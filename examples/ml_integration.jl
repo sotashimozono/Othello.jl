@@ -7,6 +7,7 @@
 
 using Othello
 using Othello: BLACK, WHITE, EMPTY, count_pieces, is_game_over, opponent
+using StaticArrays: MMatrix
 
 # Example 1: Simple Heuristic Player
 # This player uses a position-based heuristic
@@ -53,9 +54,9 @@ end
 
 # Example 2: Player that tracks game state for ML training
 mutable struct TrainingPlayer <: Player
-    move_history::Vector{Tuple{Matrix{Int},Position}}
+    move_history::Vector{Tuple{MMatrix{8,8,Int,64},Position}}
 
-    TrainingPlayer() = new(Tuple{Matrix{Int},Position}[])
+    TrainingPlayer() = new(Tuple{MMatrix{8,8,Int,64},Position}[])
 end
 
 function Othello.get_move(player::TrainingPlayer, game::OthelloGame)
@@ -65,8 +66,8 @@ function Othello.get_move(player::TrainingPlayer, game::OthelloGame)
         return nothing
     end
 
-    # Record the board state
-    board_copy = Matrix(game.board)
+    # Record the board state using efficient MMatrix copy
+    board_copy = copy(game.board)
 
     # Make a random move (in practice, this would use your ML model)
     move = rand(moves)

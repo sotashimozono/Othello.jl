@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links: 
+  - name: 💬 Discussions
+    url: https://github.com/sotashimozono/template.jl/discussions
+    about: 質問や一般的な議論はDiscussionsをご利用ください

@@ -1,7 +1,14 @@
-name = "MyModule"
+name = "Othello"
 uuid = "4f7774e9-efb7-42d6-b735-122dcc7ea7b8"
 version = "0.1.0"
 authors = ["sota <shimozono-sota631@g.ecc.u-tokyo.ac.jp>"]
+
+[deps]
+StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
+
+[compat]
+julia = "1.6"
+StaticArrays = "1"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"

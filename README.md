@@ -1,16 +1,16 @@
-# Othello.jl
+# Reversi.jl
 
-[![docs: stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://codes.sota-shimozono.com/Othello.jl/stable/)
-[![docs: dev](https://img.shields.io/badge/docs-dev-purple.svg)](https://codes.sota-shimozono.com/Othello.jl/dev/)
+[![docs: stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://codes.sota-shimozono.com/Reversi.jl/stable/)
+[![docs: dev](https://img.shields.io/badge/docs-dev-purple.svg)](https://codes.sota-shimozono.com/Reversi.jl/dev/)
 [![Julia](https://img.shields.io/badge/julia-v1.12+-9558b2.svg)](https://julialang.org)
 [![Code Style: Blue](https://img.shields.io/badge/Code%20Style-Blue-4495d1.svg)](https://github.com/invenia/BlueStyle)
 
 <a id="badge-top"></a>
 [![codecov](https://codecov.io/gh/sotashimozono/template.jl/graph/badge.svg?token=Q3oEEiz9A2)](https://codecov.io/gh/sotashimozono/template.jl)
-[![Build Status](https://github.com/sotashimozono/Othello.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/sotashimozono/Othello.jl/actions/workflows/CI.yml?query=branch%3Amain)
+[![Build Status](https://github.com/sotashimozono/Reversi.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/sotashimozono/Reversi.jl/actions/workflows/CI.yml?query=branch%3Amain)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A high-performance Othello (Reversi) implementation in Julia, built on StaticArrays.jl for efficient board representation. Designed with flexibility for machine learning research and reinforcement learning applications.
+A high-performance Reversi (Reversi) implementation in Julia, built on StaticArrays.jl for efficient board representation. Designed with flexibility for machine learning research and reinforcement learning applications.
 
 ## Features
 
@@ -24,13 +24,13 @@ A high-performance Othello (Reversi) implementation in Julia, built on StaticArr
 
 ```julia
 using Pkg
-Pkg.add(url="https://github.com/sotashimozono/Othello.jl")
+Pkg.add(url="https://github.com/sotashimozono/Reversi.jl")
 ```
 
 Or in the Julia REPL package mode (press `]`):
 
 ```julia
-pkg> add https://github.com/sotashimozono/Othello.jl
+pkg> add https://github.com/sotashimozono/Reversi.jl
 ```
 
 ## Quick Start
@@ -38,7 +38,7 @@ pkg> add https://github.com/sotashimozono/Othello.jl
 ### Play in Terminal
 
 ```julia
-using Othello
+using Reversi
 
 # Human vs Random AI
 play_game(HumanPlayer(), RandomPlayer())
@@ -53,10 +53,10 @@ julia --project examples/play.jl
 ### Programmatic Usage
 
 ```julia
-using Othello
+using Reversi
 
 # Create a new game
-game = OthelloGame()
+game = ReversiGame()
 
 # Display the board
 display_board(game)
@@ -76,13 +76,13 @@ end
 ### Create Custom AI Players
 
 ```julia
-using Othello
+using Reversi
 
 # Define a custom player type
 struct MyAIPlayer <: Player end
 
 # Implement the get_move function
-function Othello.get_move(player::MyAIPlayer, game::OthelloGame)
+function Reversi.get_move(player::MyAIPlayer, game::ReversiGame)
     moves = valid_moves(game)
     
     if isempty(moves)
@@ -102,7 +102,7 @@ play_game(MyAIPlayer(), RandomPlayer())
 
 ### Core Types
 
-- `OthelloGame`: Main game state structure
+- `ReversiGame`: Main game state structure
   - `board::MMatrix{8,8,Int,64}`: 8x8 game board
   - `current_player::Int`: Current player (BLACK or WHITE)
   - `pass_count::Int`: Number of consecutive passes
@@ -129,7 +129,7 @@ play_game(MyAIPlayer(), RandomPlayer())
 
 ## Machine Learning Integration
 
-Othello.jl is designed to facilitate machine learning research. The flexible player system allows you to integrate:
+Reversi.jl is designed to facilitate machine learning research. The flexible player system allows you to integrate:
 
 - **Reinforcement Learning agents** (e.g., DQN, AlphaZero-style)
 - **Neural network policies**
@@ -139,14 +139,14 @@ Othello.jl is designed to facilitate machine learning research. The flexible pla
 ### Example: Integrating a Neural Network Player
 
 ```julia
-using Othello
+using Reversi
 using Flux  # Or your preferred ML framework
 
 struct NeuralPlayer <: Player
     model  # Your trained neural network
 end
 
-function Othello.get_move(player::NeuralPlayer, game::OthelloGame)
+function Reversi.get_move(player::NeuralPlayer, game::ReversiGame)
     moves = valid_moves(game)
     
     if isempty(moves)
@@ -182,7 +182,7 @@ See the `examples/` directory for more examples:
 
 ```julia
 using Pkg
-Pkg.test("Othello")
+Pkg.test("Reversi")
 ```
 
 ### Code Formatting
@@ -197,7 +197,7 @@ format("test/")
 
 ## Game Rules
 
-Othello (also known as Reversi) is played on an 8x8 board:
+Reversi (also known as Reversi) is played on an 8x8 board:
 
 1. Black (●) plays first
 2. Players alternate placing pieces

@@ -1,4 +1,4 @@
-name = "Othello"
+name = "Reversi"
 uuid = "8f7655e2-04a7-45c2-9cb3-16b1b80822ae"
 version = "0.1.0"
 authors = ["sota <shimozono-sota631@g.ecc.u-tokyo.ac.jp>"]

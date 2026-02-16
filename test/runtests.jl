@@ -1,11 +1,11 @@
 ENV["GKSwstype"] = "100"
 
-using Othello, Test
-using Othello: EMPTY, BLACK, WHITE, opponent, is_valid_position, count_pieces, pass!
+using Reversi, Test
+using Reversi: EMPTY, BLACK, WHITE, opponent, is_valid_position, count_pieces, pass!
 
-@testset "Othello.jl" begin
+@testset "Reversi.jl" begin
     @testset "Game Initialization" begin
-        game = OthelloGame()
+        game = ReversiGame()
         @test game.board[4, 4] == WHITE
         @test game.board[4, 5] == BLACK
         @test game.board[5, 4] == BLACK
@@ -28,7 +28,7 @@ using Othello: EMPTY, BLACK, WHITE, opponent, is_valid_position, count_pieces, p
     end
 
     @testset "Valid Moves" begin
-        game = OthelloGame()
+        game = ReversiGame()
         moves = valid_moves(game, BLACK)
 
         # Black should have exactly 4 valid opening moves
@@ -40,7 +40,7 @@ using Othello: EMPTY, BLACK, WHITE, opponent, is_valid_position, count_pieces, p
     end
 
     @testset "Make Move" begin
-        game = OthelloGame()
+        game = ReversiGame()
 
         # Black makes a valid move
         @test make_move!(game, 3, 4) == true
@@ -49,13 +49,13 @@ using Othello: EMPTY, BLACK, WHITE, opponent, is_valid_position, count_pieces, p
         @test game.current_player == WHITE
 
         # Try invalid move
-        game2 = OthelloGame()
+        game2 = ReversiGame()
         @test make_move!(game2, 1, 1) == false
         @test game2.current_player == BLACK  # Turn not changed
     end
 
     @testset "Piece Counting" begin
-        game = OthelloGame()
+        game = ReversiGame()
         black_count, white_count = count_pieces(game)
         @test black_count == 2
         @test white_count == 2
@@ -67,7 +67,7 @@ using Othello: EMPTY, BLACK, WHITE, opponent, is_valid_position, count_pieces, p
     end
 
     @testset "Pass and Game Over" begin
-        game = OthelloGame()
+        game = ReversiGame()
         @test is_game_over(game) == false
 
         pass!(game)
@@ -81,7 +81,7 @@ using Othello: EMPTY, BLACK, WHITE, opponent, is_valid_position, count_pieces, p
     end
 
     @testset "Winner Detection" begin
-        game = OthelloGame()
+        game = ReversiGame()
 
         # Manually set up a winning position for black
         game.board .= EMPTY
@@ -121,7 +121,7 @@ using Othello: EMPTY, BLACK, WHITE, opponent, is_valid_position, count_pieces, p
 end
 
 const dirs = []
-const FIG_BASE = joinpath(pkgdir(Othello), "docs", "src", "assets")
+const FIG_BASE = joinpath(pkgdir(Reversi), "docs", "src", "assets")
 const PATHS = Dict()
 mkpath.(values(PATHS))
 

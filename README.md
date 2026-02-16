@@ -2,11 +2,11 @@
 
 [![docs: stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://codes.sota-shimozono.com/Othello.jl/stable/)
 [![docs: dev](https://img.shields.io/badge/docs-dev-purple.svg)](https://codes.sota-shimozono.com/Othello.jl/dev/)
-[![Julia](https://img.shields.io/badge/julia-v1.6+-9558b2.svg)](https://julialang.org)
+[![Julia](https://img.shields.io/badge/julia-v1.12+-9558b2.svg)](https://julialang.org)
 [![Code Style: Blue](https://img.shields.io/badge/Code%20Style-Blue-4495d1.svg)](https://github.com/invenia/BlueStyle)
 
 <a id="badge-top"></a>
-[![codecov](https://codecov.io/gh/sotashimozono/Othello.jl/graph/badge.svg?token=Q3oEEiz9A2)](https://codecov.io/gh/sotashimozono/Othello.jl)
+[![codecov](https://codecov.io/gh/sotashimozono/template.jl/graph/badge.svg?token=Q3oEEiz9A2)](https://codecov.io/gh/sotashimozono/template.jl)
 [![Build Status](https://github.com/sotashimozono/Othello.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/sotashimozono/Othello.jl/actions/workflows/CI.yml?query=branch%3Amain)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 

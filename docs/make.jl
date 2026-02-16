@@ -1,4 +1,4 @@
-using MyModule
+using Othello
 using Documenter
 using Downloads
 
@@ -9,9 +9,9 @@ favicon_path = joinpath(assets_dir, "favicon.ico")
 Downloads.download("https://github.com/sotashimozono.png", favicon_path)
 
 makedocs(;
-    sitename="MyModule.jl",
+    sitename="Othello.jl",
     format=Documenter.HTML(;
-        canonical="https://codes.sota-shimozono.com/MyModule.jl/stable/",
+        canonical="https://codes.sota-shimozono.com/Othello.jl/stable/",
         prettyurls=get(ENV, "CI", "false") == "true",
         mathengine=MathJax3(
             Dict(
@@ -24,8 +24,8 @@ makedocs(;
         ),
         assets=["assets/favicon.ico"],
     ),
-    modules=[MyModule],
+    modules=[Othello],
     pages=["Home" => "index.md"],
 )
 
-deploydocs(; repo="github.com/sotashimozono/MyModule.jl.git", devbranch="main")
+deploydocs(; repo="github.com/sotashimozono/Othello.jl.git", devbranch="main")

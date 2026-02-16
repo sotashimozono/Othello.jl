@@ -1,9 +1,9 @@
 ENV["GKSwstype"] = "100"
 
-using MyModule, Test
+using Othello, Test
 const dirs = []
 
-const FIG_BASE = joinpath(pkgdir(MyModule), "docs", "src", "assets")
+const FIG_BASE = joinpath(pkgdir(Othello), "docs", "src", "assets")
 const PATHS = Dict()
 mkpath.(values(PATHS))
 

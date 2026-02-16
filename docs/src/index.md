@@ -1,7 +1,7 @@
-# MyModule.jl
+# Othello.jl
 
 ## Models
 
 ```@autodocs
-Modules = [MyModule]
+Modules = [Othello]
 ```

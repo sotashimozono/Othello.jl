@@ -12,7 +12,7 @@ println()
 # Example 1: Play a game between two random players
 println("Example 1: Two Random Players")
 println("-" * "="^59)
-winner = play_game(RandomPlayer(), RandomPlayer(), verbose=true)
+winner = play_game(RandomPlayer(), RandomPlayer(); verbose=true)
 println()
 
 # Example 2: Create a custom player that prefers corner moves
@@ -20,11 +20,11 @@ struct CornerPlayer <: Player end
 
 function Othello.get_move(player::CornerPlayer, game::OthelloGame)
     moves = valid_moves(game)
-    
+
     if isempty(moves)
         return nothing
     end
-    
+
     # Prefer corners
     corners = [Position(1, 1), Position(1, 8), Position(8, 1), Position(8, 8)]
     for corner in corners
@@ -32,7 +32,7 @@ function Othello.get_move(player::CornerPlayer, game::OthelloGame)
             return corner
         end
     end
-    
+
     # Otherwise random
     return rand(moves)
 end
@@ -40,7 +40,7 @@ end
 println("\n" * "="^60)
 println("Example 2: Corner-Preferring Player vs Random Player")
 println("-" * "="^59)
-winner = play_game(CornerPlayer(), RandomPlayer(), verbose=true)
+winner = play_game(CornerPlayer(), RandomPlayer(); verbose=true)
 println()
 
 # Example 3: Programmatic game control

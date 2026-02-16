@@ -21,12 +21,12 @@ function select_game_mode()
     println("  2. Human (White) vs Random AI (Black)")
     println("  3. Human vs Human")
     println("  4. Random AI vs Random AI (watch)")
-    
+
     while true
         print("Enter choice (1-4): ")
         input = readline()
         choice = tryparse(Int, strip(input))
-        
+
         if choice !== nothing && 1 <= choice <= 4
             return choice
         end
@@ -56,4 +56,4 @@ else
 end
 
 println()
-play_game(player1, player2, verbose=true)
+play_game(player1, player2; verbose=true)

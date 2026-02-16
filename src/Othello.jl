@@ -32,7 +32,7 @@ mutable struct OthelloGame
     board::MMatrix{8,8,Int,64}  # 8x8 mutable static array
     current_player::Int           # BLACK or WHITE
     pass_count::Int              # Track consecutive passes
-    
+
     function OthelloGame()
         board = @MMatrix zeros(Int, 8, 8)
         # Initial setup: center 4 pieces
@@ -70,11 +70,13 @@ directions() = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1
 
 Check if pieces can be flipped in a given direction from a position.
 """
-function can_flip_in_direction(game::OthelloGame, row::Int, col::Int, drow::Int, dcol::Int, player::Int)
+function can_flip_in_direction(
+    game::OthelloGame, row::Int, col::Int, drow::Int, dcol::Int, player::Int
+)
     opp = opponent(player)
     r, c = row + drow, col + dcol
     found_opponent = false
-    
+
     while is_valid_position(r, c)
         if game.board[r, c] == EMPTY
             return false
@@ -98,7 +100,7 @@ function is_valid_move(game::OthelloGame, row::Int, col::Int, player::Int)
     if !is_valid_position(row, col) || game.board[row, col] != EMPTY
         return false
     end
-    
+
     for (drow, dcol) in directions()
         if can_flip_in_direction(game, row, col, drow, dcol, player)
             return true
@@ -129,7 +131,7 @@ Flip all pieces that should be flipped when placing a piece at (row, col).
 """
 function flip_pieces!(game::OthelloGame, row::Int, col::Int, player::Int)
     opp = opponent(player)
-    
+
     for (drow, dcol) in directions()
         if can_flip_in_direction(game, row, col, drow, dcol, player)
             r, c = row + drow, col + dcol
@@ -151,7 +153,7 @@ function make_move!(game::OthelloGame, row::Int, col::Int)
     if !is_valid_move(game, row, col, game.current_player)
         return false
     end
-    
+
     game.board[row, col] = game.current_player
     flip_pieces!(game, row, col, game.current_player)
     game.pass_count = 0
@@ -179,12 +181,12 @@ function is_game_over(game::OthelloGame)
     if game.pass_count >= 2
         return true
     end
-    
+
     # Board is full
     if all(game.board .!= EMPTY)
         return true
     end
-    
+
     return false
 end
 
@@ -265,12 +267,12 @@ struct HumanPlayer <: Player end
 
 function get_move(player::HumanPlayer, game::OthelloGame)
     moves = valid_moves(game)
-    
+
     if isempty(moves)
         println("No valid moves available. Passing turn.")
         return nothing
     end
-    
+
     println("\nValid moves:")
     for (i, pos) in enumerate(moves)
         print("$(pos.row),$(pos.col) ")
@@ -279,22 +281,22 @@ function get_move(player::HumanPlayer, game::OthelloGame)
         end
     end
     println()
-    
+
     while true
         print("Enter your move (row,col) or 'p' to pass: ")
         input = readline()
-        
+
         if lowercase(strip(input)) == "p"
             return nothing
         end
-        
+
         parts = split(input, ',')
         if length(parts) == 2
             try
                 row = parse(Int, strip(parts[1]))
                 col = parse(Int, strip(parts[2]))
                 pos = Position(row, col)
-                
+
                 if pos in moves
                     return pos
                 else
@@ -318,11 +320,11 @@ struct RandomPlayer <: Player end
 
 function get_move(player::RandomPlayer, game::OthelloGame)
     moves = valid_moves(game)
-    
+
     if isempty(moves)
         return nothing
     end
-    
+
     return rand(moves)
 end
 
@@ -334,23 +336,23 @@ Play a complete game between two players. Returns the winner.
 function play_game(player1::Player, player2::Player; verbose::Bool=true)
     game = OthelloGame()
     players = Dict(BLACK => player1, WHITE => player2)
-    
+
     if verbose
         println("Starting new Othello game!")
         println("Black (●) vs White (○)")
         println()
         display_board(game)
     end
-    
+
     while !is_game_over(game)
         current = players[game.current_player]
-        
+
         if verbose
             println("\n" * "="^40)
         end
-        
+
         move = get_move(current, game)
-        
+
         if move === nothing
             if verbose
                 color = game.current_player == BLACK ? "Black" : "White"
@@ -364,14 +366,14 @@ function play_game(player1::Player, player2::Player; verbose::Bool=true)
             end
             make_move!(game, move.row, move.col)
         end
-        
+
         if verbose
             display_board(game)
         end
     end
-    
+
     winner = get_winner(game)
-    
+
     if verbose
         println("\n" * "="^40)
         println("Game Over!")
@@ -384,7 +386,7 @@ function play_game(player1::Player, player2::Player; verbose::Bool=true)
         black_count, white_count = count_pieces(game)
         println("Final score - Black: $black_count, White: $white_count")
     end
-    
+
     return winner
 end
 

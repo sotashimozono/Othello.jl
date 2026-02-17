@@ -24,7 +24,6 @@ function display_board(game::ReversiGame)
     println("Current player: $(game.current_player == BLACK ? "Black (●)" : "White (○)")")
 end
 
-
 """
     play_game(player1::Player, player2::Player; verbose::Bool=true) -> Int
 

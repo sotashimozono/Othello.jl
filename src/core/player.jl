@@ -31,14 +31,14 @@ function get_move(player::HumanPlayer, game::ReversiGame; hints=true)
     end
 
     if hints
-        display_board(game, hints=moves)
+        display_board(game; hints=moves)
     else
-        display_board(game, hints=[])
+        display_board(game; hints=[])
     end
 
     while true
         print("\nMove (row,col): ")
-        input = readline() |> strip |> lowercase
+        input = lowercase(strip(readline()))
         # imput format: "row,col" or "row col"
         m = match(r"^([1-8])[\s,]*([1-8])$", input)
         if m !== nothing
@@ -54,7 +54,6 @@ function get_move(player::HumanPlayer, game::ReversiGame; hints=true)
         end
     end
 end
-
 
 """
     RandomPlayer <: Player

@@ -1,4 +1,4 @@
-using Othello
+using Reversi
 using Documenter
 using Downloads
 
@@ -9,9 +9,9 @@ favicon_path = joinpath(assets_dir, "favicon.ico")
 Downloads.download("https://github.com/sotashimozono.png", favicon_path)
 
 makedocs(;
-    sitename="Othello.jl",
+    sitename="Reversi.jl",
     format=Documenter.HTML(;
-        canonical="https://codes.sota-shimozono.com/Othello.jl/stable/",
+        canonical="https://codes.sota-shimozono.com/Reversi.jl/stable/",
         prettyurls=get(ENV, "CI", "false") == "true",
         mathengine=MathJax3(
             Dict(
@@ -24,8 +24,8 @@ makedocs(;
         ),
         assets=["assets/favicon.ico"],
     ),
-    modules=[Othello],
+    modules=[Reversi],
     pages=["Home" => "index.md"],
 )
 
-deploydocs(; repo="github.com/sotashimozono/Othello.jl.git", devbranch="main")
+deploydocs(; repo="github.com/sotashimozono/Reversi.jl.git", devbranch="main")

@@ -1,10 +1,10 @@
-# Othello.jl Documentation
+# Reversi.jl Documentation
 
 ```@meta
-CurrentModule = Othello
+CurrentModule = Reversi
 ```
 
-A high-performance Othello (Reversi) implementation in Julia, built on StaticArrays.jl for efficient board representation. Designed with flexibility for machine learning research and reinforcement learning applications.
+A high-performance Reversi (Othello) implementation in Julia, built on StaticArrays.jl for efficient board representation. Designed with flexibility for machine learning research and reinforcement learning applications.
 
 ## Features
 
@@ -18,7 +18,7 @@ A high-performance Othello (Reversi) implementation in Julia, built on StaticArr
 
 ```julia
 using Pkg
-Pkg.add(url="https://github.com/sotashimozono/Othello.jl")
+Pkg.add(url="https://github.com/sotashimozono/Reversi.jl")
 ```
 
 ## Quick Start
@@ -26,7 +26,7 @@ Pkg.add(url="https://github.com/sotashimozono/Othello.jl")
 ### Play in Terminal
 
 ```julia
-using Othello
+using Reversi
 
 # Human vs Random AI
 play_game(HumanPlayer(), RandomPlayer())
@@ -35,13 +35,13 @@ play_game(HumanPlayer(), RandomPlayer())
 ### Create Custom AI Players
 
 ```julia
-using Othello
+using Reversi
 
 # Define a custom player type
 struct MyAIPlayer <: Player end
 
 # Implement the get_move function
-function Othello.get_move(player::MyAIPlayer, game::OthelloGame)
+function Reversi.get_move(player::MyAIPlayer, game::ReversiGame)
     moves = valid_moves(game)
     
     if isempty(moves)
@@ -59,5 +59,5 @@ play_game(MyAIPlayer(), RandomPlayer())
 ## API Reference
 
 ```@autodocs
-Modules = [Othello]
+Modules = [Reversi]
 ```

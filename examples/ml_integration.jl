@@ -5,7 +5,6 @@
 
 using Reversi
 using Reversi: BLACK, WHITE, EMPTY, count_pieces, is_game_over, opponent
-using StaticArrays: MMatrix
 
 # ## Example 1: Simple Heuristic Player
 # This player uses a position-based heuristic
@@ -50,10 +49,26 @@ function Reversi.get_move(player::HeuristicPlayer, game::ReversiGame)
 end
 
 # ## Example 2: Player that tracks game state for ML training
+# Board state is represented as a plain `Matrix{Int}` where `0` = empty,
+# `1` = BLACK, `2` = WHITE — no external dependencies required.
 mutable struct TrainingPlayer <: Player
-    move_history::Vector{Tuple{MMatrix{8,8,Int,64},Position}}
+    move_history::Vector{Tuple{Matrix{Int},Position}}
 
-    TrainingPlayer() = new(Tuple{MMatrix{8,8,Int,64},Position}[])
+    TrainingPlayer() = new(Tuple{Matrix{Int},Position}[])
+end
+
+"""
+    board_to_matrix(game::ReversiGame) -> Matrix{Int}
+
+Convert the bitboard state of `game` into an 8×8 `Matrix{Int}` where
+`EMPTY == 0`, `BLACK == 1`, and `WHITE == 2`.
+"""
+function board_to_matrix(game::ReversiGame)
+    mat = zeros(Int, 8, 8)
+    for row in 1:8, col in 1:8
+        mat[row, col] = get_piece(game, row, col)
+    end
+    return mat
 end
 
 function Reversi.get_move(player::TrainingPlayer, game::ReversiGame)
@@ -63,8 +78,8 @@ function Reversi.get_move(player::TrainingPlayer, game::ReversiGame)
         return nothing
     end
 
-    # Record the board state using efficient MMatrix copy
-    board_copy = copy(game.board)
+    # Record the board state as a plain matrix
+    board_copy = board_to_matrix(game)
 
     # Make a random move (in practice, this would use your ML model)
     move = rand(moves)

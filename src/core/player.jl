@@ -33,24 +33,29 @@ function get_move(player::HumanPlayer, game::ReversiGame; hints=true)
     if hints
         display_board(game; hints=moves)
     else
-        display_board(game; hints=[])
+        display_board(game; hints=Position[])
     end
 
     while true
-        print("\nMove (row,col): ")
+        print("\nMove (e.g. e4 or row,col): ")
         input = lowercase(strip(readline()))
-        # imput format: "row,col" or "row col"
-        m = match(r"^([1-8])[\s,]*([1-8])$", input)
-        if m !== nothing
-            row, col = parse(Int, m.captures[1]), parse(Int, m.captures[2])
-            pos = Position(row, col)
-            if pos in moves
-                return pos
-            else
-                println("\e[31mInvalid move! See the green '*' marks.\e[0m")
-            end
+        # Accept standard notation "e4"
+        m_std = match(r"^([a-h])([1-8])$", input)
+        # Accept legacy "row,col" notation
+        m_leg = match(r"^([1-8])[\s,]*([1-8])$", input)
+        pos = if m_std !== nothing
+            Position(string(m_std.captures[1]) * string(m_std.captures[2]))
+        elseif m_leg !== nothing
+            Position(parse(Int, m_leg.captures[1]), parse(Int, m_leg.captures[2]))
         else
-            println("\e[31mPlease enter as 'row,col' (e.g., 4,3) using numbers 1-8.\e[0m")
+            nothing
+        end
+        if pos !== nothing && pos in moves
+            return pos
+        elseif pos !== nothing
+            println("\e[31mInvalid move! See the green '*' marks.\e[0m")
+        else
+            println("\e[31mPlease enter as 'e4' or 'row,col' (e.g., 4,3).\e[0m")
         end
     end
 end

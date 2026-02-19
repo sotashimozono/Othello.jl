@@ -1,20 +1,26 @@
 """
-    display_board(game::ReversiGame)
+    display_board(game::ReversiGame; hints::Vector{Position}=Position[])
 
 Display the current board state in the terminal.
+Columns are labelled `a`–`h` and rows `1`–`8`.
+Optional `hints` highlights valid moves with a green `*`.
 """
-function display_board(game::ReversiGame)
-    println("  1 2 3 4 5 6 7 8")
+function display_board(game::ReversiGame; hints::Vector{Position}=Position[])
+    hint_set = Set(hints)
+    println("  a b c d e f g h")
     for row in 1:8
         print("$row ")
         for col in 1:8
-            piece = game.board[row, col]
-            if piece == EMPTY
-                print("· ")
-            elseif piece == BLACK
+            bit = one(UInt64) << ((row - 1) * 8 + (col - 1))
+            pos = Position(row, col)
+            if (game.black & bit) != 0
                 print("● ")
-            else  # WHITE
+            elseif (game.white & bit) != 0
                 print("○ ")
+            elseif pos in hint_set
+                print("\e[32m* \e[0m")
+            else
+                print("· ")
             end
         end
         println()

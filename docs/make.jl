@@ -39,6 +39,7 @@ makedocs(;
             "rules" => "api/rules.md",
             "player" => "api/player.md",
             "game" => "api/game.md",
+            "data" => "api/data.md",
         ],
     ],
 )

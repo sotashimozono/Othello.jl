@@ -344,8 +344,13 @@ using Reversi: GameRecord, save_game, load_game, replay_game
     @testset "play_game with save_record" begin
         tmp = tempname() * ".txt"
         try
-            winner = play_game(RandomPlayer(), RandomPlayer();
-                               verbose=false, save_record=true, record_path=tmp)
+            winner = play_game(
+                RandomPlayer(),
+                RandomPlayer();
+                verbose=false,
+                save_record=true,
+                record_path=tmp,
+            )
             @test winner in [BLACK, WHITE, EMPTY]
             @test isfile(tmp)
             rec = load_game(tmp)

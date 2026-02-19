@@ -1,20 +1,31 @@
-# # How to Play with Reversi.jl
-# ## Example1: script demonstrating Reversi.jl usage
+```@meta
+EditURL = "../../../examples/demo.jl"
+```
 
+# How to Play with Reversi.jl
+## Example1: script demonstrating Reversi.jl usage
+
+````@example demo
 using Reversi
 
 println("="^60)
 println("Reversi.jl Demo")
 println("="^60)
 println()
+````
 
-# Example 1: Play a game between two random players
+Example 1: Play a game between two random players
+
+````@example demo
 println("Example 1: Two Random Players")
 println("-" * "="^59)
 winner = play_game(RandomPlayer(), RandomPlayer(); verbose=true)
 println()
+````
 
-# ## Example 2: Create a custom player that prefers corner moves
+## Example 2: Create a custom player that prefers corner moves
+
+````@example demo
 struct CornerPlayer <: Player end
 function Reversi.get_move(player::CornerPlayer, game::ReversiGame)
     moves = valid_moves(game)
@@ -35,8 +46,11 @@ println("Example 2: Corner-Preferring Player vs Random Player")
 println("-" * "="^59)
 winner = play_game(CornerPlayer(), RandomPlayer(); verbose=true)
 println()
+````
 
-# Example 3: Programmatic game control
+Example 3: Programmatic game control
+
+````@example demo
 println("\n" * "="^60)
 println("Example 3: Programmatic Control")
 println("-" * "="^59)
@@ -58,3 +72,9 @@ end
 println("\n" * "="^60)
 println("Demo Complete!")
 println("="^60)
+````
+
+---
+
+*This page was generated using [Literate.jl](https://github.com/fredrikekre/Literate.jl).*
+

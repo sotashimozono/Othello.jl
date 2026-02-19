@@ -1,19 +1,31 @@
-# # Example: Creating a Custom AI Player for Machine Learning Integration
-#
-# This example demonstrates how to create custom players that can integrate
-# with machine learning frameworks like Flux.jl or reinforcement learning libraries.
+```@meta
+EditURL = "../../../examples/ml_integration.jl"
+```
 
+# Example: Creating a Custom AI Player for Machine Learning Integration
+
+This example demonstrates how to create custom players that can integrate
+with machine learning frameworks like Flux.jl or reinforcement learning libraries.
+
+````@example ml_integration
 using Reversi
 using Reversi: BLACK, WHITE, EMPTY, count_pieces, is_game_over, opponent
 using StaticArrays: MMatrix
+````
 
-# ## Example 1: Simple Heuristic Player
-# This player uses a position-based heuristic
+## Example 1: Simple Heuristic Player
+This player uses a position-based heuristic
+
+````@example ml_integration
 struct HeuristicPlayer <: Player
     weights::Matrix{Float64}  # Position weights
 
     function HeuristicPlayer()
-        # Corner squares are valuable, edges are decent, next to corners are bad
+````
+
+Corner squares are valuable, edges are decent, next to corners are bad
+
+````@example ml_integration
         weights = [
             100 -20 10 5 5 10 -20 100;
             -20 -50 -2 -2 -2 -2 -50 -20;
@@ -48,8 +60,11 @@ function Reversi.get_move(player::HeuristicPlayer, game::ReversiGame)
 
     return best_move
 end
+````
 
-# ## Example 2: Player that tracks game state for ML training
+## Example 2: Player that tracks game state for ML training
+
+````@example ml_integration
 mutable struct TrainingPlayer <: Player
     move_history::Vector{Tuple{MMatrix{8,8,Int,64},Position}}
 
@@ -62,36 +77,50 @@ function Reversi.get_move(player::TrainingPlayer, game::ReversiGame)
     if isempty(moves)
         return nothing
     end
+````
 
-    # Record the board state using efficient MMatrix copy
+Record the board state using efficient MMatrix copy
+
+````@example ml_integration
     board_copy = copy(game.board)
+````
 
-    # Make a random move (in practice, this would use your ML model)
+Make a random move (in practice, this would use your ML model)
+
+````@example ml_integration
     move = rand(moves)
+````
 
-    # Store the state-action pair for training
+Store the state-action pair for training
+
+````@example ml_integration
     push!(player.move_history, (board_copy, move))
 
     return move
 end
+````
 
-# ## Example 3: Mock Neural Network Player
-# This shows the structure for integrating with a real neural network
-# In practice, this would be your trained model from Flux, TensorFlow, etc.
+## Example 3: Mock Neural Network Player
+This shows the structure for integrating with a real neural network
+In practice, this would be your trained model from Flux, TensorFlow, etc.
+
+````@example ml_integration
 struct NeuralNetPlayer <: Player
     model
 end
+````
 
-# Convert board to neural network input
-# In practice: input = preprocess_board(game.board, game.current_player)
-# For demo, we'll just use random
+Convert board to neural network input
+In practice: input = preprocess_board(game.board, game.current_player)
+For demo, we'll just use random
 
-# Get policy from neural network
-# In practice: policy = player.model(input)
+Get policy from neural network
+In practice: policy = player.model(input)
 
-# Select move based on policy
-# In practice: return select_move_from_policy(policy, moves)
+Select move based on policy
+In practice: return select_move_from_policy(policy, moves)
 
+````@example ml_integration
 function Reversi.get_move(player::NeuralNetPlayer, game::ReversiGame)
     moves = valid_moves(game)
 
@@ -101,13 +130,20 @@ function Reversi.get_move(player::NeuralNetPlayer, game::ReversiGame)
 
     return rand(moves)
 end
+````
 
-# Example 4: Minimax Player (game tree search)
+Example 4: Minimax Player (game tree search)
+
+````@example ml_integration
 struct MinimaxPlayer <: Player
     depth::Int
     MinimaxPlayer(depth=3) = new(depth)
 end
-# Simple evaluation: piece count difference
+````
+
+Simple evaluation: piece count difference
+
+````@example ml_integration
 function evaluate_board(game::ReversiGame, player_color::Int)
     black, white = count_pieces(game)
     return player_color == BLACK ? (black - white) : (white - black)
@@ -186,8 +222,11 @@ function Reversi.get_move(player::MinimaxPlayer, game::ReversiGame)
 
     return best_move
 end
+````
 
-# Demonstration
+Demonstration
+
+````@example ml_integration
 println("="^60)
 println("Machine Learning Integration Examples")
 println("="^60)
@@ -225,3 +264,9 @@ println("  2. Game state can be copied for tree search (Minimax, MCTS)")
 println("  3. State-action pairs can be collected for supervised learning")
 println("  4. Neural network policies can be integrated seamlessly")
 println("="^60)
+````
+
+---
+
+*This page was generated using [Literate.jl](https://github.com/fredrikekre/Literate.jl).*
+

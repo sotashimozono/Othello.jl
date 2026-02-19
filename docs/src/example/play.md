@@ -1,5 +1,10 @@
-# Interactive terminal Reversi game
+```@meta
+EditURL = "../../../examples/play.jl"
+```
 
+Interactive terminal Reversi game
+
+````@example play
 using Reversi
 
 println("="^60)
@@ -55,3 +60,9 @@ end
 
 println()
 play_game(player1, player2; verbose=true)
+````
+
+---
+
+*This page was generated using [Literate.jl](https://github.com/fredrikekre/Literate.jl).*
+

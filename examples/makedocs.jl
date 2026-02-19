@@ -10,10 +10,6 @@ mkpath(output_dir)
 for file in readdir(input_dir)
     if endswith(file, ".jl") && file != basename(@__FILE__)
         println("Generating markdown for: $file")
-        Literate.markdown(
-            joinpath(input_dir, file), 
-            output_dir; 
-            documenter = true
-        )
+        Literate.markdown(joinpath(input_dir, file), output_dir; documenter=true)
     end
 end

@@ -52,10 +52,10 @@ function load_game(filepath::String)::GameRecord
     result = -1
     for line in eachline(filepath)
         if startswith(line, "MOVES:")
-            raw = strip(line[length("MOVES:") + 1:end])
+            raw = strip(line[(length("MOVES:") + 1):end])
             moves = isempty(raw) ? String[] : split(raw, " ")
         elseif startswith(line, "RESULT:")
-            val = strip(line[length("RESULT:") + 1:end])
+            val = strip(line[(length("RESULT:") + 1):end])
             result = if val == "BLACK"
                 BLACK
             elseif val == "WHITE"

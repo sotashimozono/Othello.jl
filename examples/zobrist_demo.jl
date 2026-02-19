@@ -17,8 +17,8 @@ using Reversi: BLACK, WHITE, EMPTY, compute_full_hash, update_hash, ZOBRIST_TABL
 # Zobrist hash of the four starting pieces.
 
 game = ReversiGame()
-println("Initial incremental hash : 0x", string(game.hash, base=16, pad=16))
-println("Full recomputed hash      : 0x", string(compute_full_hash(game), base=16, pad=16))
+println("Initial incremental hash : 0x", string(game.hash; base=16, pad=16))
+println("Full recomputed hash      : 0x", string(compute_full_hash(game); base=16, pad=16))
 @assert game.hash == compute_full_hash(game)
 
 # ## 2. Hash after a move
@@ -29,8 +29,8 @@ println("Full recomputed hash      : 0x", string(compute_full_hash(game), base=1
 
 make_move!(game, "d3")   # Black plays d3
 println("\nAfter d3:")
-println("Incremental hash : 0x", string(game.hash, base=16, pad=16))
-println("Full hash        : 0x", string(compute_full_hash(game), base=16, pad=16))
+println("Incremental hash : 0x", string(game.hash; base=16, pad=16))
+println("Full hash        : 0x", string(compute_full_hash(game); base=16, pad=16))
 @assert game.hash == compute_full_hash(game)
 
 # ## 3. XOR self-inverse property
@@ -41,8 +41,8 @@ println("Full hash        : 0x", string(compute_full_hash(game), base=16, pad=16
 h0 = compute_full_hash(ReversiGame())
 h1 = update_hash(h0, 3, 4, BLACK)   # add a piece
 h2 = update_hash(h1, 3, 4, BLACK)   # remove the same piece
-println("\nOriginal hash    : 0x", string(h0, base=16, pad=16))
-println("After toggle ×2  : 0x", string(h2, base=16, pad=16))
+println("\nOriginal hash    : 0x", string(h0; base=16, pad=16))
+println("After toggle ×2  : 0x", string(h2; base=16, pad=16))
 @assert h0 == h2 "XOR inverse property failed!"
 
 # ## 4. Position lookup / transposition detection
@@ -51,7 +51,7 @@ println("After toggle ×2  : 0x", string(h2, base=16, pad=16))
 # tables**: a dictionary from hash → evaluation that avoids re-searching the
 # same position reached via different move orders.
 
-transposition_table = Dict{UInt64, Int}()
+transposition_table = Dict{UInt64,Int}()
 
 function cached_piece_diff(game::ReversiGame)::Int
     haskey(transposition_table, game.hash) && return transposition_table[game.hash]
@@ -62,13 +62,15 @@ function cached_piece_diff(game::ReversiGame)::Int
 end
 
 g1 = ReversiGame()
-make_move!(g1, "d3"); make_move!(g1, "c5")
+make_move!(g1, "d3");
+make_move!(g1, "c5")
 
 g2 = ReversiGame()
-make_move!(g2, "d3"); make_move!(g2, "c5")
+make_move!(g2, "d3");
+make_move!(g2, "c5")
 
-println("\nHash of g1: 0x", string(g1.hash, base=16, pad=16))
-println("Hash of g2: 0x", string(g2.hash, base=16, pad=16))
+println("\nHash of g1: 0x", string(g1.hash; base=16, pad=16))
+println("Hash of g2: 0x", string(g2.hash; base=16, pad=16))
 @assert g1.hash == g2.hash "Same move sequence must yield same hash!"
 
 val1 = cached_piece_diff(g1)

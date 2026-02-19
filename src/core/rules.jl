@@ -21,16 +21,18 @@ is_valid_position(row::Int, col::Int) = 1 <= row <= 8 && 1 <= col <= 8
 const _COL_A = UInt64(0x0101010101010101)
 const _COL_H = UInt64(0x8080808080808080)
 
-@inline _shift_n(x::UInt64)  = x >> 8
-@inline _shift_s(x::UInt64)  = x << 8
-@inline _shift_e(x::UInt64)  = (x & ~_COL_H) << 1
-@inline _shift_w(x::UInt64)  = (x & ~_COL_A) >> 1
+@inline _shift_n(x::UInt64) = x >> 8
+@inline _shift_s(x::UInt64) = x << 8
+@inline _shift_e(x::UInt64) = (x & ~_COL_H) << 1
+@inline _shift_w(x::UInt64) = (x & ~_COL_A) >> 1
 @inline _shift_ne(x::UInt64) = (x & ~_COL_H) >> 7
 @inline _shift_nw(x::UInt64) = (x & ~_COL_A) >> 9
 @inline _shift_se(x::UInt64) = (x & ~_COL_H) << 9
 @inline _shift_sw(x::UInt64) = (x & ~_COL_A) << 7
 
-const _SHIFTS = (_shift_n, _shift_s, _shift_e, _shift_w, _shift_ne, _shift_nw, _shift_se, _shift_sw)
+const _SHIFTS = (
+    _shift_n, _shift_s, _shift_e, _shift_w, _shift_ne, _shift_nw, _shift_se, _shift_sw
+)
 
 # ---------------------------------------------------------------------------
 # Core bitboard algorithms
@@ -102,10 +104,12 @@ end
 
 Check if placing a piece at `(row, col)` is a valid move for `player`.
 """
-function is_valid_move(game::ReversiGame, row::Int, col::Int, player::Int=game.current_player)
+function is_valid_move(
+    game::ReversiGame, row::Int, col::Int, player::Int=game.current_player
+)
     is_valid_position(row, col) || return false
     bit = one(UInt64) << ((row - 1) * 8 + (col - 1))
-    player_bb   = player == BLACK ? game.black : game.white
+    player_bb = player == BLACK ? game.black : game.white
     opponent_bb = player == BLACK ? game.white : game.black
     return (bit & legal_moves_bb(player_bb, opponent_bb)) != 0
 end
@@ -116,7 +120,7 @@ end
 Return all valid moves for `player` (defaults to `game.current_player`).
 """
 function valid_moves(game::ReversiGame, player::Int=game.current_player)
-    player_bb   = player == BLACK ? game.black : game.white
+    player_bb = player == BLACK ? game.black : game.white
     opponent_bb = player == BLACK ? game.white : game.black
     bb = legal_moves_bb(player_bb, opponent_bb)
     moves = Position[]
@@ -137,9 +141,9 @@ is illegal.
 """
 function make_move!(game::ReversiGame, row::Int, col::Int)
     player = game.current_player
-    opp    = opponent(player)
+    opp = opponent(player)
 
-    player_bb   = player == BLACK ? game.black : game.white
+    player_bb = player == BLACK ? game.black : game.white
     opponent_bb = player == BLACK ? game.white : game.black
 
     bit = one(UInt64) << ((row - 1) * 8 + (col - 1))
@@ -162,7 +166,7 @@ function make_move!(game::ReversiGame, row::Int, col::Int)
         flip_copy &= flip_copy - one(UInt64)
     end
 
-    new_player_bb   = player_bb | bit | flips
+    new_player_bb = player_bb | bit | flips
     new_opponent_bb = opponent_bb & ~flips
 
     if player == BLACK

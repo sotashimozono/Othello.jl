@@ -27,7 +27,8 @@ Position("a1")  # Position(1, 1)
 ```
 """
 function Position(s::AbstractString)
-    length(s) == 2 || throw(ArgumentError("Position string must be 2 characters, e.g. \"e4\""))
+    length(s) == 2 ||
+        throw(ArgumentError("Position string must be 2 characters, e.g. \"e4\""))
     col_char = s[1]
     row_char = s[2]
     'a' <= col_char <= 'h' || throw(ArgumentError("Column must be a-h, got '$col_char'"))
@@ -47,7 +48,9 @@ function position_to_string(pos::Position)
     return string(col_char) * string(pos.row)
 end
 
-Base.show(io::IO, pos::Position) = print(io, "Position($(pos.row), $(pos.col)) [$(position_to_string(pos))]")
+function Base.show(io::IO, pos::Position)
+    print(io, "Position($(pos.row), $(pos.col)) [$(position_to_string(pos))]")
+end
 
 # ---------------------------------------------------------------------------
 # Zobrist hash table (fixed seed for reproducibility, no external deps)
@@ -98,7 +101,8 @@ mutable struct ReversiGame
         # (4,4)=WHITE: bit 27, (4,5)=BLACK: bit 28, (5,4)=BLACK: bit 35, (5,5)=WHITE: bit 36
         black = (one(UInt64) << 28) | (one(UInt64) << 35)
         white = (one(UInt64) << 27) | (one(UInt64) << 36)
-        h = ZOBRIST_TABLE[4, 5, BLACK] ⊻ ZOBRIST_TABLE[5, 4, BLACK] ⊻
+        h =
+            ZOBRIST_TABLE[4, 5, BLACK] ⊻ ZOBRIST_TABLE[5, 4, BLACK] ⊻
             ZOBRIST_TABLE[4, 4, WHITE] ⊻ ZOBRIST_TABLE[5, 5, WHITE]
         new(black, white, BLACK, 0, h)
     end

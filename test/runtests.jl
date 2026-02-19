@@ -111,14 +111,14 @@ using Reversi: compute_full_hash, update_hash, get_piece, next_state, position_t
         # Manually set up a winning position for Black
         game.black = (one(UInt64) << 0) | (one(UInt64) << 1)  # (1,1), (1,2)
         game.white = one(UInt64) << 2                          # (1,3)
-        game.hash  = compute_full_hash(game)
+        game.hash = compute_full_hash(game)
 
         @test get_winner(game) == BLACK
 
         # Test draw
         game.black = one(UInt64) << 0   # (1,1)
         game.white = one(UInt64) << 1   # (1,2)
-        game.hash  = compute_full_hash(game)
+        game.hash = compute_full_hash(game)
 
         @test get_winner(game) == EMPTY
     end

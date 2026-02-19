@@ -8,11 +8,11 @@ using Reversi: BLACK, WHITE, EMPTY, count_pieces, is_game_over, opponent
 
 # ## Example 1: Simple Heuristic Player
 # This player uses a position-based heuristic
+# Corner squares are valuable, edges are decent, next to corners are bad
 struct HeuristicPlayer <: Player
-    weights::Matrix{Float64}  # Position weights
+    weights::Matrix{Float64}
 
     function HeuristicPlayer()
-        # Corner squares are valuable, edges are decent, next to corners are bad
         weights = [
             100 -20 10 5 5 10 -20 100;
             -20 -50 -2 -2 -2 -2 -50 -20;
@@ -71,6 +71,9 @@ function board_to_matrix(game::ReversiGame)
     return mat
 end
 
+# Record the board state as a plain matrix
+# Make a random move (in practice, this would use your ML model)
+# Store the state-action pair for training
 function Reversi.get_move(player::TrainingPlayer, game::ReversiGame)
     moves = valid_moves(game)
 
@@ -78,13 +81,8 @@ function Reversi.get_move(player::TrainingPlayer, game::ReversiGame)
         return nothing
     end
 
-    # Record the board state as a plain matrix
     board_copy = board_to_matrix(game)
-
-    # Make a random move (in practice, this would use your ML model)
     move = rand(moves)
-
-    # Store the state-action pair for training
     push!(player.move_history, (board_copy, move))
 
     return move
@@ -202,7 +200,6 @@ function Reversi.get_move(player::MinimaxPlayer, game::ReversiGame)
     return best_move
 end
 
-# Demonstration
 println("="^60)
 println("Machine Learning Integration Examples")
 println("="^60)

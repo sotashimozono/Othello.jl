@@ -10,22 +10,17 @@ with machine learning frameworks like Flux.jl or reinforcement learning librarie
 ````@example ml_integration
 using Reversi
 using Reversi: BLACK, WHITE, EMPTY, count_pieces, is_game_over, opponent
-using StaticArrays: MMatrix
 ````
 
 ## Example 1: Simple Heuristic Player
 This player uses a position-based heuristic
-
-````@example ml_integration
-struct HeuristicPlayer <: Player
-    weights::Matrix{Float64}  # Position weights
-
-    function HeuristicPlayer()
-````
-
 Corner squares are valuable, edges are decent, next to corners are bad
 
 ````@example ml_integration
+struct HeuristicPlayer <: Player
+    weights::Matrix{Float64}
+
+    function HeuristicPlayer()
         weights = [
             100 -20 10 5 5 10 -20 100;
             -20 -50 -2 -2 -2 -2 -50 -20;
@@ -63,37 +58,45 @@ end
 ````
 
 ## Example 2: Player that tracks game state for ML training
+Board state is represented as a plain `Matrix{Int}` where `0` = empty,
+`1` = BLACK, `2` = WHITE — no external dependencies required.
 
 ````@example ml_integration
 mutable struct TrainingPlayer <: Player
-    move_history::Vector{Tuple{MMatrix{8,8,Int,64},Position}}
+    move_history::Vector{Tuple{Matrix{Int},Position}}
 
-    TrainingPlayer() = new(Tuple{MMatrix{8,8,Int,64},Position}[])
+    TrainingPlayer() = new(Tuple{Matrix{Int},Position}[])
 end
 
+"""
+    board_to_matrix(game::ReversiGame) -> Matrix{Int}
+
+Convert the bitboard state of `game` into an 8×8 `Matrix{Int}` where
+`EMPTY == 0`, `BLACK == 1`, and `WHITE == 2`.
+"""
+function board_to_matrix(game::ReversiGame)
+    mat = zeros(Int, 8, 8)
+    for row in 1:8, col in 1:8
+        mat[row, col] = get_piece(game, row, col)
+    end
+    return mat
+end
+````
+
+Record the board state as a plain matrix
+Make a random move (in practice, this would use your ML model)
+Store the state-action pair for training
+
+````@example ml_integration
 function Reversi.get_move(player::TrainingPlayer, game::ReversiGame)
     moves = valid_moves(game)
 
     if isempty(moves)
         return nothing
     end
-````
 
-Record the board state using efficient MMatrix copy
-
-````@example ml_integration
-    board_copy = copy(game.board)
-````
-
-Make a random move (in practice, this would use your ML model)
-
-````@example ml_integration
+    board_copy = board_to_matrix(game)
     move = rand(moves)
-````
-
-Store the state-action pair for training
-
-````@example ml_integration
     push!(player.move_history, (board_copy, move))
 
     return move
@@ -222,11 +225,7 @@ function Reversi.get_move(player::MinimaxPlayer, game::ReversiGame)
 
     return best_move
 end
-````
 
-Demonstration
-
-````@example ml_integration
 println("="^60)
 println("Machine Learning Integration Examples")
 println("="^60)

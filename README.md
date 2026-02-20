@@ -5,8 +5,7 @@
 [![Julia](https://img.shields.io/badge/julia-v1.12+-9558b2.svg)](https://julialang.org)
 [![Code Style: Blue](https://img.shields.io/badge/Code%20Style-Blue-4495d1.svg)](https://github.com/invenia/BlueStyle)
 
-<a id="badge-top"></a>
-[![codecov](https://codecov.io/gh/sotashimozono/template.jl/graph/badge.svg?token=Q3oEEiz9A2)](https://codecov.io/gh/sotashimozono/template.jl)
+[![codecov](https://codecov.io/gh/sotashimozono/Reversi.jl/graph/badge.svg?token=gg6ToG6vPb)](https://codecov.io/gh/sotashimozono/Reversi.jl)
 [![Build Status](https://github.com/sotashimozono/Reversi.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/sotashimozono/Reversi.jl/actions/workflows/CI.yml?query=branch%3Amain)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -25,12 +24,14 @@ A high-performance Reversi (Reversi) implementation in Julia, built on StaticArr
 ```julia
 using Pkg
 Pkg.add(url="https://github.com/sotashimozono/Reversi.jl")
+Pkg.add("Reversi")
 ```
 
 Or in the Julia REPL package mode (press `]`):
 
 ```julia
 pkg> add https://github.com/sotashimozono/Reversi.jl
+pkg> add Reversi
 ```
 
 ## Quick Start
@@ -176,25 +177,6 @@ See the `examples/` directory for more examples:
 - `examples/demo.jl`: Demonstrates various features
 - `examples/play.jl`: Interactive terminal game
 
-## Development
-
-### Running Tests
-
-```julia
-using Pkg
-Pkg.test("Reversi")
-```
-
-### Code Formatting
-
-This project uses JuliaFormatter with Blue style:
-
-```julia
-using JuliaFormatter
-format("src/")
-format("test/")
-```
-
 ## Game Rules
 
 Reversi (also known as Reversi) is played on an 8x8 board:
@@ -206,17 +188,6 @@ Reversi (also known as Reversi) is played on an 8x8 board:
 5. If no valid moves exist, the player must pass
 6. Game ends when both players pass or the board is full
 7. Winner is the player with more pieces
-
-## Performance
-
-Thanks to StaticArrays.jl, board operations are highly efficient:
-- Board state fits in cache
-- No heap allocations for board updates
-- Fast move validation and generation
-
-Benchmarks on typical hardware show:
-- ~1 microsecond per move validation
-- ~10,000 games per second (random vs random)
 
 ## Future Development
 
@@ -230,12 +201,3 @@ Benchmarks on typical hardware show:
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## License
-
-MIT License - see LICENSE file for details
-
-## Acknowledgments
-
-Built with:
-- [StaticArrays.jl](https://github.com/JuliaArrays/StaticArrays.jl) for efficient board representation
-- Julia's multiple dispatch for flexible player system

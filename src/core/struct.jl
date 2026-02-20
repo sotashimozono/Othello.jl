@@ -104,7 +104,8 @@ mutable struct ReversiGame
         black = (one(UInt64) << 28) | (one(UInt64) << 35)
         white = (one(UInt64) << 27) | (one(UInt64) << 36)
         h =
-            ZOBRIST_TABLE[4, 5, _color_idx(BLACK)] ⊻ ZOBRIST_TABLE[5, 4, _color_idx(BLACK)] ⊻
+            ZOBRIST_TABLE[4, 5, _color_idx(BLACK)] ⊻
+            ZOBRIST_TABLE[5, 4, _color_idx(BLACK)] ⊻
             ZOBRIST_TABLE[4, 4, _color_idx(WHITE)] ⊻ ZOBRIST_TABLE[5, 5, _color_idx(WHITE)]
         new(black, white, BLACK, 0, h)
     end

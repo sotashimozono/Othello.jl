@@ -1,0 +1,1810 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>quickstart · Reversi.jl</title><meta name="title" content="quickstart · Reversi.jl"/><meta property="og:title" content="quickstart · Reversi.jl"/><meta property="twitter:title" content="quickstart · Reversi.jl"/><meta name="description" content="Documentation for Reversi.jl."/><meta property="og:description" content="Documentation for Reversi.jl."/><meta property="twitter:description" content="Documentation for Reversi.jl."/><meta property="og:url" content="https://codes.sota-shimozono.com/Reversi.jl/stable/example/demo/"/><meta property="twitter:url" content="https://codes.sota-shimozono.com/Reversi.jl/stable/example/demo/"/><link rel="canonical" href="https://codes.sota-shimozono.com/Reversi.jl/stable/example/demo/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script><link href="../../assets/favicon.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.png" alt="Reversi.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Reversi.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Examples</span><ul><li class="is-active"><a class="tocitem" href>quickstart</a><ul class="internal"><li><a class="tocitem" href="#Example1:-script-demonstrating-Reversi.jl-usage"><span>Example1: script demonstrating Reversi.jl usage</span></a></li><li><a class="tocitem" href="#Example-2:-Create-a-custom-player-that-prefers-corner-moves"><span>Example 2: Create a custom player that prefers corner moves</span></a></li></ul></li><li><a class="tocitem" href="../play/">play</a></li><li><a class="tocitem" href="../ml_integration/">machine learning</a></li></ul></li><li><span class="tocitem">API Reference</span><ul><li><a class="tocitem" href="../../api/struct/">struct</a></li><li><a class="tocitem" href="../../api/rules/">rules</a></li><li><a class="tocitem" href="../../api/player/">player</a></li><li><a class="tocitem" href="../../api/game/">game</a></li><li><a class="tocitem" href="../../api/data/">data</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>quickstart</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>quickstart</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/sotashimozono/Reversi.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/sotashimozono/Reversi.jl/blob/main/examples/demo.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="How-to-Play-with-Reversi.jl"><a class="docs-heading-anchor" href="#How-to-Play-with-Reversi.jl">How to Play with Reversi.jl</a><a id="How-to-Play-with-Reversi.jl-1"></a><a class="docs-heading-anchor-permalink" href="#How-to-Play-with-Reversi.jl" title="Permalink"></a></h1><h2 id="Example1:-script-demonstrating-Reversi.jl-usage"><a class="docs-heading-anchor" href="#Example1:-script-demonstrating-Reversi.jl-usage">Example1: script demonstrating Reversi.jl usage</a><a id="Example1:-script-demonstrating-Reversi.jl-usage-1"></a><a class="docs-heading-anchor-permalink" href="#Example1:-script-demonstrating-Reversi.jl-usage" title="Permalink"></a></h2><pre><code class="language-julia hljs">using Reversi
+
+println(&quot;=&quot;^60)
+println(&quot;Reversi.jl Demo&quot;)
+println(&quot;=&quot;^60)
+println()</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">============================================================
+Reversi.jl Demo
+============================================================</code></pre><p>Example 1: Play a game between two random players</p><pre><code class="language-julia hljs">println(&quot;Example 1: Two Random Players&quot;)
+println(&quot;-&quot; * &quot;=&quot;^59)
+winner = play_game(RandomPlayer(), RandomPlayer(); verbose=true)
+println()</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Example 1: Two Random Players
+-===========================================================
+Starting new Reversi game!
+Black (●) vs White (○)
+
+  a b c d e f g h
+1 · · · · · · · ·
+2 · · · · · · · ·
+3 · · · · · · · ·
+4 · · · ○ ● · · ·
+5 · · · ● ○ · · ·
+6 · · · · · · · ·
+7 · · · · · · · ·
+8 · · · · · · · ·
+Black (●): 2  White (○): 2
+Current player: Black (●)
+
+========================================
+Black plays at f5
+  a b c d e f g h
+1 · · · · · · · ·
+2 · · · · · · · ·
+3 · · · · · · · ·
+4 · · · ○ ● · · ·
+5 · · · ● ● ● · ·
+6 · · · · · · · ·
+7 · · · · · · · ·
+8 · · · · · · · ·
+Black (●): 4  White (○): 1
+Current player: White (○)
+
+========================================
+White plays at f6
+  a b c d e f g h
+1 · · · · · · · ·
+2 · · · · · · · ·
+3 · · · · · · · ·
+4 · · · ○ ● · · ·
+5 · · · ● ○ ● · ·
+6 · · · · · ○ · ·
+7 · · · · · · · ·
+8 · · · · · · · ·
+Black (●): 3  White (○): 3
+Current player: Black (●)
+
+========================================
+Black plays at f7
+  a b c d e f g h
+1 · · · · · · · ·
+2 · · · · · · · ·
+3 · · · · · · · ·
+4 · · · ○ ● · · ·
+5 · · · ● ○ ● · ·
+6 · · · · · ● · ·
+7 · · · · · ● · ·
+8 · · · · · · · ·
+Black (●): 5  White (○): 2
+Current player: White (○)
+
+========================================
+White plays at d6
+  a b c d e f g h
+1 · · · · · · · ·
+2 · · · · · · · ·
+3 · · · · · · · ·
+4 · · · ○ ● · · ·
+5 · · · ○ ○ ● · ·
+6 · · · ○ · ● · ·
+7 · · · · · ● · ·
+8 · · · · · · · ·
+Black (●): 4  White (○): 4
+Current player: Black (●)
+
+========================================
+Black plays at e6
+  a b c d e f g h
+1 · · · · · · · ·
+2 · · · · · · · ·
+3 · · · · · · · ·
+4 · · · ○ ● · · ·
+5 · · · ○ ● ● · ·
+6 · · · ○ ● ● · ·
+7 · · · · · ● · ·
+8 · · · · · · · ·
+Black (●): 6  White (○): 3
+Current player: White (○)
+
+========================================
+White plays at g6
+  a b c d e f g h
+1 · · · · · · · ·
+2 · · · · · · · ·
+3 · · · · · · · ·
+4 · · · ○ ● · · ·
+5 · · · ○ ● ● · ·
+6 · · · ○ ○ ○ ○ ·
+7 · · · · · ● · ·
+8 · · · · · · · ·
+Black (●): 4  White (○): 6
+Current player: Black (●)
+
+========================================
+Black plays at d7
+  a b c d e f g h
+1 · · · · · · · ·
+2 · · · · · · · ·
+3 · · · · · · · ·
+4 · · · ○ ● · · ·
+5 · · · ○ ● ● · ·
+6 · · · ○ ● ○ ○ ·
+7 · · · ● · ● · ·
+8 · · · · · · · ·
+Black (●): 6  White (○): 5
+Current player: White (○)
+
+========================================
+White plays at f8
+  a b c d e f g h
+1 · · · · · · · ·
+2 · · · · · · · ·
+3 · · · · · · · ·
+4 · · · ○ ● · · ·
+5 · · · ○ ● ● · ·
+6 · · · ○ ● ○ ○ ·
+7 · · · ● · ○ · ·
+8 · · · · · ○ · ·
+Black (●): 5  White (○): 7
+Current player: Black (●)
+
+========================================
+Black plays at c5
+  a b c d e f g h
+1 · · · · · · · ·
+2 · · · · · · · ·
+3 · · · · · · · ·
+4 · · · ○ ● · · ·
+5 · · ● ● ● ● · ·
+6 · · · ○ ● ○ ○ ·
+7 · · · ● · ○ · ·
+8 · · · · · ○ · ·
+Black (●): 7  White (○): 6
+Current player: White (○)
+
+========================================
+White plays at b4
+  a b c d e f g h
+1 · · · · · · · ·
+2 · · · · · · · ·
+3 · · · · · · · ·
+4 · ○ · ○ ● · · ·
+5 · · ○ ● ● ● · ·
+6 · · · ○ ● ○ ○ ·
+7 · · · ● · ○ · ·
+8 · · · · · ○ · ·
+Black (●): 6  White (○): 8
+Current player: Black (●)
+
+========================================
+Black plays at c4
+  a b c d e f g h
+1 · · · · · · · ·
+2 · · · · · · · ·
+3 · · · · · · · ·
+4 · ○ ● ● ● · · ·
+5 · · ○ ● ● ● · ·
+6 · · · ○ ● ○ ○ ·
+7 · · · ● · ○ · ·
+8 · · · · · ○ · ·
+Black (●): 8  White (○): 7
+Current player: White (○)
+
+========================================
+White plays at f4
+  a b c d e f g h
+1 · · · · · · · ·
+2 · · · · · · · ·
+3 · · · · · · · ·
+4 · ○ ○ ○ ○ ○ · ·
+5 · · ○ ● ○ ○ · ·
+6 · · · ○ ● ○ ○ ·
+7 · · · ● · ○ · ·
+8 · · · · · ○ · ·
+Black (●): 3  White (○): 13
+Current player: Black (●)
+
+========================================
+Black plays at c6
+  a b c d e f g h
+1 · · · · · · · ·
+2 · · · · · · · ·
+3 · · · · · · · ·
+4 · ○ ○ ○ ○ ○ · ·
+5 · · ○ ● ○ ○ · ·
+6 · · ● ● ● ○ ○ ·
+7 · · · ● · ○ · ·
+8 · · · · · ○ · ·
+Black (●): 5  White (○): 12
+Current player: White (○)
+
+========================================
+White plays at c7
+  a b c d e f g h
+1 · · · · · · · ·
+2 · · · · · · · ·
+3 · · · · · · · ·
+4 · ○ ○ ○ ○ ○ · ·
+5 · · ○ ● ○ ○ · ·
+6 · · ○ ○ ● ○ ○ ·
+7 · · ○ ● · ○ · ·
+8 · · · · · ○ · ·
+Black (●): 3  White (○): 15
+Current player: Black (●)
+
+========================================
+Black plays at g4
+  a b c d e f g h
+1 · · · · · · · ·
+2 · · · · · · · ·
+3 · · · · · · · ·
+4 · ○ ○ ○ ○ ○ ● ·
+5 · · ○ ● ○ ● · ·
+6 · · ○ ○ ● ○ ○ ·
+7 · · ○ ● · ○ · ·
+8 · · · · · ○ · ·
+Black (●): 5  White (○): 14
+Current player: White (○)
+
+========================================
+White plays at e8
+  a b c d e f g h
+1 · · · · · · · ·
+2 · · · · · · · ·
+3 · · · · · · · ·
+4 · ○ ○ ○ ○ ○ ● ·
+5 · · ○ ● ○ ● · ·
+6 · · ○ ○ ● ○ ○ ·
+7 · · ○ ○ · ○ · ·
+8 · · · · ○ ○ · ·
+Black (●): 4  White (○): 16
+Current player: Black (●)
+
+========================================
+Black plays at h7
+  a b c d e f g h
+1 · · · · · · · ·
+2 · · · · · · · ·
+3 · · · · · · · ·
+4 · ○ ○ ○ ○ ○ ● ·
+5 · · ○ ● ○ ● · ·
+6 · · ○ ○ ● ○ ● ·
+7 · · ○ ○ · ○ · ●
+8 · · · · ○ ○ · ·
+Black (●): 6  White (○): 15
+Current player: White (○)
+
+========================================
+White plays at h5
+  a b c d e f g h
+1 · · · · · · · ·
+2 · · · · · · · ·
+3 · · · · · · · ·
+4 · ○ ○ ○ ○ ○ ● ·
+5 · · ○ ● ○ ● · ○
+6 · · ○ ○ ● ○ ○ ·
+7 · · ○ ○ · ○ · ●
+8 · · · · ○ ○ · ·
+Black (●): 5  White (○): 17
+Current player: Black (●)
+
+========================================
+Black plays at d8
+  a b c d e f g h
+1 · · · · · · · ·
+2 · · · · · · · ·
+3 · · · · · · · ·
+4 · ○ ○ ○ ○ ○ ● ·
+5 · · ○ ● ○ ● · ○
+6 · · ○ ● ● ○ ○ ·
+7 · · ○ ● · ○ · ●
+8 · · · ● ○ ○ · ·
+Black (●): 8  White (○): 15
+Current player: White (○)
+
+========================================
+White plays at g5
+  a b c d e f g h
+1 · · · · · · · ·
+2 · · · · · · · ·
+3 · · · · · · · ·
+4 · ○ ○ ○ ○ ○ ● ·
+5 · · ○ ● ○ ○ ○ ○
+6 · · ○ ● ● ○ ○ ·
+7 · · ○ ● · ○ · ●
+8 · · · ● ○ ○ · ·
+Black (●): 7  White (○): 17
+Current player: Black (●)
+
+========================================
+Black plays at a3
+  a b c d e f g h
+1 · · · · · · · ·
+2 · · · · · · · ·
+3 ● · · · · · · ·
+4 · ● ○ ○ ○ ○ ● ·
+5 · · ● ● ○ ○ ○ ○
+6 · · ○ ● ● ○ ○ ·
+7 · · ○ ● · ○ · ●
+8 · · · ● ○ ○ · ·
+Black (●): 10  White (○): 15
+Current player: White (○)
+
+========================================
+White plays at h3
+  a b c d e f g h
+1 · · · · · · · ·
+2 · · · · · · · ·
+3 ● · · · · · · ○
+4 · ● ○ ○ ○ ○ ○ ·
+5 · · ● ● ○ ○ ○ ○
+6 · · ○ ● ● ○ ○ ·
+7 · · ○ ● · ○ · ●
+8 · · · ● ○ ○ · ·
+Black (●): 9  White (○): 17
+Current player: Black (●)
+
+========================================
+Black plays at b8
+  a b c d e f g h
+1 · · · · · · · ·
+2 · · · · · · · ·
+3 ● · · · · · · ○
+4 · ● ○ ○ ○ ○ ○ ·
+5 · · ● ● ○ ○ ○ ○
+6 · · ○ ● ● ○ ○ ·
+7 · · ● ● · ○ · ●
+8 · ● · ● ○ ○ · ·
+Black (●): 11  White (○): 16
+Current player: White (○)
+
+========================================
+White plays at c8
+  a b c d e f g h
+1 · · · · · · · ·
+2 · · · · · · · ·
+3 ● · · · · · · ○
+4 · ● ○ ○ ○ ○ ○ ·
+5 · · ● ● ○ ○ ○ ○
+6 · · ○ ● ○ ○ ○ ·
+7 · · ○ ○ · ○ · ●
+8 · ● ○ ○ ○ ○ · ·
+Black (●): 7  White (○): 21
+Current player: Black (●)
+
+========================================
+Black plays at c3
+  a b c d e f g h
+1 · · · · · · · ·
+2 · · · · · · · ·
+3 ● · ● · · · · ○
+4 · ● ● ○ ○ ○ ○ ·
+5 · · ● ● ○ ○ ○ ○
+6 · · ○ ● ○ ○ ○ ·
+7 · · ○ ○ · ○ · ●
+8 · ● ○ ○ ○ ○ · ·
+Black (●): 9  White (○): 20
+Current player: White (○)
+
+========================================
+White plays at b2
+  a b c d e f g h
+1 · · · · · · · ·
+2 · ○ · · · · · ·
+3 ● · ○ · · · · ○
+4 · ● ● ○ ○ ○ ○ ·
+5 · · ● ● ○ ○ ○ ○
+6 · · ○ ● ○ ○ ○ ·
+7 · · ○ ○ · ○ · ●
+8 · ● ○ ○ ○ ○ · ·
+Black (●): 8  White (○): 22
+Current player: Black (●)
+
+========================================
+Black plays at g3
+  a b c d e f g h
+1 · · · · · · · ·
+2 · ○ · · · · · ·
+3 ● · ○ · · · ● ○
+4 · ● ● ○ ○ ● ○ ·
+5 · · ● ● ● ○ ○ ○
+6 · · ○ ● ○ ○ ○ ·
+7 · · ○ ○ · ○ · ●
+8 · ● ○ ○ ○ ○ · ·
+Black (●): 11  White (○): 20
+Current player: White (○)
+
+========================================
+White plays at a8
+  a b c d e f g h
+1 · · · · · · · ·
+2 · ○ · · · · · ·
+3 ● · ○ · · · ● ○
+4 · ● ● ○ ○ ● ○ ·
+5 · · ● ● ● ○ ○ ○
+6 · · ○ ● ○ ○ ○ ·
+7 · · ○ ○ · ○ · ●
+8 ○ ○ ○ ○ ○ ○ · ·
+Black (●): 10  White (○): 22
+Current player: Black (●)
+
+========================================
+Black plays at c2
+  a b c d e f g h
+1 · · · · · · · ·
+2 · ○ ● · · · · ·
+3 ● · ● · · · ● ○
+4 · ● ● ○ ○ ● ○ ·
+5 · · ● ● ● ○ ○ ○
+6 · · ○ ● ○ ○ ○ ·
+7 · · ○ ○ · ○ · ●
+8 ○ ○ ○ ○ ○ ○ · ·
+Black (●): 12  White (○): 21
+Current player: White (○)
+
+========================================
+White plays at a4
+  a b c d e f g h
+1 · · · · · · · ·
+2 · ○ ● · · · · ·
+3 ● · ● · · · ● ○
+4 ○ ○ ○ ○ ○ ● ○ ·
+5 · · ● ● ● ○ ○ ○
+6 · · ○ ● ○ ○ ○ ·
+7 · · ○ ○ · ○ · ●
+8 ○ ○ ○ ○ ○ ○ · ·
+Black (●): 10  White (○): 24
+Current player: Black (●)
+
+========================================
+Black plays at h4
+  a b c d e f g h
+1 · · · · · · · ·
+2 · ○ ● · · · · ·
+3 ● · ● · · · ● ○
+4 ○ ○ ○ ○ ○ ● ● ●
+5 · · ● ● ● ○ ○ ○
+6 · · ○ ● ○ ○ ○ ·
+7 · · ○ ○ · ○ · ●
+8 ○ ○ ○ ○ ○ ○ · ·
+Black (●): 12  White (○): 23
+Current player: White (○)
+
+========================================
+White plays at b6
+  a b c d e f g h
+1 · · · · · · · ·
+2 · ○ ● · · · · ·
+3 ● · ● · · · ● ○
+4 ○ ○ ○ ○ ○ ● ● ●
+5 · · ○ ● ● ○ ○ ○
+6 · ○ ○ ● ○ ○ ○ ·
+7 · · ○ ○ · ○ · ●
+8 ○ ○ ○ ○ ○ ○ · ·
+Black (●): 11  White (○): 25
+Current player: Black (●)
+
+========================================
+Black plays at d3
+  a b c d e f g h
+1 · · · · · · · ·
+2 · ○ ● · · · · ·
+3 ● · ● ● · · ● ○
+4 ○ ○ ○ ● ● ● ● ●
+5 · · ○ ● ● ● ○ ○
+6 · ○ ○ ● ○ ○ ● ·
+7 · · ○ ○ · ○ · ●
+8 ○ ○ ○ ○ ○ ○ · ·
+Black (●): 16  White (○): 21
+Current player: White (○)
+
+========================================
+White plays at e2
+  a b c d e f g h
+1 · · · · · · · ·
+2 · ○ ● · ○ · · ·
+3 ● · ● ○ · · ● ○
+4 ○ ○ ○ ● ● ● ● ●
+5 · · ○ ● ● ● ○ ○
+6 · ○ ○ ● ○ ○ ● ·
+7 · · ○ ○ · ○ · ●
+8 ○ ○ ○ ○ ○ ○ · ·
+Black (●): 15  White (○): 23
+Current player: Black (●)
+
+========================================
+Black plays at a2
+  a b c d e f g h
+1 · · · · · · · ·
+2 ● ● ● · ○ · · ·
+3 ● · ● ○ · · ● ○
+4 ○ ○ ○ ● ● ● ● ●
+5 · · ○ ● ● ● ○ ○
+6 · ○ ○ ● ○ ○ ● ·
+7 · · ○ ○ · ○ · ●
+8 ○ ○ ○ ○ ○ ○ · ·
+Black (●): 17  White (○): 22
+Current player: White (○)
+
+========================================
+White plays at h6
+  a b c d e f g h
+1 · · · · · · · ·
+2 ● ● ● · ○ · · ·
+3 ● · ● ○ · · ● ○
+4 ○ ○ ○ ● ● ● ● ●
+5 · · ○ ● ● ● ○ ○
+6 · ○ ○ ● ○ ○ ○ ○
+7 · · ○ ○ · ○ · ●
+8 ○ ○ ○ ○ ○ ○ · ·
+Black (●): 16  White (○): 24
+Current player: Black (●)
+
+========================================
+Black plays at e7
+  a b c d e f g h
+1 · · · · · · · ·
+2 ● ● ● · ○ · · ·
+3 ● · ● ○ · · ● ○
+4 ○ ○ ○ ● ● ● ● ●
+5 · · ○ ● ● ● ● ○
+6 · ○ ○ ● ● ● ○ ○
+7 · · ○ ○ ● ○ · ●
+8 ○ ○ ○ ○ ○ ○ · ·
+Black (●): 20  White (○): 21
+Current player: White (○)
+
+========================================
+White plays at b1
+  a b c d e f g h
+1 · ○ · · · · · ·
+2 ● ● ○ · ○ · · ·
+3 ● · ● ○ · · ● ○
+4 ○ ○ ○ ● ● ● ● ●
+5 · · ○ ● ● ● ● ○
+6 · ○ ○ ● ● ● ○ ○
+7 · · ○ ○ ● ○ · ●
+8 ○ ○ ○ ○ ○ ○ · ·
+Black (●): 19  White (○): 23
+Current player: Black (●)
+
+========================================
+Black plays at a7
+  a b c d e f g h
+1 · ○ · · · · · ·
+2 ● ● ○ · ○ · · ·
+3 ● · ● ○ · · ● ○
+4 ○ ○ ○ ● ● ● ● ●
+5 · · ● ● ● ● ● ○
+6 · ● ○ ● ● ● ○ ○
+7 ● · ○ ○ ● ○ · ●
+8 ○ ○ ○ ○ ○ ○ · ·
+Black (●): 22  White (○): 21
+Current player: White (○)
+
+========================================
+White plays at f3
+  a b c d e f g h
+1 · ○ · · · · · ·
+2 ● ● ○ · ○ · · ·
+3 ● · ● ○ · ○ ○ ○
+4 ○ ○ ○ ● ○ ○ ○ ●
+5 · · ● ○ ● ○ ● ○
+6 · ● ○ ● ● ○ ○ ○
+7 ● · ○ ○ ● ○ · ●
+8 ○ ○ ○ ○ ○ ○ · ·
+Black (●): 15  White (○): 29
+Current player: Black (●)
+
+========================================
+Black plays at a5
+  a b c d e f g h
+1 · ○ · · · · · ·
+2 ● ● ○ · ○ · · ·
+3 ● · ● ○ · ○ ○ ○
+4 ● ● ○ ● ○ ○ ○ ●
+5 ● · ● ○ ● ○ ● ○
+6 · ● ○ ● ● ○ ○ ○
+7 ● · ○ ○ ● ○ · ●
+8 ○ ○ ○ ○ ○ ○ · ·
+Black (●): 18  White (○): 27
+Current player: White (○)
+
+========================================
+White plays at h8
+  a b c d e f g h
+1 · ○ · · · · · ·
+2 ● ● ○ · ○ · · ·
+3 ● · ● ○ · ○ ○ ○
+4 ● ● ○ ● ○ ○ ○ ●
+5 ● · ● ○ ● ○ ● ○
+6 · ● ○ ● ● ○ ○ ○
+7 ● · ○ ○ ● ○ · ○
+8 ○ ○ ○ ○ ○ ○ · ○
+Black (●): 17  White (○): 29
+Current player: Black (●)
+
+========================================
+Black plays at d2
+  a b c d e f g h
+1 · ○ · · · · · ·
+2 ● ● ● ● ○ · · ·
+3 ● · ● ● · ○ ○ ○
+4 ● ● ○ ● ○ ○ ○ ●
+5 ● · ● ○ ● ○ ● ○
+6 · ● ○ ● ● ○ ○ ○
+7 ● · ○ ○ ● ○ · ○
+8 ○ ○ ○ ○ ○ ○ · ○
+Black (●): 20  White (○): 27
+Current player: White (○)
+
+========================================
+White plays at d1
+  a b c d e f g h
+1 · ○ · ○ · · · ·
+2 ● ● ● ○ ○ · · ·
+3 ● · ● ○ · ○ ○ ○
+4 ● ● ○ ○ ○ ○ ○ ●
+5 ● · ● ○ ● ○ ● ○
+6 · ● ○ ● ● ○ ○ ○
+7 ● · ○ ○ ● ○ · ○
+8 ○ ○ ○ ○ ○ ○ · ○
+Black (●): 17  White (○): 31
+Current player: Black (●)
+
+========================================
+Black plays at e3
+  a b c d e f g h
+1 · ○ · ○ · · · ·
+2 ● ● ● ○ ○ · · ·
+3 ● · ● ● ● ○ ○ ○
+4 ● ● ○ ● ● ● ○ ●
+5 ● · ● ○ ● ○ ● ○
+6 · ● ○ ● ● ○ ○ ○
+7 ● · ○ ○ ● ○ · ○
+8 ○ ○ ○ ○ ○ ○ · ○
+Black (●): 22  White (○): 27
+Current player: White (○)
+
+========================================
+White plays at b3
+  a b c d e f g h
+1 · ○ · ○ · · · ·
+2 ● ○ ○ ○ ○ · · ·
+3 ● ○ ○ ○ ○ ○ ○ ○
+4 ● ● ○ ● ● ● ○ ●
+5 ● · ● ○ ● ○ ● ○
+6 · ● ○ ● ● ○ ○ ○
+7 ● · ○ ○ ● ○ · ○
+8 ○ ○ ○ ○ ○ ○ · ○
+Black (●): 17  White (○): 33
+Current player: Black (●)
+
+========================================
+Black plays at f2
+  a b c d e f g h
+1 · ○ · ○ · · · ·
+2 ● ● ● ● ● ● · ·
+3 ● ○ ○ ○ ● ● ● ○
+4 ● ● ○ ● ● ● ○ ●
+5 ● · ● ○ ● ○ ● ○
+6 · ● ○ ● ● ○ ○ ○
+7 ● · ○ ○ ● ○ · ○
+8 ○ ○ ○ ○ ○ ○ · ○
+Black (●): 25  White (○): 26
+Current player: White (○)
+
+========================================
+White plays at f1
+  a b c d e f g h
+1 · ○ · ○ · ○ · ·
+2 ● ● ● ● ○ ○ · ·
+3 ● ○ ○ ○ ● ○ ● ○
+4 ● ● ○ ● ● ○ ○ ●
+5 ● · ● ○ ● ○ ● ○
+6 · ● ○ ● ● ○ ○ ○
+7 ● · ○ ○ ● ○ · ○
+8 ○ ○ ○ ○ ○ ○ · ○
+Black (●): 21  White (○): 31
+Current player: Black (●)
+
+========================================
+Black plays at e1
+  a b c d e f g h
+1 · ○ · ○ ● ○ · ·
+2 ● ● ● ● ● ● · ·
+3 ● ○ ○ ○ ● ○ ● ○
+4 ● ● ○ ● ● ○ ○ ●
+5 ● · ● ○ ● ○ ● ○
+6 · ● ○ ● ● ○ ○ ○
+7 ● · ○ ○ ● ○ · ○
+8 ○ ○ ○ ○ ○ ○ · ○
+Black (●): 24  White (○): 29
+Current player: White (○)
+
+========================================
+White plays at a6
+  a b c d e f g h
+1 · ○ · ○ ● ○ · ·
+2 ● ● ● ● ● ● · ·
+3 ● ○ ○ ○ ● ○ ● ○
+4 ● ● ○ ● ● ○ ○ ●
+5 ● · ● ○ ● ○ ● ○
+6 ○ ○ ○ ● ● ○ ○ ○
+7 ○ · ○ ○ ● ○ · ○
+8 ○ ○ ○ ○ ○ ○ · ○
+Black (●): 22  White (○): 32
+Current player: Black (●)
+
+========================================
+Black plays at b7
+  a b c d e f g h
+1 · ○ · ○ ● ○ · ·
+2 ● ● ● ● ● ● · ·
+3 ● ○ ○ ○ ● ○ ● ○
+4 ● ● ○ ● ● ○ ○ ●
+5 ● · ● ● ● ○ ● ○
+6 ○ ○ ● ● ● ○ ○ ○
+7 ○ ● ● ● ● ○ · ○
+8 ○ ○ ○ ○ ○ ○ · ○
+Black (●): 27  White (○): 28
+Current player: White (○)
+
+========================================
+White plays at g2
+  a b c d e f g h
+1 · ○ · ○ ● ○ · ·
+2 ● ● ● ● ● ● ○ ·
+3 ● ○ ○ ○ ● ○ ○ ○
+4 ● ● ○ ● ● ○ ○ ●
+5 ● · ● ● ● ○ ● ○
+6 ○ ○ ● ● ● ○ ○ ○
+7 ○ ● ● ● ● ○ · ○
+8 ○ ○ ○ ○ ○ ○ · ○
+Black (●): 26  White (○): 30
+Current player: Black (●)
+
+========================================
+Black plays at g8
+  a b c d e f g h
+1 · ○ · ○ ● ○ · ·
+2 ● ● ● ● ● ● ○ ·
+3 ● ○ ○ ○ ● ○ ○ ○
+4 ● ● ○ ● ● ○ ○ ●
+5 ● · ● ● ● ○ ● ○
+6 ○ ○ ● ● ● ○ ○ ○
+7 ○ ● ● ● ● ● · ○
+8 ○ ○ ○ ○ ○ ○ ● ○
+Black (●): 28  White (○): 29
+Current player: White (○)
+
+========================================
+White plays at g7
+  a b c d e f g h
+1 · ○ · ○ ● ○ · ·
+2 ● ● ● ● ● ● ○ ·
+3 ● ○ ○ ○ ● ○ ○ ○
+4 ● ● ○ ● ● ○ ○ ●
+5 ● · ● ● ● ○ ● ○
+6 ○ ○ ● ● ● ○ ○ ○
+7 ○ ○ ○ ○ ○ ○ ○ ○
+8 ○ ○ ○ ○ ○ ○ ● ○
+Black (●): 23  White (○): 35
+Current player: Black (●)
+
+========================================
+Black plays at g1
+  a b c d e f g h
+1 · ○ · ○ ● ● ● ·
+2 ● ● ● ● ● ● ● ·
+3 ● ○ ○ ○ ● ○ ● ○
+4 ● ● ○ ● ● ○ ● ●
+5 ● · ● ● ● ○ ● ○
+6 ○ ○ ● ● ● ○ ○ ○
+7 ○ ○ ○ ○ ○ ○ ○ ○
+8 ○ ○ ○ ○ ○ ○ ● ○
+Black (●): 28  White (○): 31
+Current player: White (○)
+
+========================================
+White plays at h1
+  a b c d e f g h
+1 · ○ · ○ ○ ○ ○ ○
+2 ● ● ● ● ● ● ○ ·
+3 ● ○ ○ ○ ● ○ ● ○
+4 ● ● ○ ● ● ○ ● ●
+5 ● · ● ● ● ○ ● ○
+6 ○ ○ ● ● ● ○ ○ ○
+7 ○ ○ ○ ○ ○ ○ ○ ○
+8 ○ ○ ○ ○ ○ ○ ● ○
+Black (●): 24  White (○): 36
+Current player: Black (●)
+
+========================================
+Black plays at b5
+  a b c d e f g h
+1 · ○ · ○ ○ ○ ○ ○
+2 ● ● ● ● ● ● ○ ·
+3 ● ○ ○ ● ● ○ ● ○
+4 ● ● ● ● ● ○ ● ●
+5 ● ● ● ● ● ○ ● ○
+6 ○ ○ ● ● ● ○ ○ ○
+7 ○ ○ ○ ○ ○ ○ ○ ○
+8 ○ ○ ○ ○ ○ ○ ● ○
+Black (●): 27  White (○): 34
+Current player: White (○)
+
+========================================
+White plays at a1
+  a b c d e f g h
+1 ○ ○ · ○ ○ ○ ○ ○
+2 ○ ○ ● ● ● ● ○ ·
+3 ○ ○ ○ ● ● ○ ● ○
+4 ○ ● ● ● ● ○ ● ●
+5 ○ ● ● ● ● ○ ● ○
+6 ○ ○ ● ● ● ○ ○ ○
+7 ○ ○ ○ ○ ○ ○ ○ ○
+8 ○ ○ ○ ○ ○ ○ ● ○
+Black (●): 22  White (○): 40
+Current player: Black (●)
+
+========================================
+Black plays at h2
+  a b c d e f g h
+1 ○ ○ · ○ ○ ○ ○ ○
+2 ○ ○ ● ● ● ● ● ●
+3 ○ ○ ○ ● ● ○ ● ●
+4 ○ ● ● ● ● ○ ● ●
+5 ○ ● ● ● ● ○ ● ○
+6 ○ ○ ● ● ● ○ ○ ○
+7 ○ ○ ○ ○ ○ ○ ○ ○
+8 ○ ○ ○ ○ ○ ○ ● ○
+Black (●): 25  White (○): 38
+Current player: White (○)
+
+========================================
+White plays at c1
+  a b c d e f g h
+1 ○ ○ ○ ○ ○ ○ ○ ○
+2 ○ ○ ○ ○ ● ● ● ●
+3 ○ ○ ○ ● ○ ○ ● ●
+4 ○ ● ● ● ● ○ ● ●
+5 ○ ● ● ● ● ○ ● ○
+6 ○ ○ ● ● ● ○ ○ ○
+7 ○ ○ ○ ○ ○ ○ ○ ○
+8 ○ ○ ○ ○ ○ ○ ● ○
+Black (●): 22  White (○): 42
+Current player: Black (●)
+
+========================================
+Game Over!
+White (○) wins!
+Final score - Black: 22, White: 42</code></pre><h2 id="Example-2:-Create-a-custom-player-that-prefers-corner-moves"><a class="docs-heading-anchor" href="#Example-2:-Create-a-custom-player-that-prefers-corner-moves">Example 2: Create a custom player that prefers corner moves</a><a id="Example-2:-Create-a-custom-player-that-prefers-corner-moves-1"></a><a class="docs-heading-anchor-permalink" href="#Example-2:-Create-a-custom-player-that-prefers-corner-moves" title="Permalink"></a></h2><pre><code class="language-julia hljs">struct CornerPlayer &lt;: Player end
+function Reversi.get_move(player::CornerPlayer, game::ReversiGame)
+    moves = valid_moves(game)
+    if isempty(moves)
+        return nothing
+    end
+    corners = [Position(1, 1), Position(1, 8), Position(8, 1), Position(8, 8)]
+    for corner in corners
+        if corner in moves
+            return corner
+        end
+    end
+    return rand(moves)
+end
+
+println(&quot;\n&quot; * &quot;=&quot;^60)
+println(&quot;Example 2: Corner-Preferring Player vs Random Player&quot;)
+println(&quot;-&quot; * &quot;=&quot;^59)
+winner = play_game(CornerPlayer(), RandomPlayer(); verbose=true)
+println()</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">
+============================================================
+Example 2: Corner-Preferring Player vs Random Player
+-===========================================================
+Starting new Reversi game!
+Black (●) vs White (○)
+
+  a b c d e f g h
+1 · · · · · · · ·
+2 · · · · · · · ·
+3 · · · · · · · ·
+4 · · · ○ ● · · ·
+5 · · · ● ○ · · ·
+6 · · · · · · · ·
+7 · · · · · · · ·
+8 · · · · · · · ·
+Black (●): 2  White (○): 2
+Current player: Black (●)
+
+========================================
+Black plays at d3
+  a b c d e f g h
+1 · · · · · · · ·
+2 · · · · · · · ·
+3 · · · ● · · · ·
+4 · · · ● ● · · ·
+5 · · · ● ○ · · ·
+6 · · · · · · · ·
+7 · · · · · · · ·
+8 · · · · · · · ·
+Black (●): 4  White (○): 1
+Current player: White (○)
+
+========================================
+White plays at e3
+  a b c d e f g h
+1 · · · · · · · ·
+2 · · · · · · · ·
+3 · · · ● ○ · · ·
+4 · · · ● ○ · · ·
+5 · · · ● ○ · · ·
+6 · · · · · · · ·
+7 · · · · · · · ·
+8 · · · · · · · ·
+Black (●): 3  White (○): 3
+Current player: Black (●)
+
+========================================
+Black plays at f6
+  a b c d e f g h
+1 · · · · · · · ·
+2 · · · · · · · ·
+3 · · · ● ○ · · ·
+4 · · · ● ○ · · ·
+5 · · · ● ● · · ·
+6 · · · · · ● · ·
+7 · · · · · · · ·
+8 · · · · · · · ·
+Black (●): 5  White (○): 2
+Current player: White (○)
+
+========================================
+White plays at c2
+  a b c d e f g h
+1 · · · · · · · ·
+2 · · ○ · · · · ·
+3 · · · ○ ○ · · ·
+4 · · · ● ○ · · ·
+5 · · · ● ● · · ·
+6 · · · · · ● · ·
+7 · · · · · · · ·
+8 · · · · · · · ·
+Black (●): 4  White (○): 4
+Current player: Black (●)
+
+========================================
+Black plays at e2
+  a b c d e f g h
+1 · · · · · · · ·
+2 · · ○ · ● · · ·
+3 · · · ○ ● · · ·
+4 · · · ● ● · · ·
+5 · · · ● ● · · ·
+6 · · · · · ● · ·
+7 · · · · · · · ·
+8 · · · · · · · ·
+Black (●): 7  White (○): 2
+Current player: White (○)
+
+========================================
+White plays at f5
+  a b c d e f g h
+1 · · · · · · · ·
+2 · · ○ · ● · · ·
+3 · · · ○ ● · · ·
+4 · · · ● ○ · · ·
+5 · · · ● ● ○ · ·
+6 · · · · · ● · ·
+7 · · · · · · · ·
+8 · · · · · · · ·
+Black (●): 6  White (○): 4
+Current player: Black (●)
+
+========================================
+Black plays at c4
+  a b c d e f g h
+1 · · · · · · · ·
+2 · · ○ · ● · · ·
+3 · · · ● ● · · ·
+4 · · ● ● ○ · · ·
+5 · · · ● ● ○ · ·
+6 · · · · · ● · ·
+7 · · · · · · · ·
+8 · · · · · · · ·
+Black (●): 8  White (○): 3
+Current player: White (○)
+
+========================================
+White plays at e6
+  a b c d e f g h
+1 · · · · · · · ·
+2 · · ○ · ● · · ·
+3 · · · ● ● · · ·
+4 · · ● ● ○ · · ·
+5 · · · ● ○ ○ · ·
+6 · · · · ○ ● · ·
+7 · · · · · · · ·
+8 · · · · · · · ·
+Black (●): 7  White (○): 5
+Current player: Black (●)
+
+========================================
+Black plays at g5
+  a b c d e f g h
+1 · · · · · · · ·
+2 · · ○ · ● · · ·
+3 · · · ● ● · · ·
+4 · · ● ● ○ · · ·
+5 · · · ● ● ● ● ·
+6 · · · · ○ ● · ·
+7 · · · · · · · ·
+8 · · · · · · · ·
+Black (●): 10  White (○): 3
+Current player: White (○)
+
+========================================
+White plays at b3
+  a b c d e f g h
+1 · · · · · · · ·
+2 · · ○ · ● · · ·
+3 · ○ · ● ● · · ·
+4 · · ○ ● ○ · · ·
+5 · · · ○ ● ● ● ·
+6 · · · · ○ ● · ·
+7 · · · · · · · ·
+8 · · · · · · · ·
+Black (●): 8  White (○): 6
+Current player: Black (●)
+
+========================================
+Black plays at e7
+  a b c d e f g h
+1 · · · · · · · ·
+2 · · ○ · ● · · ·
+3 · ○ · ● ● · · ·
+4 · · ○ ● ○ · · ·
+5 · · · ○ ● ● ● ·
+6 · · · · ● ● · ·
+7 · · · · ● · · ·
+8 · · · · · · · ·
+Black (●): 10  White (○): 5
+Current player: White (○)
+
+========================================
+White plays at f1
+  a b c d e f g h
+1 · · · · · ○ · ·
+2 · · ○ · ○ · · ·
+3 · ○ · ○ ● · · ·
+4 · · ○ ● ○ · · ·
+5 · · · ○ ● ● ● ·
+6 · · · · ● ● · ·
+7 · · · · ● · · ·
+8 · · · · · · · ·
+Black (●): 8  White (○): 8
+Current player: Black (●)
+
+========================================
+Black plays at c3
+  a b c d e f g h
+1 · · · · · ○ · ·
+2 · · ○ · ○ · · ·
+3 · ○ ● ● ● · · ·
+4 · · ○ ● ○ · · ·
+5 · · · ○ ● ● ● ·
+6 · · · · ● ● · ·
+7 · · · · ● · · ·
+8 · · · · · · · ·
+Black (●): 10  White (○): 7
+Current player: White (○)
+
+========================================
+White plays at f3
+  a b c d e f g h
+1 · · · · · ○ · ·
+2 · · ○ · ○ · · ·
+3 · ○ ○ ○ ○ ○ · ·
+4 · · ○ ● ○ · · ·
+5 · · · ○ ● ● ● ·
+6 · · · · ● ● · ·
+7 · · · · ● · · ·
+8 · · · · · · · ·
+Black (●): 7  White (○): 11
+Current player: Black (●)
+
+========================================
+Black plays at a2
+  a b c d e f g h
+1 · · · · · ○ · ·
+2 ● · ○ · ○ · · ·
+3 · ● ○ ○ ○ ○ · ·
+4 · · ● ● ○ · · ·
+5 · · · ● ● ● ● ·
+6 · · · · ● ● · ·
+7 · · · · ● · · ·
+8 · · · · · · · ·
+Black (●): 11  White (○): 8
+Current player: White (○)
+
+========================================
+White plays at b5
+  a b c d e f g h
+1 · · · · · ○ · ·
+2 ● · ○ · ○ · · ·
+3 · ● ○ ○ ○ ○ · ·
+4 · · ○ ● ○ · · ·
+5 · ○ · ● ● ● ● ·
+6 · · · · ● ● · ·
+7 · · · · ● · · ·
+8 · · · · · · · ·
+Black (●): 10  White (○): 10
+Current player: Black (●)
+
+========================================
+Black plays at b2
+  a b c d e f g h
+1 · · · · · ○ · ·
+2 ● ● ○ · ○ · · ·
+3 · ● ● ○ ○ ○ · ·
+4 · · ○ ● ○ · · ·
+5 · ○ · ● ● ● ● ·
+6 · · · · ● ● · ·
+7 · · · · ● · · ·
+8 · · · · · · · ·
+Black (●): 12  White (○): 9
+Current player: White (○)
+
+========================================
+White plays at c6
+  a b c d e f g h
+1 · · · · · ○ · ·
+2 ● ● ○ · ○ · · ·
+3 · ● ● ○ ○ ○ · ·
+4 · · ○ ● ○ · · ·
+5 · ○ · ○ ● ● ● ·
+6 · · ○ · ● ● · ·
+7 · · · · ● · · ·
+8 · · · · · · · ·
+Black (●): 11  White (○): 11
+Current player: Black (●)
+
+========================================
+Black plays at b1
+  a b c d e f g h
+1 · ● · · · ○ · ·
+2 ● ● ● · ○ · · ·
+3 · ● ● ● ○ ○ · ·
+4 · · ○ ● ● · · ·
+5 · ○ · ○ ● ● ● ·
+6 · · ○ · ● ● · ·
+7 · · · · ● · · ·
+8 · · · · · · · ·
+Black (●): 15  White (○): 8
+Current player: White (○)
+
+========================================
+White plays at e8
+  a b c d e f g h
+1 · ● · · · ○ · ·
+2 ● ● ● · ○ · · ·
+3 · ● ● ● ○ ○ · ·
+4 · · ○ ● ○ · · ·
+5 · ○ · ○ ○ ● ● ·
+6 · · ○ · ○ ● · ·
+7 · · · · ○ · · ·
+8 · · · · ○ · · ·
+Black (●): 11  White (○): 13
+Current player: Black (●)
+
+========================================
+Black plays at f4
+  a b c d e f g h
+1 · ● · · · ○ · ·
+2 ● ● ● · ○ · · ·
+3 · ● ● ● ○ ○ · ·
+4 · · ○ ● ● ● · ·
+5 · ○ · ○ ○ ● ● ·
+6 · · ○ · ○ ● · ·
+7 · · · · ○ · · ·
+8 · · · · ○ · · ·
+Black (●): 13  White (○): 12
+Current player: White (○)
+
+========================================
+White plays at h6
+  a b c d e f g h
+1 · ● · · · ○ · ·
+2 ● ● ● · ○ · · ·
+3 · ● ● ● ○ ○ · ·
+4 · · ○ ● ● ○ · ·
+5 · ○ · ○ ○ ● ○ ·
+6 · · ○ · ○ ● · ○
+7 · · · · ○ · · ·
+8 · · · · ○ · · ·
+Black (●): 11  White (○): 15
+Current player: Black (●)
+
+========================================
+Black plays at d8
+  a b c d e f g h
+1 · ● · · · ○ · ·
+2 ● ● ● · ○ · · ·
+3 · ● ● ● ○ ○ · ·
+4 · · ○ ● ● ○ · ·
+5 · ○ · ○ ○ ● ○ ·
+6 · · ○ · ○ ● · ○
+7 · · · · ● · · ·
+8 · · · ● ○ · · ·
+Black (●): 13  White (○): 14
+Current player: White (○)
+
+========================================
+White plays at g7
+  a b c d e f g h
+1 · ● · · · ○ · ·
+2 ● ● ● · ○ · · ·
+3 · ● ● ● ○ ○ · ·
+4 · · ○ ● ● ○ · ·
+5 · ○ · ○ ○ ● ○ ·
+6 · · ○ · ○ ○ · ○
+7 · · · · ● · ○ ·
+8 · · · ● ○ · · ·
+Black (●): 12  White (○): 16
+Current player: Black (●)
+
+========================================
+Black plays at h8
+  a b c d e f g h
+1 · ● · · · ○ · ·
+2 ● ● ● · ○ · · ·
+3 · ● ● ● ○ ○ · ·
+4 · · ○ ● ● ○ · ·
+5 · ○ · ○ ● ● ○ ·
+6 · · ○ · ○ ● · ○
+7 · · · · ● · ● ·
+8 · · · ● ○ · · ●
+Black (●): 16  White (○): 13
+Current player: White (○)
+
+========================================
+White plays at d6
+  a b c d e f g h
+1 · ● · · · ○ · ·
+2 ● ● ● · ○ · · ·
+3 · ● ● ● ○ ○ · ·
+4 · · ○ ● ● ○ · ·
+5 · ○ · ○ ○ ● ○ ·
+6 · · ○ ○ ○ ● · ○
+7 · · · · ● · ● ·
+8 · · · ● ○ · · ●
+Black (●): 15  White (○): 15
+Current player: Black (●)
+
+========================================
+Black plays at f8
+  a b c d e f g h
+1 · ● · · · ○ · ·
+2 ● ● ● · ○ · · ·
+3 · ● ● ● ○ ○ · ·
+4 · · ○ ● ● ○ · ·
+5 · ○ · ○ ○ ● ○ ·
+6 · · ○ ○ ○ ● · ○
+7 · · · · ● · ● ·
+8 · · · ● ● ● · ●
+Black (●): 17  White (○): 14
+Current player: White (○)
+
+========================================
+White plays at d2
+  a b c d e f g h
+1 · ● · · · ○ · ·
+2 ● ● ● ○ ○ · · ·
+3 · ● ● ○ ○ ○ · ·
+4 · · ○ ○ ● ○ · ·
+5 · ○ · ○ ○ ● ○ ·
+6 · · ○ ○ ○ ● · ○
+7 · · · · ● · ● ·
+8 · · · ● ● ● · ●
+Black (●): 15  White (○): 17
+Current player: Black (●)
+
+========================================
+Black plays at f2
+  a b c d e f g h
+1 · ● · · · ○ · ·
+2 ● ● ● ● ● ● · ·
+3 · ● ● ○ ○ ● · ·
+4 · · ○ ○ ● ● · ·
+5 · ○ · ○ ○ ● ○ ·
+6 · · ○ ○ ○ ● · ○
+7 · · · · ● · ● ·
+8 · · · ● ● ● · ●
+Black (●): 20  White (○): 13
+Current player: White (○)
+
+========================================
+White plays at g3
+  a b c d e f g h
+1 · ● · · · ○ · ·
+2 ● ● ● ● ● ● · ·
+3 · ● ● ○ ○ ○ ○ ·
+4 · · ○ ○ ● ○ · ·
+5 · ○ · ○ ○ ● ○ ·
+6 · · ○ ○ ○ ● · ○
+7 · · · · ● · ● ·
+8 · · · ● ● ● · ●
+Black (●): 18  White (○): 16
+Current player: Black (●)
+
+========================================
+Black plays at g2
+  a b c d e f g h
+1 · ● · · · ○ · ·
+2 ● ● ● ● ● ● ● ·
+3 · ● ● ○ ○ ● ○ ·
+4 · · ○ ○ ● ○ · ·
+5 · ○ · ○ ○ ● ○ ·
+6 · · ○ ○ ○ ● · ○
+7 · · · · ● · ● ·
+8 · · · ● ● ● · ●
+Black (●): 20  White (○): 15
+Current player: White (○)
+
+========================================
+White plays at a3
+  a b c d e f g h
+1 · ● · · · ○ · ·
+2 ● ● ● ● ● ● ● ·
+3 ○ ○ ○ ○ ○ ● ○ ·
+4 · · ○ ○ ● ○ · ·
+5 · ○ · ○ ○ ● ○ ·
+6 · · ○ ○ ○ ● · ○
+7 · · · · ● · ● ·
+8 · · · ● ● ● · ●
+Black (●): 18  White (○): 18
+Current player: Black (●)
+
+========================================
+Black plays at h5
+  a b c d e f g h
+1 · ● · · · ○ · ·
+2 ● ● ● ● ● ● ● ·
+3 ○ ○ ○ ○ ○ ● ○ ·
+4 · · ○ ○ ● ○ · ·
+5 · ○ · ○ ○ ● ● ●
+6 · · ○ ○ ○ ● · ○
+7 · · · · ● · ● ·
+8 · · · ● ● ● · ●
+Black (●): 20  White (○): 17
+Current player: White (○)
+
+========================================
+White plays at h4
+  a b c d e f g h
+1 · ● · · · ○ · ·
+2 ● ● ● ● ● ● ● ·
+3 ○ ○ ○ ○ ○ ● ○ ·
+4 · · ○ ○ ● ○ · ○
+5 · ○ · ○ ○ ● ● ○
+6 · · ○ ○ ○ ● · ○
+7 · · · · ● · ● ·
+8 · · · ● ● ● · ●
+Black (●): 19  White (○): 19
+Current player: Black (●)
+
+========================================
+Black plays at f7
+  a b c d e f g h
+1 · ● · · · ○ · ·
+2 ● ● ● ● ● ● ● ·
+3 ○ ● ○ ○ ○ ● ○ ·
+4 · · ● ○ ● ○ · ○
+5 · ○ · ● ○ ● ● ○
+6 · · ○ ○ ● ● · ○
+7 · · · · ● ● ● ·
+8 · · · ● ● ● · ●
+Black (●): 24  White (○): 15
+Current player: White (○)
+
+========================================
+White plays at c1
+  a b c d e f g h
+1 · ● ○ · · ○ · ·
+2 ● ○ ○ ○ ● ● ● ·
+3 ○ ● ○ ○ ○ ● ○ ·
+4 · · ● ○ ● ○ · ○
+5 · ○ · ● ○ ● ● ○
+6 · · ○ ○ ● ● · ○
+7 · · · · ● ● ● ·
+8 · · · ● ● ● · ●
+Black (●): 21  White (○): 19
+Current player: Black (●)
+
+========================================
+Black plays at a1
+  a b c d e f g h
+1 ● ● ○ · · ○ · ·
+2 ● ● ○ ○ ● ● ● ·
+3 ○ ● ● ○ ○ ● ○ ·
+4 · · ● ● ● ○ · ○
+5 · ○ · ● ● ● ● ○
+6 · · ○ ○ ● ● · ○
+7 · · · · ● ● ● ·
+8 · · · ● ● ● · ●
+Black (●): 26  White (○): 15
+Current player: White (○)
+
+========================================
+White plays at h3
+  a b c d e f g h
+1 ● ● ○ · · ○ · ·
+2 ● ● ○ ○ ● ● ○ ·
+3 ○ ● ● ○ ○ ● ○ ○
+4 · · ● ● ● ○ · ○
+5 · ○ · ● ● ● ● ○
+6 · · ○ ○ ● ● · ○
+7 · · · · ● ● ● ·
+8 · · · ● ● ● · ●
+Black (●): 25  White (○): 17
+Current player: Black (●)
+
+========================================
+Black plays at h1
+  a b c d e f g h
+1 ● ● ○ · · ○ · ●
+2 ● ● ○ ○ ● ● ● ·
+3 ○ ● ● ○ ○ ● ○ ○
+4 · · ● ● ● ○ · ○
+5 · ○ · ● ● ● ● ○
+6 · · ○ ○ ● ● · ○
+7 · · · · ● ● ● ·
+8 · · · ● ● ● · ●
+Black (●): 27  White (○): 16
+Current player: White (○)
+
+========================================
+White plays at a4
+  a b c d e f g h
+1 ● ● ○ · · ○ · ●
+2 ● ● ○ ○ ● ● ● ·
+3 ○ ○ ● ○ ○ ● ○ ○
+4 ○ · ● ● ● ○ · ○
+5 · ○ · ● ● ● ● ○
+6 · · ○ ○ ● ● · ○
+7 · · · · ● ● ● ·
+8 · · · ● ● ● · ●
+Black (●): 26  White (○): 18
+Current player: Black (●)
+
+========================================
+Black plays at b7
+  a b c d e f g h
+1 ● ● ○ · · ○ · ●
+2 ● ● ○ ○ ● ● ● ·
+3 ○ ○ ● ○ ○ ● ○ ○
+4 ○ · ● ● ● ○ · ○
+5 · ○ · ● ● ● ● ○
+6 · · ● ○ ● ● · ○
+7 · ● · · ● ● ● ·
+8 · · · ● ● ● · ●
+Black (●): 28  White (○): 17
+Current player: White (○)
+
+========================================
+White plays at g1
+  a b c d e f g h
+1 ● ● ○ · · ○ ○ ●
+2 ● ● ○ ○ ● ○ ○ ·
+3 ○ ○ ● ○ ○ ● ○ ○
+4 ○ · ● ● ● ○ · ○
+5 · ○ · ● ● ● ● ○
+6 · · ● ○ ● ● · ○
+7 · ● · · ● ● ● ·
+8 · · · ● ● ● · ●
+Black (●): 26  White (○): 20
+Current player: Black (●)
+
+========================================
+Black plays at b4
+  a b c d e f g h
+1 ● ● ○ · · ○ ○ ●
+2 ● ● ○ ○ ● ○ ○ ·
+3 ○ ● ● ○ ○ ● ○ ○
+4 ○ ● ● ● ● ○ · ○
+5 · ○ · ● ● ● ● ○
+6 · · ● ○ ● ● · ○
+7 · ● · · ● ● ● ·
+8 · · · ● ● ● · ●
+Black (●): 28  White (○): 19
+Current player: White (○)
+
+========================================
+White plays at c5
+  a b c d e f g h
+1 ● ● ○ · · ○ ○ ●
+2 ● ● ○ ○ ● ○ ○ ·
+3 ○ ● ○ ○ ○ ● ○ ○
+4 ○ ○ ○ ○ ● ○ · ○
+5 · ○ ○ ○ ○ ○ ○ ○
+6 · · ● ○ ● ● · ○
+7 · ● · · ● ● ● ·
+8 · · · ● ● ● · ●
+Black (●): 20  White (○): 28
+Current player: Black (●)
+
+========================================
+Black plays at a5
+  a b c d e f g h
+1 ● ● ○ · · ○ ○ ●
+2 ● ● ○ ○ ● ○ ○ ·
+3 ● ● ○ ○ ○ ● ○ ○
+4 ● ○ ○ ○ ● ○ · ○
+5 ● ○ ○ ○ ○ ○ ○ ○
+6 · · ● ○ ● ● · ○
+7 · ● · · ● ● ● ·
+8 · · · ● ● ● · ●
+Black (●): 23  White (○): 26
+Current player: White (○)
+
+========================================
+White plays at d7
+  a b c d e f g h
+1 ● ● ○ · · ○ ○ ●
+2 ● ● ○ ○ ● ○ ○ ·
+3 ● ● ○ ○ ○ ● ○ ○
+4 ● ○ ○ ○ ● ○ · ○
+5 ● ○ ○ ○ ○ ○ ○ ○
+6 · · ○ ○ ○ ● · ○
+7 · ● · ○ ● ● ● ·
+8 · · · ● ● ● · ●
+Black (●): 21  White (○): 29
+Current player: Black (●)
+
+========================================
+Black plays at b6
+  a b c d e f g h
+1 ● ● ○ · · ○ ○ ●
+2 ● ● ○ ○ ● ○ ○ ·
+3 ● ● ○ ○ ○ ● ○ ○
+4 ● ● ○ ○ ● ○ · ○
+5 ● ● ○ ○ ○ ○ ○ ○
+6 · ● ● ● ● ● · ○
+7 · ● · ○ ● ● ● ·
+8 · · · ● ● ● · ●
+Black (●): 27  White (○): 24
+Current player: White (○)
+
+========================================
+White plays at a7
+  a b c d e f g h
+1 ● ● ○ · · ○ ○ ●
+2 ● ● ○ ○ ● ○ ○ ·
+3 ● ● ○ ○ ○ ● ○ ○
+4 ● ● ○ ○ ● ○ · ○
+5 ● ● ○ ○ ○ ○ ○ ○
+6 · ○ ● ● ● ● · ○
+7 ○ ● · ○ ● ● ● ·
+8 · · · ● ● ● · ●
+Black (●): 26  White (○): 26
+Current player: Black (●)
+
+========================================
+Black plays at g4
+  a b c d e f g h
+1 ● ● ○ · · ○ ○ ●
+2 ● ● ○ ○ ● ○ ○ ·
+3 ● ● ○ ○ ○ ● ○ ○
+4 ● ● ○ ○ ● ● ● ○
+5 ● ● ○ ○ ○ ● ○ ○
+6 · ○ ● ● ● ● · ○
+7 ○ ● · ○ ● ● ● ·
+8 · · · ● ● ● · ●
+Black (●): 29  White (○): 24
+Current player: White (○)
+
+========================================
+White plays at a8
+  a b c d e f g h
+1 ● ● ○ · · ○ ○ ●
+2 ● ● ○ ○ ● ○ ○ ·
+3 ● ● ○ ○ ○ ● ○ ○
+4 ● ● ○ ○ ● ● ● ○
+5 ● ● ○ ○ ○ ● ○ ○
+6 · ○ ○ ● ● ● · ○
+7 ○ ○ · ○ ● ● ● ·
+8 ○ · · ● ● ● · ●
+Black (●): 27  White (○): 27
+Current player: Black (●)
+
+========================================
+Black plays at g6
+  a b c d e f g h
+1 ● ● ○ · · ○ ○ ●
+2 ● ● ○ ○ ● ○ ○ ·
+3 ● ● ○ ○ ○ ● ○ ○
+4 ● ● ○ ○ ● ● ● ○
+5 ● ● ○ ○ ○ ● ● ○
+6 · ○ ○ ● ● ● ● ○
+7 ○ ○ · ○ ● ● ● ·
+8 ○ · · ● ● ● · ●
+Black (●): 29  White (○): 26
+Current player: White (○)
+
+========================================
+White plays at h7
+  a b c d e f g h
+1 ● ● ○ · · ○ ○ ●
+2 ● ● ○ ○ ● ○ ○ ·
+3 ● ● ○ ○ ○ ● ○ ○
+4 ● ● ○ ○ ○ ● ● ○
+5 ● ● ○ ○ ○ ○ ● ○
+6 · ○ ○ ● ● ● ○ ○
+7 ○ ○ · ○ ○ ○ ○ ○
+8 ○ · · ● ● ● · ●
+Black (●): 23  White (○): 33
+Current player: Black (●)
+
+========================================
+Black plays at d1
+  a b c d e f g h
+1 ● ● ● ● · ○ ○ ●
+2 ● ● ● ● ● ○ ○ ·
+3 ● ● ○ ● ○ ● ○ ○
+4 ● ● ○ ● ○ ● ● ○
+5 ● ● ○ ● ○ ○ ● ○
+6 · ○ ○ ● ● ● ○ ○
+7 ○ ○ · ○ ○ ○ ○ ○
+8 ○ · · ● ● ● · ●
+Black (●): 30  White (○): 27
+Current player: White (○)
+
+========================================
+White plays at e1
+  a b c d e f g h
+1 ● ● ● ● ○ ○ ○ ●
+2 ● ● ● ○ ○ ○ ○ ·
+3 ● ● ○ ● ○ ● ○ ○
+4 ● ● ○ ● ○ ● ● ○
+5 ● ● ○ ● ○ ○ ● ○
+6 · ○ ○ ● ● ● ○ ○
+7 ○ ○ · ○ ○ ○ ○ ○
+8 ○ · · ● ● ● · ●
+Black (●): 28  White (○): 30
+Current player: Black (●)
+
+========================================
+Black plays at c8
+  a b c d e f g h
+1 ● ● ● ● ○ ○ ○ ●
+2 ● ● ● ○ ○ ○ ○ ·
+3 ● ● ○ ● ○ ● ○ ○
+4 ● ● ○ ● ○ ● ● ○
+5 ● ● ○ ● ○ ○ ● ○
+6 · ○ ○ ● ● ● ○ ○
+7 ○ ○ · ● ○ ○ ○ ○
+8 ○ · ● ● ● ● · ●
+Black (●): 30  White (○): 29
+Current player: White (○)
+
+========================================
+White plays at a6
+  a b c d e f g h
+1 ● ● ● ● ○ ○ ○ ●
+2 ● ● ● ○ ○ ○ ○ ·
+3 ● ● ○ ● ○ ● ○ ○
+4 ● ● ○ ● ○ ● ● ○
+5 ● ○ ○ ● ○ ○ ● ○
+6 ○ ○ ○ ● ● ● ○ ○
+7 ○ ○ · ● ○ ○ ○ ○
+8 ○ · ● ● ● ● · ●
+Black (●): 29  White (○): 31
+Current player: Black (●)
+
+========================================
+Black plays at c7
+  a b c d e f g h
+1 ● ● ● ● ○ ○ ○ ●
+2 ● ● ● ○ ○ ○ ○ ·
+3 ● ● ● ● ○ ● ○ ○
+4 ● ● ● ● ○ ● ● ○
+5 ● ○ ● ● ○ ○ ● ○
+6 ○ ● ● ● ● ● ○ ○
+7 ○ ○ ● ● ○ ○ ○ ○
+8 ○ · ● ● ● ● · ●
+Black (●): 35  White (○): 26
+Current player: White (○)
+
+========================================
+White plays at b8
+  a b c d e f g h
+1 ● ● ● ● ○ ○ ○ ●
+2 ● ● ● ○ ○ ○ ○ ·
+3 ● ● ● ● ○ ● ○ ○
+4 ● ● ● ● ○ ● ● ○
+5 ● ○ ● ● ○ ○ ● ○
+6 ○ ● ● ○ ● ● ○ ○
+7 ○ ○ ○ ● ○ ○ ○ ○
+8 ○ ○ ● ● ● ● · ●
+Black (●): 33  White (○): 29
+Current player: Black (●)
+
+========================================
+Black plays at h2
+  a b c d e f g h
+1 ● ● ● ● ○ ○ ○ ●
+2 ● ● ● ● ● ● ● ●
+3 ● ● ● ● ○ ● ● ●
+4 ● ● ● ● ○ ● ● ●
+5 ● ○ ● ● ○ ○ ● ●
+6 ○ ● ● ○ ● ● ○ ●
+7 ○ ○ ○ ● ○ ○ ○ ●
+8 ○ ○ ● ● ● ● · ●
+Black (●): 44  White (○): 19
+Current player: White (○)
+
+========================================
+White plays at g8
+  a b c d e f g h
+1 ● ● ● ● ○ ○ ○ ●
+2 ● ● ● ● ● ● ● ●
+3 ● ● ● ● ○ ● ● ●
+4 ● ● ● ● ○ ● ● ●
+5 ● ○ ● ● ○ ○ ● ●
+6 ○ ● ● ○ ● ● ○ ●
+7 ○ ○ ○ ● ○ ○ ○ ●
+8 ○ ○ ○ ○ ○ ○ ○ ●
+Black (●): 40  White (○): 24
+Current player: Black (●)
+
+========================================
+Game Over!
+Black (●) wins!
+Final score - Black: 40, White: 24</code></pre><p>Example 3: Programmatic game control</p><pre><code class="language-julia hljs">println(&quot;\n&quot; * &quot;=&quot;^60)
+println(&quot;Example 3: Programmatic Control&quot;)
+println(&quot;-&quot; * &quot;=&quot;^59)
+
+game = ReversiGame()
+println(&quot;Initial board:&quot;)
+display_board(game)
+
+println(&quot;\nMaking first move at (3, 4)...&quot;)
+make_move!(game, 3, 4)
+display_board(game)
+
+println(&quot;\nValid moves for current player:&quot;)
+moves = valid_moves(game)
+for move in moves
+    println(&quot;  ($(move.row), $(move.col))&quot;)
+end
+
+println(&quot;\n&quot; * &quot;=&quot;^60)
+println(&quot;Demo Complete!&quot;)
+println(&quot;=&quot;^60)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">
+============================================================
+Example 3: Programmatic Control
+-===========================================================
+Initial board:
+  a b c d e f g h
+1 · · · · · · · ·
+2 · · · · · · · ·
+3 · · · · · · · ·
+4 · · · ○ ● · · ·
+5 · · · ● ○ · · ·
+6 · · · · · · · ·
+7 · · · · · · · ·
+8 · · · · · · · ·
+Black (●): 2  White (○): 2
+Current player: Black (●)
+
+Making first move at (3, 4)...
+  a b c d e f g h
+1 · · · · · · · ·
+2 · · · · · · · ·
+3 · · · ● · · · ·
+4 · · · ● ● · · ·
+5 · · · ● ○ · · ·
+6 · · · · · · · ·
+7 · · · · · · · ·
+8 · · · · · · · ·
+Black (●): 4  White (○): 1
+Current player: White (○)
+
+Valid moves for current player:
+  (3, 3)
+  (3, 5)
+  (5, 3)
+
+============================================================
+Demo Complete!
+============================================================</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../">« Home</a><a class="docs-footer-nextpage" href="../play/">play »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Friday 20 February 2026 04:49">Friday 20 February 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

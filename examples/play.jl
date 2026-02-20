@@ -2,7 +2,6 @@
 
 using Reversi
 
-
 println("="^60)
 println("Welcome to Reversi!")
 println("="^60)

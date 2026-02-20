@@ -55,9 +55,3 @@ end
 # Play a game
 play_game(MyAIPlayer(), RandomPlayer())
 ```
-
-## API Reference
-
-```@autodocs
-Modules = [Reversi]
-```

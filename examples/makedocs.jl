@@ -1,5 +1,5 @@
 using Pkg
-Pkg.activate("../")
+Pkg.activate(joinpath(@__DIR__, ".."))
 using Literate, Reversi
 
 input_dir = @__DIR__

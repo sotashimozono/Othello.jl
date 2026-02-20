@@ -32,7 +32,9 @@ function select_game_mode()
     end
 end
 
-mode = select_game_mode()
+# When you play this example, you can uncomment the line below and disalbing `mode=4`. 
+# mode = select_game_mode()
+mode = 4
 println()
 
 if mode == 1

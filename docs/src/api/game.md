@@ -6,5 +6,5 @@ UI of Reversi.jl. only CUI is available.
 
 ```@autodocs
 Modules = [Reversi]
-Pages   = ["UI/game.md"]
+Pages   = ["UI/game.jl"]
 ```

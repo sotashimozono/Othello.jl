@@ -7,6 +7,7 @@ Interactive terminal Reversi game
 ````@example play
 using Reversi
 
+
 println("="^60)
 println("Welcome to Reversi!")
 println("="^60)
@@ -36,8 +37,13 @@ function select_game_mode()
         println("Invalid choice. Please enter 1, 2, 3, or 4.")
     end
 end
+````
 
+When you play this example, you can uncomment the line below and disalbing `mode=4`.
 mode = select_game_mode()
+
+````@example play
+mode = 4
 println()
 
 if mode == 1

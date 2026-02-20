@@ -6,5 +6,5 @@ Data of Reversi.jl.
 
 ```@autodocs
 Modules = [Reversi]
-Pages   = ["UI/data.md"]
+Pages   = ["UI/data.jl"]
 ```

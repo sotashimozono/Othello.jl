@@ -153,7 +153,7 @@ function make_move!(game::ReversiGame, row::Int, col::Int)
     flips = compute_flips(bit, player_bb, opponent_bb)
 
     # Incremental hash: add placed piece
-    game.hash ⊻= ZOBRIST_TABLE[row, col, player]
+    game.hash ⊻= ZOBRIST_TABLE[row, col, _color_idx(player)]
 
     # Incremental hash: toggle each flipped piece (remove opp, add player)
     flip_copy = flips
@@ -161,8 +161,8 @@ function make_move!(game::ReversiGame, row::Int, col::Int)
         idx = trailing_zeros(flip_copy)
         r = div(idx, 8) + 1
         c = mod(idx, 8) + 1
-        game.hash ⊻= ZOBRIST_TABLE[r, c, opp]
-        game.hash ⊻= ZOBRIST_TABLE[r, c, player]
+        game.hash ⊻= ZOBRIST_TABLE[r, c, _color_idx(opp)]
+        game.hash ⊻= ZOBRIST_TABLE[r, c, _color_idx(player)]
         flip_copy &= flip_copy - one(UInt64)
     end
 

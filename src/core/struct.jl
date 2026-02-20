@@ -1,7 +1,7 @@
 # Player color constants
 const EMPTY = 0
 const BLACK = 1
-const WHITE = 2
+const WHITE = -1
 
 """
     Position
@@ -56,11 +56,13 @@ end
 # Zobrist hash table (fixed seed for reproducibility, no external deps)
 # ---------------------------------------------------------------------------
 
+@inline _color_idx(c::Int) = c == BLACK ? 1 : 2
+
 """
     ZOBRIST_TABLE
 
-128-entry table of random `UInt64` values indexed by `[row, col, color]`
-(color 1 = BLACK, 2 = WHITE) used for incremental Zobrist hashing.
+128-entry table of random `UInt64` values indexed by `[row, col, color_idx]`
+(color_idx 1 = BLACK, 2 = WHITE) used for incremental Zobrist hashing.
 """
 const ZOBRIST_TABLE = let
     table = Array{UInt64}(undef, 8, 8, 2)
@@ -102,8 +104,8 @@ mutable struct ReversiGame
         black = (one(UInt64) << 28) | (one(UInt64) << 35)
         white = (one(UInt64) << 27) | (one(UInt64) << 36)
         h =
-            ZOBRIST_TABLE[4, 5, BLACK] ⊻ ZOBRIST_TABLE[5, 4, BLACK] ⊻
-            ZOBRIST_TABLE[4, 4, WHITE] ⊻ ZOBRIST_TABLE[5, 5, WHITE]
+            ZOBRIST_TABLE[4, 5, _color_idx(BLACK)] ⊻ ZOBRIST_TABLE[5, 4, _color_idx(BLACK)] ⊻
+            ZOBRIST_TABLE[4, 4, _color_idx(WHITE)] ⊻ ZOBRIST_TABLE[5, 5, _color_idx(WHITE)]
         new(black, white, BLACK, 0, h)
     end
 end
@@ -125,7 +127,7 @@ function compute_full_hash(game::ReversiGame)::UInt64
         idx = trailing_zeros(b)
         r = div(idx, 8) + 1
         c = mod(idx, 8) + 1
-        h ⊻= ZOBRIST_TABLE[r, c, BLACK]
+        h ⊻= ZOBRIST_TABLE[r, c, _color_idx(BLACK)]
         b &= b - one(UInt64)
     end
     w = game.white
@@ -133,7 +135,7 @@ function compute_full_hash(game::ReversiGame)::UInt64
         idx = trailing_zeros(w)
         r = div(idx, 8) + 1
         c = mod(idx, 8) + 1
-        h ⊻= ZOBRIST_TABLE[r, c, WHITE]
+        h ⊻= ZOBRIST_TABLE[r, c, _color_idx(WHITE)]
         w &= w - one(UInt64)
     end
     return h
@@ -147,5 +149,5 @@ Because XOR is self-inverse, this both adds *and* removes the piece, matching
 the Zobrist property `A ⊕ A = 0`.
 """
 function update_hash(current_hash::UInt64, row::Int, col::Int, color::Int)::UInt64
-    return current_hash ⊻ ZOBRIST_TABLE[row, col, color]
+    return current_hash ⊻ ZOBRIST_TABLE[row, col, _color_idx(color)]
 end

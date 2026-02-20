@@ -50,7 +50,7 @@ end
 
 # ## Example 2: Player that tracks game state for ML training
 # Board state is represented as a plain `Matrix{Int}` where `0` = empty,
-# `1` = BLACK, `2` = WHITE — no external dependencies required.
+# `1` = BLACK, `-1` = WHITE — no external dependencies required.
 mutable struct TrainingPlayer <: Player
     move_history::Vector{Tuple{Matrix{Int},Position}}
 
@@ -61,7 +61,7 @@ end
     board_to_matrix(game::ReversiGame) -> Matrix{Int}
 
 Convert the bitboard state of `game` into an 8×8 `Matrix{Int}` where
-`EMPTY == 0`, `BLACK == 1`, and `WHITE == 2`.
+`EMPTY == 0`, `BLACK == 1`, and `WHITE == -1`.
 """
 function board_to_matrix(game::ReversiGame)
     mat = zeros(Int, 8, 8)

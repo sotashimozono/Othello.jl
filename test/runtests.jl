@@ -327,7 +327,7 @@ using Reversi: GameRecord, save_game, load_game, replay_game
 
     @testset "GameRecord – replay" begin
         moves = ["d3", "c3", "b3"]
-        record = GameRecord(moves, -1)
+        record = GameRecord(moves, 2)
         replayed = replay_game(record)
 
         # Apply the same moves manually and compare final state

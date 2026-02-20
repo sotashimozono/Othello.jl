@@ -6,14 +6,14 @@ as a vector of standard notation strings (e.g. `["d3", "c5", ...]`).
 
 Fields:
 - `moves::Vector{String}` – ordered list of moves in standard notation.
-- `result::Int`           – `BLACK`, `WHITE`, or `EMPTY` (draw); `-1` when not yet finished.
+- `result::Int`           – `BLACK`, `WHITE`, or `EMPTY` (draw); `2` when not yet finished.
 """
 struct GameRecord
     moves::Vector{String}
     result::Int
 end
 
-GameRecord(moves::Vector{String}) = GameRecord(moves, -1)
+GameRecord(moves::Vector{String}) = GameRecord(moves, 2)
 
 """
     save_game(record::GameRecord, filepath::String)
@@ -49,7 +49,7 @@ Read a `GameRecord` from a file previously written by `save_game`.
 """
 function load_game(filepath::String)::GameRecord
     moves = String[]
-    result = -1
+    result = 2
     for line in eachline(filepath)
         if startswith(line, "MOVES:")
             raw = strip(line[(length("MOVES:") + 1):end])
@@ -63,7 +63,7 @@ function load_game(filepath::String)::GameRecord
             elseif val == "DRAW"
                 EMPTY
             else
-                -1
+                2
             end
         end
     end

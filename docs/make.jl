@@ -31,8 +31,9 @@ makedocs(;
         "Home" => "index.md",
         "Examples" => [
             "quickstart" => "example/demo.md",
-            "play" => "example/play.md",
+            "play Reversi" => "example/play.md",
             "machine learning" => "example/ml_integration.md",
+            "zobrist hashing" => "example/zobrist_demo.md",
         ],
         "API Reference" => [
             "struct" => "api/struct.md",

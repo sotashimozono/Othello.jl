@@ -37,6 +37,28 @@ jobs:
             echo "changed=false" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Generate release notes text
+        if: steps.version_check.outputs.changed == 'true'
+        id: notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          CURR="${{ steps.version_check.outputs.curr }}"
+
+          DRAFT_TAG="v$CURR"
+          DRAFT_BODY=$(gh release view "$DRAFT_TAG" --json body --jq '.body' 2>/dev/null || echo "")
+
+          if [ -z "$DRAFT_BODY" ] || [ "$DRAFT_BODY" = "null" ]; then
+            DRAFT_BODY=$(gh release list --limit 50 --json tagName,isDraft \
+              --jq '.[] | select(.isDraft == true) | .tagName' | head -n 1 | xargs -I{} gh release view {} --json body --jq '.body' 2>/dev/null || echo "")
+          fi
+
+          if [ -z "$DRAFT_BODY" ] || [ "$DRAFT_BODY" = "null" ]; then
+            DRAFT_BODY="## Changelog\n\n- See changelog/commit history for details in v$CURR.\n\n## Breaking changes\n\n- No explicit breaking changes were detected in automation."
+          fi
+
+          printf 'content<<EOF\n%s\nEOF\n' "$DRAFT_BODY" >> "$GITHUB_OUTPUT"
+
       - name: Post @JuliaRegistrator comment on commit
         if: steps.version_check.outputs.changed == 'true'
         env:
@@ -45,14 +67,13 @@ jobs:
           CURR="${{ steps.version_check.outputs.curr }}"
           PREV="${{ steps.version_check.outputs.prev }}"
           COMMIT="${{ github.sha }}"
+          RELEASE_NOTES="${{ steps.notes.outputs.content }}"
 
           BODY="@JuliaRegistrator register
 
           Release notes:
 
-          ## Breaking changes
-
-          - See changelog/commit history for API changes in this release.
+          $RELEASE_NOTES
 
           Version bumped from \`$PREV\` -> \`$CURR\` by commit $COMMIT."
 

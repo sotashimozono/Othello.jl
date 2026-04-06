@@ -31,7 +31,7 @@ function run_game!(
     kifu_obs::Observable,
     last_move_obs::Observable,
     game_over_obs::Observable{Bool};
-    stop_check::Function = () -> false,   # returns true → cancel this task
+    stop_check::Function=() -> false,   # returns true → cancel this task
 )
     try
         move_num = Ref(0)

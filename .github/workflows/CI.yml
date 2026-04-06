@@ -30,8 +30,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y xorg-dev mesa-utils xvfb libgl1-mesa-glx libvulkan1 libxrandr2 libxinerama1 libxcursor1 libxi6
-      # ------------------------------------------
+          sudo apt-get install -y xorg-dev mesa-utils xvfb libgl1 libvulkan1 libxrandr2 libxinerama1 libxcursor1 libxi6 libxkbcommon-x11-0      # ------------------------------------------
 
       - uses: julia-actions/julia-buildpkg@v1
 

@@ -2,7 +2,7 @@ name: Checkbox Labeler
 
 on:
   pull_request:
-    types: [opened, edited, synchronize, reopened]
+    types: [opened, edited]
 
 permissions:
   pull-requests: write
@@ -20,41 +20,28 @@ jobs:
           REPO: ${{ github.repository }}
         run: |
           # Ensure all labels exist (--force updates color/description if already present)
-          gh label create "breaking"      --repo "$REPO" --color "B60205" --description "Breaking changes" --force
-          gh label create "feature"       --repo "$REPO" --color "C2E0C6" --description "New feature" --force
           gh label create "enhancement"   --repo "$REPO" --color "a2eeef" --force
-          gh label create "fix"           --repo "$REPO" --color "D93F0B" --description "Bug fix" --force
           gh label create "bug"           --repo "$REPO" --color "d73a4a" --force
           gh label create "performance"   --repo "$REPO" --color "e4e669" --force
-          gh label create "docs"          --repo "$REPO" --color "0075ca" --description "Documentation" --force
           gh label create "documentation" --repo "$REPO" --color "0075ca" --force
           gh label create "chore"         --repo "$REPO" --color "e8e8e8" --force
-          gh label create "refactor"      --repo "$REPO" --color "C5DEF5" --description "Refactoring" --force
-          gh label create "ci"            --repo "$REPO" --color "FBCA04" --description "CI/CD" --force
 
-          # Normalize managed labels first so checkbox edits remain the source of truth
-          gh pr edit "$PR_NUMBER" --repo "$REPO" --remove-label "breaking,feature,enhancement,fix,bug,performance,docs,documentation,chore,refactor,ci" 2>/dev/null || true
-
-          if echo "$PR_BODY" | grep -qi "\- \[x\].*Breaking Changes"; then
-            gh pr edit "$PR_NUMBER" --repo "$REPO" --add-label "breaking"
+          if echo "$PR_BODY" | grep -qi "\- \[x\].*Feature"; then
+            gh pr edit "$PR_NUMBER" --repo "$REPO" --add-label "enhancement"
           fi
 
-          if echo "$PR_BODY" | grep -qi "\- \[x\].*Feature\|\- \[x\].*新機能"; then
-            gh pr edit "$PR_NUMBER" --repo "$REPO" --add-label "feature,enhancement"
+          if echo "$PR_BODY" | grep -qi "\- \[x\].*Bug Fix"; then
+            gh pr edit "$PR_NUMBER" --repo "$REPO" --add-label "bug"
           fi
 
-          if echo "$PR_BODY" | grep -qi "\- \[x\].*Bug Fix\|\- \[x\].*バグ修正"; then
-            gh pr edit "$PR_NUMBER" --repo "$REPO" --add-label "bug,fix"
-          fi
-
-          if echo "$PR_BODY" | grep -qi "\- \[x\].*Performance\|\- \[x\].*パフォーマンス"; then
+          if echo "$PR_BODY" | grep -qi "\- \[x\].*Performance"; then
             gh pr edit "$PR_NUMBER" --repo "$REPO" --add-label "performance"
           fi
 
-          if echo "$PR_BODY" | grep -qi "\- \[x\].*Documentation\|\- \[x\].*ドキュメント"; then
-            gh pr edit "$PR_NUMBER" --repo "$REPO" --add-label "documentation,docs"
+          if echo "$PR_BODY" | grep -qi "\- \[x\].*Documentation"; then
+            gh pr edit "$PR_NUMBER" --repo "$REPO" --add-label "documentation"
           fi
 
-          if echo "$PR_BODY" | grep -qi "\- \[x\].*メンテナンス\|\- \[x\].*Refactoring\|\- \[x\].*CI/CD"; then
-            gh pr edit "$PR_NUMBER" --repo "$REPO" --add-label "chore,refactor,ci"
+          if echo "$PR_BODY" | grep -qi "\- \[x\].*Maintenance"; then
+            gh pr edit "$PR_NUMBER" --repo "$REPO" --add-label "chore"
           fi

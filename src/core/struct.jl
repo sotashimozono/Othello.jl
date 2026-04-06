@@ -3,6 +3,9 @@ const EMPTY = 0
 const BLACK = 1
 const WHITE = -1
 
+"""Result sentinel: game is still in progress (not yet finished)."""
+const IN_PROGRESS = 2
+
 """
     Position
 
@@ -66,7 +69,6 @@ end
 """
 const ZOBRIST_TABLE = let
     table = Array{UInt64}(undef, 8, 8, 2)
-    # Linear Congruential Generator with a fixed seed for reproducibility
     seed = UInt64(0x123456789ABCDEF0)
     for i in eachindex(table)
         seed = seed * UInt64(6364136223846793005) + UInt64(1442695040888963407)
@@ -85,7 +87,7 @@ end
 Represents the state of a Reversi game using two `UInt64` bitboards.
 
 Fields:
-- `black::UInt64`  – bitmask of squares occupied by Black (bit `(row-1)*8+(col-1)`)
+- `black::UInt64`  – bitmask of squares occupied by Black
 - `white::UInt64`  – bitmask of squares occupied by White
 - `current_player::Int` – `BLACK` or `WHITE`
 - `pass_count::Int` – consecutive passes (≥ 2 → game over)
@@ -99,8 +101,6 @@ mutable struct ReversiGame
     hash::UInt64
 
     function ReversiGame()
-        # Bit index layout: bit i = (row-1)*8 + (col-1)
-        # (4,4)=WHITE: bit 27, (4,5)=BLACK: bit 28, (5,4)=BLACK: bit 35, (5,5)=WHITE: bit 36
         black = (one(UInt64) << 28) | (one(UInt64) << 35)
         white = (one(UInt64) << 27) | (one(UInt64) << 36)
         h =
@@ -111,6 +111,22 @@ mutable struct ReversiGame
     end
 end
 
+"""
+    copy(game::ReversiGame) -> ReversiGame
+
+Fast field-by-field copy of a `ReversiGame`.  Prefer this over `deepcopy` since
+all fields are value types (integers).
+"""
+function Base.copy(game::ReversiGame)
+    g = ReversiGame()
+    g.black          = game.black
+    g.white          = game.white
+    g.current_player = game.current_player
+    g.pass_count     = game.pass_count
+    g.hash           = game.hash
+    return g
+end
+
 # ---------------------------------------------------------------------------
 # Hash utilities
 # ---------------------------------------------------------------------------
@@ -118,8 +134,7 @@ end
 """
     compute_full_hash(game::ReversiGame) -> UInt64
 
-Compute the Zobrist hash of `game` from scratch by XOR-ing the table entries
-for every piece currently on the board.  Useful for initialisation and debugging.
+Compute the Zobrist hash of `game` from scratch.  Useful for debugging.
 """
 function compute_full_hash(game::ReversiGame)::UInt64
     h = zero(UInt64)
@@ -143,11 +158,9 @@ function compute_full_hash(game::ReversiGame)::UInt64
 end
 
 """
-    update_hash(current_hash::UInt64, row::Int, col::Int, color::Int) -> UInt64
+    update_hash(current_hash, row, col, color) -> UInt64
 
-Return the hash obtained by toggling one piece of `color` at `(row, col)`.
-Because XOR is self-inverse, this both adds *and* removes the piece, matching
-the Zobrist property `A ⊕ A = 0`.
+Toggle one piece of `color` at `(row, col)` in the hash (add or remove).
 """
 function update_hash(current_hash::UInt64, row::Int, col::Int, color::Int)::UInt64
     return current_hash ⊻ ZOBRIST_TABLE[row, col, _color_idx(color)]

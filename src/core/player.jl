@@ -1,16 +1,15 @@
-# Player interface
 """
     Player
 
 Abstract type for all player implementations.
-if you want to create a new player type, subtype Player and implement the get_move function.
+Subtype and implement `get_move(player, game)` to create a new player.
 """
 abstract type Player end
 
 """
     get_move(player::Player, game::ReversiGame) -> Union{Position, Nothing}
 
-Get the next move from a player. Returns Nothing if the player wants to pass.
+Get the next move from a player.  Returns `nothing` to indicate a pass.
 """
 function get_move end
 
@@ -21,9 +20,8 @@ A player that gets moves from terminal input.
 """
 struct HumanPlayer <: Player end
 
-function get_move(player::HumanPlayer, game::ReversiGame; hints=true)
+function get_move(::HumanPlayer, game::ReversiGame; hints=true)
     moves = valid_moves(game)
-    # if there are no valid moves, prompt the user to pass
     if isempty(moves)
         println("\e[33mNo valid moves. Press Enter to pass...\e[0m")
         readline()
@@ -39,9 +37,7 @@ function get_move(player::HumanPlayer, game::ReversiGame; hints=true)
     while true
         print("\nMove (e.g. e4 or row,col): ")
         input = lowercase(strip(readline()))
-        # Accept standard notation "e4"
         m_std = match(r"^([a-h])([1-8])$", input)
-        # Accept legacy "row,col" notation
         m_leg = match(r"^([1-8])[\s,]*([1-8])$", input)
         pos = if m_std !== nothing
             Position(string(m_std.captures[1]) * string(m_std.captures[2]))
@@ -63,16 +59,12 @@ end
 """
     RandomPlayer <: Player
 
-A player that makes random valid moves.
+A player that picks a random valid move each turn.
 """
 struct RandomPlayer <: Player end
 
-function get_move(player::RandomPlayer, game::ReversiGame)
+function get_move(::RandomPlayer, game::ReversiGame)
     moves = valid_moves(game)
-
-    if isempty(moves)
-        return nothing
-    end
-
+    isempty(moves) && return nothing
     return rand(moves)
 end

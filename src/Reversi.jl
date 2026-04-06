@@ -1,22 +1,51 @@
 module Reversi
 
-# Export main types and functions
+# ---------------------------------------------------------------------------
+# Exports
+# ---------------------------------------------------------------------------
+
+# Core types & constants
 export ReversiGame, Player, Position
-export make_move!, valid_moves, is_game_over, get_winner, display_board
-export HumanPlayer, RandomPlayer, play_game
-export next_state, get_piece, count_pieces, pass!
+export EMPTY, BLACK, WHITE, IN_PROGRESS
+
+# Core game functions
+export make_move!, valid_moves, is_game_over, get_winner
+export HumanPlayer, RandomPlayer
+export next_state, get_piece, count_pieces, pass!, mobility
 export position_to_string, ZOBRIST_TABLE, compute_full_hash, update_hash
-export GameRecord, save_game, load_game, replay_game
+
+# CUI
+export display_board
+
+# Game session
+export play_game
+
+# Game record & replay (io)
+export GameRecord, save_game, load_game, replay_game, validate_record
+
+# GUI (requires GLMakie)
 export GUIPlayer, launch_gui, launch_replay_gui
+
+# WTHOR format (io)
 export WThorHeader, WThorGame, read_wthor, write_wthor
 export wthor_game_to_record, verify_wthor_game
 
-include("core/struct.jl")
-include("core/player.jl")
-include("core/rules.jl")
-include("core/wthor.jl")
-include("UI/game.jl")
-include("UI/data.jl")
-include("UI/gui.jl")
+# ---------------------------------------------------------------------------
+# Include order:
+#   core/   – pure game state and rules, no I/O, no rendering
+#   io/     – serialisation and file formats (depends on core/)
+#   ui/     – user interfaces (depends on core/ and io/)
+# ---------------------------------------------------------------------------
+
+include("core/struct.jl")   # ReversiGame, Position, constants, Zobrist
+include("core/rules.jl")    # make_move!, valid_moves, pass!, …
+include("core/player.jl")   # Player interface, HumanPlayer, RandomPlayer
+
+include("io/wthor.jl")      # WTHOR binary format (.wtb)
+include("io/record.jl")     # GameRecord, save_game, load_game, replay_game
+
+include("ui/cui.jl")        # display_board (terminal rendering)
+include("ui/game.jl")       # play_game (CUI game loop)
+include("ui/gui.jl")        # GLMakie GUI (loads GLMakie on include)
 
 end # module Reversi

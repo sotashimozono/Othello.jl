@@ -14,24 +14,23 @@ is_valid_position(row::Int, col::Int) = 1 <= row <= 8 && 1 <= col <= 8
 
 # ---------------------------------------------------------------------------
 # Bitboard shift helpers
-# Column-A mask: bits where col == 1 (must not shift west).
-# Column-H mask: bits where col == 8 (must not shift east).
 # ---------------------------------------------------------------------------
 
 const _COL_A = UInt64(0x0101010101010101)
 const _COL_H = UInt64(0x8080808080808080)
 
-@inline _shift_n(x::UInt64) = x >> 8
-@inline _shift_s(x::UInt64) = x << 8
-@inline _shift_e(x::UInt64) = (x & ~_COL_H) << 1
-@inline _shift_w(x::UInt64) = (x & ~_COL_A) >> 1
+@inline _shift_n(x::UInt64)  = x >> 8
+@inline _shift_s(x::UInt64)  = x << 8
+@inline _shift_e(x::UInt64)  = (x & ~_COL_H) << 1
+@inline _shift_w(x::UInt64)  = (x & ~_COL_A) >> 1
 @inline _shift_ne(x::UInt64) = (x & ~_COL_H) >> 7
 @inline _shift_nw(x::UInt64) = (x & ~_COL_A) >> 9
 @inline _shift_se(x::UInt64) = (x & ~_COL_H) << 9
 @inline _shift_sw(x::UInt64) = (x & ~_COL_A) << 7
 
 const _SHIFTS = (
-    _shift_n, _shift_s, _shift_e, _shift_w, _shift_ne, _shift_nw, _shift_se, _shift_sw
+    _shift_n, _shift_s, _shift_e, _shift_w,
+    _shift_ne, _shift_nw, _shift_se, _shift_sw,
 )
 
 # ---------------------------------------------------------------------------
@@ -39,16 +38,15 @@ const _SHIFTS = (
 # ---------------------------------------------------------------------------
 
 """
-    legal_moves_bb(player::UInt64, opponent::UInt64) -> UInt64
+    legal_moves_bb(player, opponent) -> UInt64
 
-Return a bitmask of all squares where `player` can legally place a piece,
-using a Kogge-Stone (Dumb7Fill) flood-fill in each of the 8 directions.
+Return a bitmask of all squares where `player` can legally place a piece
+(Kogge-Stone Dumb7Fill in each of the 8 directions).
 """
 function legal_moves_bb(player::UInt64, opponent::UInt64)::UInt64
     empty = ~(player | opponent)
     legal = zero(UInt64)
     for shift_fn in _SHIFTS
-        # Flood from player through opponent pieces (up to 6 in a row)
         gen = shift_fn(player) & opponent
         gen |= shift_fn(gen) & opponent
         gen |= shift_fn(gen) & opponent
@@ -61,10 +59,10 @@ function legal_moves_bb(player::UInt64, opponent::UInt64)::UInt64
 end
 
 """
-    compute_flips(pos::UInt64, player::UInt64, opponent::UInt64) -> UInt64
+    compute_flips(pos, player, opponent) -> UInt64
 
-Return a bitmask of opponent pieces that would be flipped if `player` places
-at the single-bit position `pos`.
+Return a bitmask of opponent pieces that would be flipped when `player`
+places at the single-bit position `pos`.
 """
 function compute_flips(pos::UInt64, player::UInt64, opponent::UInt64)::UInt64
     flips = zero(UInt64)
@@ -75,7 +73,6 @@ function compute_flips(pos::UInt64, player::UInt64, opponent::UInt64)::UInt64
         candidates |= shift_fn(candidates) & opponent
         candidates |= shift_fn(candidates) & opponent
         candidates |= shift_fn(candidates) & opponent
-        # Valid only when a player piece closes the bracket
         if shift_fn(candidates) & player != 0
             flips |= candidates
         end
@@ -88,7 +85,7 @@ end
 # ---------------------------------------------------------------------------
 
 """
-    get_piece(game::ReversiGame, row::Int, col::Int) -> Int
+    get_piece(game, row, col) -> Int
 
 Return `BLACK`, `WHITE`, or `EMPTY` for the given square.
 """
@@ -100,27 +97,27 @@ function get_piece(game::ReversiGame, row::Int, col::Int)::Int
 end
 
 """
-    is_valid_move(game::ReversiGame, row::Int, col::Int[, player::Int]) -> Bool
+    is_valid_move(game, row, col[, player]) -> Bool
 
-Check if placing a piece at `(row, col)` is a valid move for `player`.
+Check if placing a piece at `(row, col)` is legal for `player`.
 """
 function is_valid_move(
     game::ReversiGame, row::Int, col::Int, player::Int=game.current_player
 )
     is_valid_position(row, col) || return false
     bit = one(UInt64) << ((row - 1) * 8 + (col - 1))
-    player_bb = player == BLACK ? game.black : game.white
+    player_bb   = player == BLACK ? game.black : game.white
     opponent_bb = player == BLACK ? game.white : game.black
     return (bit & legal_moves_bb(player_bb, opponent_bb)) != 0
 end
 
 """
-    valid_moves(game::ReversiGame[, player::Int]) -> Vector{Position}
+    valid_moves(game[, player]) -> Vector{Position}
 
 Return all valid moves for `player` (defaults to `game.current_player`).
 """
 function valid_moves(game::ReversiGame, player::Int=game.current_player)
-    player_bb = player == BLACK ? game.black : game.white
+    player_bb   = player == BLACK ? game.black : game.white
     opponent_bb = player == BLACK ? game.white : game.black
     bb = legal_moves_bb(player_bb, opponent_bb)
     moves = Position[]
@@ -133,17 +130,28 @@ function valid_moves(game::ReversiGame, player::Int=game.current_player)
 end
 
 """
-    make_move!(game::ReversiGame, row::Int, col::Int) -> Bool
+    mobility(game[, player]) -> Int
+
+Return the number of legal moves available to `player`
+(defaults to `game.current_player`).  A commonly used feature in evaluation.
+"""
+function mobility(game::ReversiGame, player::Int=game.current_player)::Int
+    player_bb   = player == BLACK ? game.black : game.white
+    opponent_bb = player == BLACK ? game.white : game.black
+    return count_ones(legal_moves_bb(player_bb, opponent_bb))
+end
+
+"""
+    make_move!(game, row, col) -> Bool
 
 Place a piece at `(row, col)` for the current player.  Updates the board and
-the incremental Zobrist hash.  Returns `true` on success, `false` if the move
-is illegal.
+the Zobrist hash.  Returns `true` on success, `false` if the move is illegal.
 """
 function make_move!(game::ReversiGame, row::Int, col::Int)
     player = game.current_player
-    opp = opponent(player)
+    opp    = opponent(player)
 
-    player_bb = player == BLACK ? game.black : game.white
+    player_bb   = player == BLACK ? game.black : game.white
     opponent_bb = player == BLACK ? game.white : game.black
 
     bit = one(UInt64) << ((row - 1) * 8 + (col - 1))
@@ -152,10 +160,8 @@ function make_move!(game::ReversiGame, row::Int, col::Int)
 
     flips = compute_flips(bit, player_bb, opponent_bb)
 
-    # Incremental hash: add placed piece
     game.hash ⊻= ZOBRIST_TABLE[row, col, _color_idx(player)]
 
-    # Incremental hash: toggle each flipped piece (remove opp, add player)
     flip_copy = flips
     while flip_copy != 0
         idx = trailing_zeros(flip_copy)
@@ -166,7 +172,7 @@ function make_move!(game::ReversiGame, row::Int, col::Int)
         flip_copy &= flip_copy - one(UInt64)
     end
 
-    new_player_bb = player_bb | bit | flips
+    new_player_bb   = player_bb   | bit | flips
     new_opponent_bb = opponent_bb & ~flips
 
     if player == BLACK
@@ -177,45 +183,54 @@ function make_move!(game::ReversiGame, row::Int, col::Int)
         game.black = new_opponent_bb
     end
 
-    game.pass_count = 0
+    game.pass_count     = 0
     game.current_player = opp
     return true
 end
 
 """
-    make_move!(game::ReversiGame, pos::Position) -> Bool
+    make_move!(game, pos) -> Bool
 
 Make a move at the given `Position`.
 """
 make_move!(game::ReversiGame, pos::Position) = make_move!(game, pos.row, pos.col)
 
 """
-    make_move!(game::ReversiGame, s::AbstractString) -> Bool
+    make_move!(game, s) -> Bool
 
 Make a move specified in standard Reversi notation (e.g. `"e4"`).
 """
 make_move!(game::ReversiGame, s::AbstractString) = make_move!(game, Position(s))
 
 """
-    pass!(game::ReversiGame)
+    pass!(game; force=false)
 
-Pass the turn to the opponent and increment the consecutive-pass counter.
+Pass the turn to the opponent.
+
+If `force=false` (default), throws `ArgumentError` when the current player
+still has at least one legal move — callers must only pass when genuinely stuck.
+Set `force=true` to skip the check (useful for replaying external records or tests).
 """
-function pass!(game::ReversiGame)
-    game.pass_count += 1
-    game.current_player = opponent(game.current_player)
+function pass!(game::ReversiGame; force::Bool=false)
+    if !force && !isempty(valid_moves(game))
+        throw(ArgumentError(
+            "Cannot pass: current player has legal moves. " *
+            "Use pass!(game; force=true) to override."
+        ))
+    end
+    game.pass_count     += 1
+    game.current_player  = opponent(game.current_player)
 end
 
 """
-    is_game_over(game::ReversiGame) -> Bool
+    is_game_over(game) -> Bool
 
-Return `true` when the game has ended (two consecutive passes, or board full,
+Return `true` when the game has ended (two consecutive passes, board full,
 or neither player has any legal move).
 """
 function is_game_over(game::ReversiGame)
     game.pass_count >= 2 && return true
     (game.black | game.white) == typemax(UInt64) && return true
-    # End game if neither player has any legal moves (stalemate condition)
     legal_black = legal_moves_bb(game.black, game.white)
     legal_white = legal_moves_bb(game.white, game.black)
     (legal_black | legal_white) == 0 && return true
@@ -223,16 +238,14 @@ function is_game_over(game::ReversiGame)
 end
 
 """
-    count_pieces(game::ReversiGame) -> (Int, Int)
+    count_pieces(game) -> (Int, Int)
 
 Return `(black_count, white_count)`.
 """
-function count_pieces(game::ReversiGame)
-    return count_ones(game.black), count_ones(game.white)
-end
+count_pieces(game::ReversiGame) = count_ones(game.black), count_ones(game.white)
 
 """
-    get_winner(game::ReversiGame) -> Int
+    get_winner(game) -> Int
 
 Return `BLACK`, `WHITE`, or `EMPTY` (draw) based on piece counts.
 """
@@ -244,20 +257,15 @@ function get_winner(game::ReversiGame)
 end
 
 """
-    next_state(game::ReversiGame, move::Position) -> ReversiGame
+    next_state(game, move) -> ReversiGame
 
-Return a new `ReversiGame` that results from applying `move` to a deep copy of
-`game`.  The original `game` is not modified (copy-on-move semantics).
+Return a new `ReversiGame` resulting from applying `move` to a copy of `game`.
+The original `game` is not modified.
 """
 function next_state(game::ReversiGame, move::Position)::ReversiGame
-    new_game = deepcopy(game)
+    new_game = copy(game)
     make_move!(new_game, move.row, move.col)
     return new_game
 end
 
-"""
-    next_state(game::ReversiGame, move::AbstractString) -> ReversiGame
-
-Copy-on-move variant that accepts standard Reversi notation (e.g. `"e4"`).
-"""
 next_state(game::ReversiGame, move::AbstractString) = next_state(game, Position(move))

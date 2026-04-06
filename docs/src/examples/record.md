@@ -4,7 +4,7 @@ CurrentModule = Reversi
 
 # Game records
 
-[`examples/record_demo.jl`](../../../../next/examples/record_demo.jl) —
+[`examples/record_demo.jl`](https://github.com/sotashimozono/Reversi.jl/blob/main/examples/record_demo.jl) —
 save, load, validate, and replay game records.
 
 ## Workflow

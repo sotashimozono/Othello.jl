@@ -4,7 +4,7 @@ CurrentModule = Reversi
 
 # WTHOR format
 
-[`examples/wthor_demo.jl`](../../../../next/examples/wthor_demo.jl) —
+[`examples/wthor_demo.jl`](https://github.com/sotashimozono/Reversi.jl/blob/main/examples/wthor_demo.jl) —
 write, read, and verify `.wtb` files (both internal and external).
 
 ## Writing your own games

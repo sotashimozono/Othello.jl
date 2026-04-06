@@ -341,7 +341,10 @@ function Reversi.launch_gui(
 
     # Symmetrical Menu Row (8 columns matching board)
     menu_row = main_col[1, 1] = GridLayout()
+
+    # Pre-initialize all 8 columns to ensure they exist for colsize!
     for i in 1:8
+        menu_row[1, i] = Label(fig, " "; tellwidth=false, tellheight=false)
         colsize!(menu_row, i, Relative(1 / 8))
     end
 

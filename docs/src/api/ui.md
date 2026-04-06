@@ -10,7 +10,7 @@ User-interface layer.  Depends on `core/` and `io/`.
 
 ```@autodocs
 Modules = [Reversi]
-Pages   = ["UI/cui.jl"]
+Pages   = ["ui/cui.jl"]
 ```
 
 ### Example output
@@ -37,7 +37,7 @@ Green `*` marks show valid moves (requires `hints` argument).
 
 ```@autodocs
 Modules = [Reversi]
-Pages   = ["UI/game.jl"]
+Pages   = ["ui/game.jl"]
 ```
 
 ### Quick reference
@@ -57,7 +57,7 @@ winner = play_game(MyAI(), MyAI(); verbose=false)
 
 ```@autodocs
 Modules = [Reversi]
-Pages   = ["UI/gui.jl"]
+Pages   = ["ui/gui.jl"]
 ```
 
 ---
@@ -66,7 +66,7 @@ Pages   = ["UI/gui.jl"]
 
 ```@autodocs
 Modules = [Reversi]
-Pages   = ["UI/config.jl"]
+Pages   = ["ui/config.jl"]
 ```
 
 ### Launching the GUI

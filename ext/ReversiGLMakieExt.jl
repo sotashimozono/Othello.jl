@@ -229,9 +229,9 @@ function _open_add_player_dialog!(
     on(btn_reg.clicks) do _
         raw_name = strip(name_tb.stored_string[])
         raw_expr = strip(expr_tb.stored_string[])
-        isempty(raw_name) && (msg_lbl.text[]="⚠ Please enter a name."; return nothing)
+        isempty(raw_name) && (msg_lbl.text[] = "⚠ Please enter a name."; return nothing)
         isempty(raw_expr) &&
-            (msg_lbl.text[]="⚠ Please enter a Julia expression."; return nothing)
+            (msg_lbl.text[] = "⚠ Please enter a Julia expression."; return nothing)
 
         local player_instance
         try
@@ -291,8 +291,40 @@ function Reversi.launch_gui(
         backgroundcolor=_get_color(config, "background"),
     )
 
-    # Row 1: player selection bar
-    sel_bar = fig[1, 1] = GridLayout()
+    # Use a nested GridLayout centered in the figure
+    content_grid = fig[1, 1] = GridLayout(; halign=:center, tellwidth=false)
+
+    # Row 1: Header Buttons (Centered)
+    top_bar = content_grid[1, 1:2] = GridLayout()
+    btn_add = Button(
+        top_bar[1, 1];
+        label="+ Add Player",
+        buttoncolor=_get_color(config, "panel"),
+        labelcolor=_get_color(config, "text"),
+        fontsize=(config.fontsize - 1),
+    )
+    btn_start = Button(
+        top_bar[1, 2];
+        label="▶ New Game",
+        buttoncolor=_get_color(config, "panel"),
+        labelcolor=_get_color(config, "text"),
+        fontsize=(config.fontsize - 1),
+    )
+    colsize!(top_bar, 1, Fixed(120))
+    colsize!(top_bar, 2, Fixed(120))
+    rowsize!(content_grid, 1, Fixed(44))
+
+    # Row 2: Main Area (Board and Side Kifu)
+    # We use a 2-column layout here: [Board Area] [Kifu]
+    main_row = content_grid[2, 1:2] = GridLayout()
+    main_col = main_row[1, 1] = GridLayout()
+    rsb = main_row[1, 2] = GridLayout()
+
+    colsize!(main_row, 1, Fixed(550)) # Board Area
+    colsize!(main_row, 2, Fixed(200)) # Kifu Sidebar
+    rowsize!(content_grid, 2, Relative(1.0))
+
+    # Player Selection Menus (Symmetrical above b/g)
     _names(reg) = [e.name for e in reg]
     function _find_idx(reg, p)
         p isa HumanPlayer && return 1
@@ -307,90 +339,35 @@ function Reversi.launch_gui(
         menu_options_obs[] = _names(reg)
     end
 
+    # Symmetrical Menu Row (8 columns matching board)
+    menu_row = main_col[1, 1] = GridLayout()
+    for i in 1:8
+        colsize!(menu_row, i, Relative(1 / 8))
+    end
+
     black_sel = Menu(
-        sel_bar[1, 2];
+        menu_row[1, 2]; # Above column 'b'
         options=menu_options_obs,
         i_selected=_find_idx(init_reg, b_player),
-        fontsize=13,
-        width=160,
+        fontsize=12,
+        width=110,
+        prompt="Black Player",
+        selection_cell_color_inactive=_get_color(config, "accent_black"),
     )
     white_sel = Menu(
-        sel_bar[1, 4];
+        menu_row[1, 7]; # Above column 'g'
         options=menu_options_obs,
         i_selected=_find_idx(init_reg, w_player),
-        fontsize=13,
-        width=160,
+        fontsize=12,
+        width=110,
+        prompt="White Player",
+        selection_cell_color_inactive=_get_color(config, "accent_white"),
     )
+    rowsize!(main_col, 1, Fixed(36))
 
-    Label(
-        sel_bar[1, 1];
-        text="Black:",
-        color=_get_color(config, "accent_black"),
-        fontsize=(config.fontsize - 1),
-        font=:bold,
-        halign=:right,
-        tellwidth=false,
-    )
-    Label(
-        sel_bar[1, 3];
-        text="White:",
-        color=_get_color(config, "accent_white"),
-        fontsize=(config.fontsize - 1),
-        font=:bold,
-        halign=:right,
-        tellwidth=false,
-    )
-    btn_add = Button(
-        sel_bar[1, 5];
-        label="+ Add Player",
-        buttoncolor=_get_color(config, "panel"),
-        labelcolor=_get_color(config, "text"),
-        fontsize=(config.fontsize - 1),
-    )
-    btn_start = Button(
-        sel_bar[1, 6];
-        label="▶ New Game",
-        buttoncolor=_get_color(config, "panel"),
-        labelcolor=_get_color(config, "text"),
-        fontsize=(config.fontsize - 1),
-    )
-    rowsize!(fig.layout, 1, Fixed(44))
-    colgap!(sel_bar, 6)
-    colsize!(sel_bar, 1, Fixed(50))
-    colsize!(sel_bar, 3, Fixed(50))
-
-    # Row 2: white player info
-    white_card = fig[2, 1] = GridLayout()
-    white_name_lbl = Label(
-        white_card[1, 1];
-        text="[W]  White: $(_player_name(w_player))",
-        color=_get_color(config, "accent_white"),
-        fontsize=(config.fontsize + 1),
-        halign=:left,
-        tellwidth=false,
-    )
-    white_score_lbl = Label(
-        white_card[1, 2];
-        text=@lift("$(count_pieces($game_obs)[2])"),
-        color=_get_color(config, "text"),
-        fontsize=(config.fontsize + 6),
-        font=:bold,
-        halign=:right,
-        tellwidth=false,
-    )
-    white_turn_lbl = Label(
-        white_card[1, 3];
-        text=@lift((!$game_over_obs && $game_obs.current_player == WHITE) ? "< Turn" : ""),
-        color=_get_color(config, "accent_white"),
-        fontsize=(config.fontsize - 1),
-        halign=:left,
-        tellwidth=false,
-    )
-    rowsize!(fig.layout, 2, Fixed(40))
-
-    # Row 3: board
+    # Board Axis
     ax = Axis(
-        fig[3, 1];
+        main_col[2, 1];
         aspect=DataAspect(),
         limits=(-0.40, 8.32, -0.24, 8.55),
         backgroundcolor=_get_color(config, "background"),
@@ -406,37 +383,44 @@ function Reversi.launch_gui(
         bottomspinevisible=false,
     )
 
-    # Row 4: black player info
-    black_card = fig[4, 1] = GridLayout()
-    black_name_lbl = Label(
-        black_card[1, 1];
-        text="[B]  Black: $(_player_name(b_player))",
-        color=_get_color(config, "accent_black"),
-        fontsize=(config.fontsize + 1),
-        halign=:left,
-        tellwidth=false,
+    # Status Bar Row (Numbers only)
+    status_bar = main_col[3, 1] = GridLayout()
+    white_score_lbl = Label(
+        status_bar[1, 1];
+        text=@lift("$(count_pieces($game_obs)[2])"),
+        color=_get_color(config, "accent_white"),
+        fontsize=(config.fontsize + 8),
+        font=:bold,
+        halign=:center,
     )
     black_score_lbl = Label(
-        black_card[1, 2];
+        status_bar[1, 2];
         text=@lift("$(count_pieces($game_obs)[1])"),
-        color=_get_color(config, "text"),
-        fontsize=(config.fontsize + 6),
-        font=:bold,
-        halign=:right,
-        tellwidth=false,
-    )
-    black_turn_lbl = Label(
-        black_card[1, 3];
-        text=@lift((!$game_over_obs && $game_obs.current_player == BLACK) ? "< Turn" : ""),
         color=_get_color(config, "accent_black"),
-        fontsize=(config.fontsize - 1),
-        halign=:left,
-        tellwidth=false,
+        fontsize=(config.fontsize + 8),
+        font=:bold,
+        halign=:center,
     )
-    rowsize!(fig.layout, 4, Fixed(40))
+    status_msg_lbl = Label(
+        status_bar[1, 3];
+        text=@lift(
+            if (!$game_over_obs && $game_obs.current_player == BLACK)
+                "Black's Turn"
+            else
+                ($game_over_obs ? "Game Over" : "White's Turn")
+            end
+        ),
+        color=_get_color(config, "text_dim"),
+        fontsize=config.fontsize,
+        halign=:center,
+    )
+    rowsize!(main_col, 3, Fixed(48))
+    colsize!(status_bar, 1, Relative(0.33))
+    colsize!(status_bar, 2, Relative(0.33))
+    colsize!(status_bar, 3, Relative(0.33))
 
-    # Row 5: control bar
-    ctrl = fig[5, 1] = GridLayout()
+    # Control toggles
+    ctrl = main_col[4, 1] = GridLayout()
     tgl_hints = Toggle(ctrl[1, 1]; active=sh)
     Label(
         ctrl[1, 2];
@@ -451,43 +435,11 @@ function Reversi.launch_gui(
         color=_get_color(config, "text_dim"),
         fontsize=(config.fontsize - 1),
     )
-    status_lbl = Label(
-        ctrl[1, 5];
-        text=@lift(
-            begin
-                game = $game_obs
-                over = $game_over_obs
-                if over
-                    w = get_winner(game)
-                    b, wc = count_pieces(game)
-                    if w == BLACK
-                        "Black wins!  (B $b - W $wc)"
-                    elseif w == WHITE
-                        "White wins!  (B $b - W $wc)"
-                    else
-                        "Draw!  (B $b - W $wc)"
-                    end
-                else
-                    "B $(count_pieces(game)[1]) - W $(count_pieces(game)[2])"
-                end
-            end
-        ),
-        color=@lift(
-            if $game_over_obs
-                _get_color(config, "last_move")
-            else
-                _get_color(config, "text_dim")
-            end
-        ),
-        fontsize=config.fontsize,
-        halign=:left,
-        tellwidth=false,
-    )
-    rowsize!(fig.layout, 5, Fixed(44))
+    rowsize!(main_col, 4, Fixed(40))
     colsize!(ctrl, 5, Relative(1.0))
 
-    # Kifu sidebar
-    kifu_panel = fig[1:5, 2] = GridLayout()
+    # Kifu sidebar Content (now in main_row col 2)
+    kifu_panel = rsb[1, 1] = GridLayout()
     Label(
         kifu_panel[1, 1];
         text="Move History",
@@ -511,16 +463,7 @@ function Reversi.launch_gui(
         bottomspinevisible=false,
         yreversed=true,
     )
-
-    colsize!(fig.layout, 1, Relative(1.0))
-    if config.show_kifu
-        colsize!(fig.layout, 2, Fixed(config.sidebar_width))
-    else
-        colsize!(fig.layout, 2, Fixed(0))
-        # Hide the kifu panel entirely
-        kifu_panel.visible = false
-    end
-    rowsize!(fig.layout, 3, Relative(1.0))
+    rowsize!(rsb, 1, Relative(1.0))
 
     _px_per_unit() = begin
         v = ax.scene.viewport[]
@@ -661,8 +604,6 @@ function Reversi.launch_gui(
         end
 
         players[] = Dict{Int,Player}(BLACK => new_black, WHITE => new_white)
-        white_name_lbl.text[] = "[W]  White: $(_player_name(new_white))"
-        black_name_lbl.text[] = "[B]  Black: $(_player_name(new_black))"
         game = ReversiGame()
         kifu = Tuple{Int,Int,String}[]
         game_over_obs[] = false
@@ -710,7 +651,8 @@ function Reversi.launch_gui(
     end
 
     # Give the GUI a moment to initialize before starting the game
-    Timer(0.1) do _
+    # Increased delay to 0.5s for macOS stability
+    Timer(0.5) do _
         start_game!(b_player, w_player)
     end
 

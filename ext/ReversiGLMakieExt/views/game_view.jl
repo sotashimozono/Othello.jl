@@ -140,7 +140,7 @@ function Reversi.launch_gui(
         eval_panel[1, 1];
         text="Evaluation",
         color=_get_color(config, "text_dim"),
-        fontsize=config.fontsize - 2,
+        fontsize=(config.fontsize - 2),
         halign=:left,
     )
     eval_ax = Axis(
@@ -228,7 +228,7 @@ function Reversi.launch_gui(
         label="● Live",
         buttoncolor=_get_color(config, "panel"),
         labelcolor=_get_color(config, "text_dim"),
-        fontsize=config.fontsize - 2,
+        fontsize=(config.fontsize - 2),
     )
     colsize!(ctrl, 4, Relative(1.0))
     rowsize!(main_col, 4, Fixed(36))

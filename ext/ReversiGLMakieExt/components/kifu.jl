@@ -6,16 +6,13 @@
 # ---------------------------------------------------------------------------
 
 function _draw_kifu!(
-    kifu_ax,
-    entries::Vector{Tuple{Int,Int,String}},
-    config::GUIConfig;
-    active_n::Int = 0,
+    kifu_ax, entries::Vector{Tuple{Int,Int,String}}, config::GUIConfig; active_n::Int=0
 )
     empty!(kifu_ax)
     c_text = _get_color(config, "text")
     c_text_dim = _get_color(config, "text_dim")
     c_accent_b = _get_color(config, "accent_black")
-    c_active   = RGBf(1.0, 0.85, 0.2)
+    c_active = RGBf(1.0, 0.85, 0.2)
     fs = config.fontsize - 2
     if isempty(kifu)
         text!(

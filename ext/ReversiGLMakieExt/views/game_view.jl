@@ -42,17 +42,19 @@ function Reversi.launch_gui(
     # Row 1: top bar — Actions menu + player selectors
     # Phase 4: _find_idx uses _player_name for reliable sync with any player type
     # ---------------------------------------------------------------------------
-    menu_bar    = content_grid[1, 1:2] = GridLayout(; valign=:center)
-    action_menu = Menu(
-        menu_bar[1, 1];
-        options=["▶ New Game", "+ Add Player"],
-        textcolor=_get_color(config, "text"),
-        fontsize=config.fontsize - 2,
-        width=100, height=24,
-        prompt="Actions",
-        selection_cell_color_inactive=_get_color(config, "panel"),
-    )
-    colsize!(menu_bar, 1, Fixed(110))
+    menu_bar     = content_grid[1, 1:2] = GridLayout(; valign=:center)
+    new_game_btn = Button(menu_bar[1, 1];
+        label="▶ New Game",
+        buttoncolor=_get_color(config, "panel"),
+        labelcolor=_get_color(config, "text"),
+        fontsize=config.fontsize - 2, width=100, height=26)
+    add_player_btn = Button(menu_bar[1, 6];
+        label="+ Add",
+        buttoncolor=_get_color(config, "panel"),
+        labelcolor=_get_color(config, "text_dim"),
+        fontsize=config.fontsize - 3, width=60, height=26)
+    colsize!(menu_bar, 1, Fixed(105))
+    colsize!(menu_bar, 6, Fixed(65))
 
     menu_options_obs = Observable([e.name for e in registry_obs[]])
     on(registry_obs) do reg
@@ -199,7 +201,7 @@ function Reversi.launch_gui(
     # Kifu sidebar
     # ---------------------------------------------------------------------------
     kifu_panel = rsb[1, 1] = GridLayout(; valign=:top)
-    Label(kifu_panel[1, 1]; text="Move History",
+    kifu_header_lbl = Label(kifu_panel[1, 1]; text="Move History",
           color=_get_color(config, "text"), fontsize=config.fontsize, font=:bold,
           halign=:center)
     kifu_ax = Axis(kifu_panel[2, 1];
@@ -224,6 +226,8 @@ function Reversi.launch_gui(
 
     on(show_sidebar_obs) do show
         colsize!(main_row, 2, Fixed(show ? 200 : 0))
+        kifu_header_lbl.visible[] = show
+        kifu_ax.visible[]         = show
         config.show_kifu = show
         save_session_config(config)
     end
@@ -345,15 +349,14 @@ function Reversi.launch_gui(
         @async run_game!(game_ref, kifu_ref, players, game_obs, kifu_obs, last_move_obs, game_over_obs)
     end
 
-    on(action_menu.selection) do sel
-        if sel == "▶ New Game"
-            start_game!(
-                _selected_player(black_sel, registry_obs[]),
-                _selected_player(white_sel, registry_obs[]),
-            )
-        elseif sel == "+ Add Player"
-            _open_add_player_dialog!(registry_obs, () -> nothing, config)
-        end
+    on(new_game_btn.clicks) do _
+        start_game!(
+            _selected_player(black_sel, registry_obs[]),
+            _selected_player(white_sel, registry_obs[]),
+        )
+    end
+    on(add_player_btn.clicks) do _
+        _open_add_player_dialog!(registry_obs, () -> nothing, config)
     end
 
     # ---------------------------------------------------------------------------

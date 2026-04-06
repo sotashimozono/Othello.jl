@@ -45,9 +45,9 @@ include("core/player.jl")   # Player interface, HumanPlayer, RandomPlayer
 include("io/wthor.jl")      # WTHOR binary format (.wtb)
 include("io/record.jl")     # GameRecord, save_game, load_game, replay_game
 
-include("ui/cui.jl")        # display_board (terminal rendering)
-include("ui/game.jl")       # play_game (CUI game loop)
-include("ui/config.jl")     # GUI configuration loader
-include("ui/gui.jl")        # GUI stubs; GLMakie implementation lives in ext/
+include("UI/cui.jl")        # display_board (terminal rendering)
+include("UI/game.jl")       # play_game (CUI game loop)
+include("UI/config.jl")     # GUI configuration loader
+include("UI/gui.jl")        # GUI stubs; GLMakie implementation lives in ext/
 
 end # module Reversi

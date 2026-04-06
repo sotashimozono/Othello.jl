@@ -522,13 +522,16 @@ function Reversi.launch_gui(
     end
     rowsize!(fig.layout, 3, Relative(1.0))
 
-    _px_per_unit() = ax.scene.viewport[].widths[1] / 8.0
+    _px_per_unit() = begin
+        v = ax.scene.viewport[]
+        return max(1.0, v.widths[1] / 8.0)
+    end
 
     function _refresh!(ax, game, show_h, last_move)
         ppu = _px_per_unit()
         empty!(ax)
         _draw_board!(ax, config)
-        _draw_pieces!(ax, game, ppu, config, show_last_obs[] ? last_move : nothing)
+        _draw_pieces!(ax, game, ppu, config, (show_last_obs[] ? last_move : nothing))
         return show_h && !game_over_obs[] && _draw_hints!(ax, game, ppu, config)
     end
 
@@ -700,8 +703,17 @@ function Reversi.launch_gui(
     end
 
     _refresh_kifu!(kifu_ax, Tuple{Int,Int,String}[])
-    display(fig)
-    start_game!(b_player, w_player)
+    _refresh!(ax, game_obs[], sh, nothing)
+
+    if !isinteractive()
+        display(fig)
+    end
+
+    # Give the GUI a moment to initialize before starting the game
+    Timer(0.1) do _
+        start_game!(b_player, w_player)
+    end
+
     return fig
 end
 

@@ -176,43 +176,48 @@ end
 # Add-Player dialog
 # ---------------------------------------------------------------------------
 
-function _open_add_player_dialog!(registry_obs::Observable, update_cb::Function)
-    dlg = Figure(; size=(480, 220), backgroundcolor=_C_BG)
+function _open_add_player_dialog!(
+    registry_obs::Observable, update_cb::Function, config::GUIConfig
+)
+    dlg = Figure(; size=(480, 240), backgroundcolor=_get_color(config, "background"))
+
+    c_text = _get_color(config, "text")
+    c_text_dim = _get_color(config, "text_dim")
+    c_panel = _get_color(config, "panel")
+    c_accent = _get_color(config, "accent_black")
+    fs = config.fontsize
 
     Label(
-        dlg[1, 1:3];
+        dlg[1, 1:2];
         text="Register Custom Player",
-        color=_C_TEXT,
-        fontsize=16,
+        color=c_text,
+        fontsize=fs + 2,
         font=:bold,
         halign=:center,
     )
 
-    Label(dlg[2, 1]; text="Name:", color=_C_TEXT_DIM, fontsize=13, halign=:right)
-    name_tb = Textbox(dlg[2, 2:3]; placeholder="e.g.  My ML Player", fontsize=13, width=280)
+    Label(dlg[2, 1]; text="Name:", color=c_text_dim, fontsize=fs, halign=:right)
+    name_tb = Textbox(dlg[2, 2]; placeholder="e.g. My AI", fontsize=fs, width=300)
 
-    Label(dlg[3, 1]; text="Expression:", color=_C_TEXT_DIM, fontsize=13, halign=:right)
-    expr_tb = Textbox(
-        dlg[3, 2:3]; placeholder="e.g.  RandomPlayer()", fontsize=13, width=280
-    )
+    Label(dlg[3, 1]; text="Expression:", color=c_text_dim, fontsize=fs, halign=:right)
+    expr_tb = Textbox(dlg[3, 2]; placeholder="e.g. MyPlayer()", fontsize=fs, width=300)
 
-    msg_lbl = Label(
-        dlg[4, 1:3]; text="", color=RGBf(1.0, 0.4, 0.4), fontsize=12, halign=:center
-    )
+    msg_lbl = Label(dlg[4, 1:2]; text="", color=RGBf(1, 0.4, 0.4), fontsize=fs - 2)
 
-    btn_reg = Button(
-        dlg[5, 2];
-        label="✔ Register",
-        buttoncolor=RGBf(0.20, 0.45, 0.20),
-        labelcolor=:white,
-        fontsize=13,
-    )
+    btn_row = dlg[5, 1:2] = GridLayout()
     btn_cancel = Button(
-        dlg[5, 3];
+        btn_row[1, 1];
         label="Cancel",
-        buttoncolor=RGBf(0.30, 0.30, 0.34),
-        labelcolor=_C_TEXT_DIM,
-        fontsize=13,
+        buttoncolor=c_panel,
+        labelcolor=c_text_dim,
+        fontsize=fs,
+    )
+    btn_reg = Button(
+        btn_row[1, 2];
+        label="✔ Register",
+        buttoncolor=c_panel,
+        labelcolor=c_accent,
+        fontsize=fs,
     )
 
     on(btn_cancel.clicks) do _
@@ -220,23 +225,28 @@ function _open_add_player_dialog!(registry_obs::Observable, update_cb::Function)
     end
 
     on(btn_reg.clicks) do _
-        raw_name = strip(name_tb.displayed_string[])
-        raw_expr = strip(expr_tb.displayed_string[])
+        raw_name = strip(name_tb.stored_string[])
+        raw_expr = strip(expr_tb.stored_string[])
         isempty(raw_name) && (msg_lbl.text[] = "⚠ Please enter a name."; return nothing)
         isempty(raw_expr) &&
             (msg_lbl.text[] = "⚠ Please enter a Julia expression."; return nothing)
+
         local player_instance
         try
+            # Evaluate in Main for custom types defined by user
             parsed = Meta.parse(raw_expr)
             player_instance = Main.eval(parsed)
         catch e
             msg_lbl.text[] = "⚠ Error: $(sprint(showerror, e))"
             return nothing
         end
+
         if !(player_instance isa Player)
             msg_lbl.text[] = "⚠ Result is not a Player (got $(typeof(player_instance)))."
             return nothing
         end
+
+        # Capture the expression for factory
         expr_str = raw_expr
         entry = NamedPlayerEntry(String(raw_name), () -> Main.eval(Meta.parse(expr_str)))
         registry_obs[] = vcat(registry_obs[], [entry])
@@ -425,10 +435,20 @@ function Reversi.launch_gui(
 
     # Row 5: control bar
     ctrl = fig[5, 1] = GridLayout()
-    tgl_hints = Toggle(ctrl[1, 1]; active=show_hints)
-    Label(ctrl[1, 2]; text="Hints", color=_C_TEXT_DIM, fontsize=13)
-    tgl_last = Toggle(ctrl[1, 3]; active=false)
-    Label(ctrl[1, 4]; text="Last Move", color=_C_TEXT_DIM, fontsize=13)
+    tgl_hints = Toggle(ctrl[1, 1]; active=sh)
+    Label(
+        ctrl[1, 2];
+        text="Hints",
+        color=_get_color(config, "text_dim"),
+        fontsize=config.fontsize - 1,
+    )
+    tgl_last = Toggle(ctrl[1, 3]; active=config.show_last_move)
+    Label(
+        ctrl[1, 4];
+        text="Last Move",
+        color=_get_color(config, "text_dim"),
+        fontsize=config.fontsize - 1,
+    )
     status_lbl = Label(
         ctrl[1, 5];
         text=@lift(
@@ -647,7 +667,7 @@ function Reversi.launch_gui(
         start_game!(_selected_player(black_sel), _selected_player(white_sel))
     end
     on(btn_add.clicks) do _
-        _open_add_player_dialog!(registry_obs, () -> nothing)
+        _open_add_player_dialog!(registry_obs, () -> nothing, config)
     end
 
     register_interaction!(ax, :board_click) do event::MouseEvent, _

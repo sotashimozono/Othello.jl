@@ -30,7 +30,8 @@ function run_game!(
     game_obs::Observable,
     kifu_obs::Observable,
     last_move_obs::Observable,
-    game_over_obs::Observable{Bool},
+    game_over_obs::Observable{Bool};
+    stop_check::Function=() -> false,   # returns true → cancel this task
 )
     try
         move_num = Ref(0)

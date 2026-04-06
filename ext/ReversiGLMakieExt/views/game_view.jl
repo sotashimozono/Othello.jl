@@ -17,7 +17,7 @@ function Reversi.launch_gui(
     last_move_obs = Observable{Union{Position,Nothing}}(nothing)
     show_last_obs = Observable(config.show_last_move)
     kifu_obs = Observable(Tuple{Int,Int,String}[])
-    score_history_obs = Observable(Float32[0.0f0])   # index 1 = initial (diff=0)
+    score_history_obs = Observable(Float32[0.0f0])
     registry_obs = Observable(copy(_BUILTIN_PLAYERS))
     players = Ref{Dict{Int,Player}}(Dict(BLACK => b_player, WHITE => w_player))
 
@@ -25,7 +25,11 @@ function Reversi.launch_gui(
     # Observables — UI state machine
     # ---------------------------------------------------------------------------
     mode_obs = Observable(:live)   # :live | :review
-    review_pos_obs = Observable(0)       # which move is highlighted (0 = none)
+    review_pos_obs = Observable(0)
+    show_eval_obs = Observable(config.show_eval)
+    show_sidebar_obs = Observable(config.show_kifu)
+    auto_start_obs = Observable(false)
+    game_gen = Ref(0)             # incremented on each new game; stale tasks exit
 
     # ---------------------------------------------------------------------------
     # Figure & layout
@@ -38,6 +42,7 @@ function Reversi.launch_gui(
 
     # ---------------------------------------------------------------------------
     # Row 1: top bar — Actions menu + player selectors
+    # Phase 4: _find_idx uses _player_name for reliable sync with any player type
     # ---------------------------------------------------------------------------
     menu_bar = content_grid[1, 1:2] = GridLayout(; valign=:center)
     action_menu = Menu(
@@ -57,11 +62,11 @@ function Reversi.launch_gui(
         menu_options_obs[] = [e.name for e in reg]
     end
 
+    # Phase 4: resolve index by matching _player_name against registry entries
     function _find_idx(reg, p)
-        p isa HumanPlayer && return 1
-        p isa RandomPlayer &&
-            return something(findfirst(e -> e.name == "Random AI", reg), 1)
-        return 1
+        name = _player_name(p)
+        idx = findfirst(e -> e.name == name, reg)
+        return something(idx, 1)
     end
 
     Label(
@@ -105,13 +110,12 @@ function Reversi.launch_gui(
     rowsize!(content_grid, 1, Fixed(34))
 
     # ---------------------------------------------------------------------------
-    # Row 2: board (left) + kifu sidebar (right)
+    # Row 2: board column (left) + kifu sidebar (right)
     # ---------------------------------------------------------------------------
     main_row = content_grid[2, 1:2] = GridLayout(; valign=:center)
     main_col = main_row[1, 1] = GridLayout()
     rsb = main_row[1, 2] = GridLayout(; valign=:top)
     colsize!(main_row, 1, Fixed(480))
-    colsize!(main_row, 2, Fixed(200))
     rowsize!(content_grid, 2, Auto())
 
     # -- Board axis --
@@ -134,6 +138,7 @@ function Reversi.launch_gui(
         bottomspinevisible=false,
     )
     rowsize!(main_col, 1, Fixed(480))
+
     # -- Evaluation graph (directly below board) --
     eval_panel = main_col[2, 1] = GridLayout()
     Label(
@@ -161,11 +166,10 @@ function Reversi.launch_gui(
         ytickalign=1,
         yticklabelsize=8,
         yticklabelcolor=_get_color(config, "text_dim"),
-        width=480,
     )
-    rowsize!(main_col, 2, Fixed(100))
+    rowsize!(main_col, 2, Fixed(config.show_eval ? 100 : 0))
 
-    # -- Status bar (piece counts + game state label) --
+    # -- Status bar (piece counts + game state) --
     status_bar = main_col[3, 1] = GridLayout()
     Label(
         status_bar[1, 1];
@@ -204,7 +208,8 @@ function Reversi.launch_gui(
     )
     rowsize!(main_col, 3, Fixed(40))
     for c in 1:3
-        colsize!(status_bar, c, Relative(1 / 3))
+        ;
+        colsize!(status_bar, c, Relative(1/3));
     end
 
     # -- Control toggles + Return-to-Live button --
@@ -237,7 +242,7 @@ function Reversi.launch_gui(
     # Kifu sidebar
     # ---------------------------------------------------------------------------
     kifu_panel = rsb[1, 1] = GridLayout(; valign=:top)
-    Label(
+    kifu_header_lbl = Label(
         kifu_panel[1, 1];
         text="Move History",
         color=_get_color(config, "text"),
@@ -259,10 +264,57 @@ function Reversi.launch_gui(
         topspinevisible=false,
         bottomspinevisible=false,
         yreversed=true,
-        valign=:top,
         height=480,
+        valign=:top,
     )
-    rowsize!(rsb, 1, Fixed(500))
+    rowsize!(rsb, 1, Fixed(520))
+    colsize!(main_row, 2, Fixed(config.show_kifu ? 200 : 0))  # after sidebar content exists
+
+    # ---------------------------------------------------------------------------
+    # Phase 3: Conditional layout — show/hide eval panel and sidebar
+    # ---------------------------------------------------------------------------
+    on(show_eval_obs) do show
+        rowsize!(main_col, 2, Fixed(show ? 100 : 0))
+        config.show_eval = show
+        save_session_config(config)
+        # Refresh on re-show so the graph is current
+        show && _refresh_eval_graph!(
+            eval_ax,
+            score_history_obs[],
+            mode_obs[] == :review ? review_pos_obs[] : 0,
+            config,
+        )
+    end
+
+    on(show_sidebar_obs) do show
+        colsize!(main_row, 2, Fixed(show ? 200 : 0))
+        kifu_header_lbl.visible[] = show
+        kifu_ax.scene.visible[] = show
+        kifu_ax.blockscene.visible[] = show
+        config.show_kifu = show
+        save_session_config(config)
+        # Refresh on re-show so the kifu is current
+        show && _draw_kifu!(
+            kifu_ax,
+            kifu_obs[],
+            config;
+            active_n=mode_obs[] == :review ? review_pos_obs[] : 0,
+        )
+    end
+
+    on(tgl_eval.active) do v
+        ;
+        show_eval_obs[] = v;
+    end
+    on(tgl_sidebar.active) do v
+        ;
+        show_sidebar_obs[] = v;
+    end
+    on(tgl_auto.active) do v
+        ;
+        auto_start_obs[] = v;
+    end
+
     # ---------------------------------------------------------------------------
     # Review mode helpers
     # ---------------------------------------------------------------------------
@@ -287,8 +339,8 @@ function Reversi.launch_gui(
         mode_obs[] = :review
         review_pos_obs[] = n
         _refresh_board!(ax, g, false, true, lm, false, config)
-        _draw_kifu!(kifu_ax, kifu, config; active_n=n)
-        return _refresh_eval_graph!(eval_ax, score_history_obs[], n, config)
+        show_sidebar_obs[] && _draw_kifu!(kifu_ax, kifu, config; active_n=n)
+        show_eval_obs[] && _refresh_eval_graph!(eval_ax, score_history_obs[], n, config)
     end
 
     function return_to_live!()
@@ -303,8 +355,8 @@ function Reversi.launch_gui(
             game_over_obs[],
             config,
         )
-        _draw_kifu!(kifu_ax, kifu_obs[], config; active_n=0)
-        return _refresh_eval_graph!(eval_ax, score_history_obs[], 0, config)
+        show_sidebar_obs[] && _draw_kifu!(kifu_ax, kifu_obs[], config; active_n=0)
+        show_eval_obs[] && _refresh_eval_graph!(eval_ax, score_history_obs[], 0, config)
     end
 
     # ---------------------------------------------------------------------------
@@ -318,7 +370,8 @@ function Reversi.launch_gui(
     end
     on(kifu_obs) do kifu
         mode_obs[] == :review && return nothing
-        _draw_kifu!(kifu_ax, kifu, config; active_n=0)
+        show_sidebar_obs[] && _draw_kifu!(kifu_ax, kifu, config; active_n=0)
+        # score history replay (needed for eval graph and review mode even when hidden)
         hist = Float32[0.0f0]
         g = ReversiGame()
         for (_, _, notation) in kifu
@@ -332,19 +385,19 @@ function Reversi.launch_gui(
             push!(hist, Float32(b - w))
         end
         score_history_obs[] = hist
-        _refresh_eval_graph!(eval_ax, hist, 0, config)
+        show_eval_obs[] && _refresh_eval_graph!(eval_ax, hist, 0, config)
     end
     on(tgl_hints.active) do v
-        hints_obs[] = v
-        config.show_hints = v
+        hints_obs[] = v;
+        config.show_hints = v;
         save_session_config(config)
         mode_obs[] == :live && _refresh_board!(
             ax, game_obs[], v, show_last_obs[], last_move_obs[], game_over_obs[], config
         )
     end
     on(tgl_last.active) do v
-        show_last_obs[] = v
-        config.show_last_move = v
+        show_last_obs[] = v;
+        config.show_last_move = v;
         save_session_config(config)
         mode_obs[] == :live && _refresh_board!(
             ax, game_obs[], hints_obs[], v, last_move_obs[], game_over_obs[], config
@@ -362,7 +415,7 @@ function Reversi.launch_gui(
         )
     end
 
-    # Sync Return-to-Live button style with mode
+    # Sync Live/Review button style with mode
     on(mode_obs) do mode
         if mode == :review
             live_btn.buttoncolor[] = RGBf(0.65, 0.30, 0.05)
@@ -376,6 +429,16 @@ function Reversi.launch_gui(
     end
     on(live_btn.clicks) do _
         mode_obs[] == :review && return_to_live!()
+    end
+
+    # Auto-restart: when game ends and auto_start_obs is on, start next game
+    on(game_over_obs) do is_over
+        is_over && auto_start_obs[] || return nothing
+        sleep(0.4)   # brief pause so the final position is visible
+        start_game!(
+            _selected_player(black_sel, registry_obs[]),
+            _selected_player(white_sel, registry_obs[]),
+        )
     end
 
     # ---------------------------------------------------------------------------
@@ -400,28 +463,39 @@ function Reversi.launch_gui(
         score_history_obs[] = Float32[0.0f0]
         kifu_obs[] = kifu_ref[]
         game_obs[] = game_ref[]
+        game_gen[] += 1
+        my_gen = game_gen[]
         @async run_game!(
-            game_ref, kifu_ref, players, game_obs, kifu_obs, last_move_obs, game_over_obs
+            game_ref,
+            kifu_ref,
+            players,
+            game_obs,
+            kifu_obs,
+            last_move_obs,
+            game_over_obs;
+            stop_check=() -> game_gen[] != my_gen,
         )
     end
 
-    on(action_menu.selection) do sel
-        if sel == "▶ New Game"
-            start_game!(
-                _selected_player(black_sel, registry_obs[]),
-                _selected_player(white_sel, registry_obs[]),
-            )
-        elseif sel == "+ Add Player"
-            _open_add_player_dialog!(registry_obs, () -> nothing, config)
-        end
+    on(new_game_btn.clicks) do _
+        start_game!(
+            _selected_player(black_sel, registry_obs[]),
+            _selected_player(white_sel, registry_obs[]),
+        )
+    end
+    on(add_player_btn.clicks) do _
+        _open_add_player_dialog!(registry_obs, () -> nothing, config)
     end
 
     # ---------------------------------------------------------------------------
-    # Board clicks (disabled in review mode)
+    # Board clicks — Phase 3: disabled during AI thinking AND review mode
     # ---------------------------------------------------------------------------
+    ai_thinking_obs = Observable(false)
+
     register_interaction!(ax, :board_click) do event::MouseEvent, _
         event.type == MouseEventTypes.leftclick || return nothing
         mode_obs[] == :review && return nothing
+        ai_thinking_obs[] && return nothing
         game = game_obs[]
         game_over_obs[] && return nothing
         data_pos = event.data
@@ -446,7 +520,7 @@ function Reversi.launch_gui(
     end
 
     # ---------------------------------------------------------------------------
-    # Keyboard shortcuts
+    # Keyboard shortcuts: ←/→ step review, Escape returns to live
     # ---------------------------------------------------------------------------
     on(events(fig.scene).keyboardbutton) do event
         (event.action == Keyboard.press || event.action == Keyboard.repeat) ||

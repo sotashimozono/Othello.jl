@@ -118,19 +118,21 @@ function read_wthor(path::String)
 
     io = IOBuffer(data)
 
-    century    = Int(read(io, UInt8))
-    yr         = Int(read(io, UInt8))
-    month      = Int(read(io, UInt8))
-    day        = Int(read(io, UInt8))
-    n_games    = Int(read(io, Int32))
-    _           = read(io, Int16)        # count field (same as n_games)
-    game_year  = Int(read(io, Int16))
+    century = Int(read(io, UInt8))
+    yr = Int(read(io, UInt8))
+    month = Int(read(io, UInt8))
+    day = Int(read(io, UInt8))
+    n_games = Int(read(io, Int32))
+    _ = read(io, Int16)        # count field (same as n_games)
+    game_year = Int(read(io, Int16))
     board_size = Int(read(io, UInt8))
-    game_type  = Int(read(io, UInt8))
-    depth      = Int(read(io, UInt8))
-    _           = read(io, UInt8)        # reserved
+    game_type = Int(read(io, UInt8))
+    depth = Int(read(io, UInt8))
+    _ = read(io, UInt8)        # reserved
 
-    header = WThorHeader(century, yr, month, day, n_games, game_year, board_size, game_type, depth)
+    header = WThorHeader(
+        century, yr, month, day, n_games, game_year, board_size, game_type, depth
+    )
 
     n_available = div(length(data) - 16, 68)
     if n_available < n_games
@@ -141,12 +143,12 @@ function read_wthor(path::String)
     sizehint!(games, n_available)
 
     for _ in 1:n_available
-        tourn    = Int(read(io, Int16))
+        tourn = Int(read(io, Int16))
         black_id = Int(read(io, Int16))
         white_id = Int(read(io, Int16))
-        b_score  = Int(read(io, UInt8))
-        t_score  = Int(read(io, UInt8))
-        raw      = read(io, 60)
+        b_score = Int(read(io, UInt8))
+        t_score = Int(read(io, UInt8))
+        raw = read(io, 60)
 
         moves = String[]
         for b in raw
@@ -184,14 +186,14 @@ header, loaded = read_wthor("out.wtb")
 function write_wthor(
     path::String,
     games::Vector{WThorGame};
-    year::Int      = 0,
-    month::Int     = 1,
-    day::Int       = 1,
-    game_year::Int = 0,
-    game_type::Int = 0,
-    depth::Int     = 0,
+    year::Int=0,
+    month::Int=1,
+    day::Int=1,
+    game_year::Int=0,
+    game_type::Int=0,
+    depth::Int=0,
 )
-    n       = length(games)
+    n = length(games)
     century = div(year, 100)
     yr_in_c = mod(year, 100)
 

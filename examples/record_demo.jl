@@ -18,10 +18,17 @@ println("="^60)
 println("\n1. Playing Random vs Random and saving the record …")
 
 tmp = tempname() * ".txt"
-winner = play_game(RandomPlayer(), RandomPlayer();
-                   verbose=false, save_record=true, record_path=tmp)
+winner = play_game(
+    RandomPlayer(), RandomPlayer(); verbose=false, save_record=true, record_path=tmp
+)
 
-result_str = winner == BLACK ? "Black wins" : winner == WHITE ? "White wins" : "Draw"
+result_str = if winner == BLACK
+    "Black wins"
+elseif winner == WHITE
+    "White wins"
+else
+    "Draw"
+end
 println("   Result: $result_str")
 println("   Saved  : $tmp")
 
@@ -31,8 +38,12 @@ println("   Saved  : $tmp")
 
 println("\n2. Loading the record …")
 rec = load_game(tmp)
-println("   Moves : $(length(rec.moves))  (first 6: $(join(rec.moves[1:min(6,end)], " ")) …)")
-println("   Result: $(rec.result == BLACK ? "BLACK" : rec.result == WHITE ? "WHITE" : "DRAW")")
+println(
+    "   Moves : $(length(rec.moves))  (first 6: $(join(rec.moves[1:min(6,end)], " ")) …)"
+)
+println(
+    "   Result: $(rec.result == BLACK ? "BLACK" : rec.result == WHITE ? "WHITE" : "DRAW")"
+)
 
 # ---------------------------------------------------------------------------
 # 3. Validate the record before replaying

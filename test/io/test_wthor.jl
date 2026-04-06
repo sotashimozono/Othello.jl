@@ -1,8 +1,17 @@
 using Reversi
-using Reversi: WThorGame, WThorHeader, read_wthor, write_wthor,
-               wthor_game_to_record, verify_wthor_game
-using Reversi: BLACK, WHITE, EMPTY, count_pieces, make_move!, pass!, position_to_string,
-               valid_moves, ReversiGame, GameRecord
+using Reversi:
+    WThorGame, WThorHeader, read_wthor, write_wthor, wthor_game_to_record, verify_wthor_game
+using Reversi:
+    BLACK,
+    WHITE,
+    EMPTY,
+    count_pieces,
+    make_move!,
+    pass!,
+    position_to_string,
+    valid_moves,
+    ReversiGame,
+    GameRecord
 using Test
 
 # ---------------------------------------------------------------------------
@@ -16,7 +25,7 @@ using Test
     @test Reversi._wthor_byte_to_notation(UInt8(88)) == "h8"
     @test Reversi._wthor_byte_to_notation(UInt8(56)) == "f5"
     @test Reversi._wthor_byte_to_notation(UInt8(34)) == "d3"
-    @test Reversi._wthor_byte_to_notation(UInt8(0))  === nothing  # end marker
+    @test Reversi._wthor_byte_to_notation(UInt8(0)) === nothing  # end marker
     @test Reversi._wthor_byte_to_notation(UInt8(99)) === nothing  # out of range
 
     @test Reversi._notation_to_wthor_byte("a1") == UInt8(11)
@@ -28,9 +37,9 @@ end
 @testset "move encoding – round-trip all 64 squares" begin
     for row in 1:8, col in 1:8
         notation = string(Char(Int('a') + col - 1)) * string(row)
-        byte     = UInt8(row * 10 + col)
-        @test Reversi._wthor_byte_to_notation(byte)      == notation
-        @test Reversi._notation_to_wthor_byte(notation)  == byte
+        byte = UInt8(row * 10 + col)
+        @test Reversi._wthor_byte_to_notation(byte) == notation
+        @test Reversi._notation_to_wthor_byte(notation) == byte
     end
 end
 
@@ -61,22 +70,22 @@ end
 
 @testset "write/read round-trip – metadata" begin
     moves = ["f5", "d6", "c5", "f4", "e3", "d3", "c4"]
-    g     = WThorGame(7, 42, 99, 34, 36, moves)
-    tmp   = tempname() * ".wtb"
+    g = WThorGame(7, 42, 99, 34, 36, moves)
+    tmp = tempname() * ".wtb"
     try
         write_wthor(tmp, [g]; year=2024, month=3, day=15, game_year=2024)
         header, games = read_wthor(tmp)
 
-        @test header.n_games    == 1
-        @test header.game_year  == 2024
+        @test header.n_games == 1
+        @test header.game_year == 2024
         @test header.board_size == 8
 
         @test games[1].tournament_id == 7
-        @test games[1].black_id      == 42
-        @test games[1].white_id      == 99
-        @test games[1].black_score   == 34
-        @test games[1].best_score    == 36
-        @test games[1].moves         == moves
+        @test games[1].black_id == 42
+        @test games[1].white_id == 99
+        @test games[1].black_score == 34
+        @test games[1].best_score == 36
+        @test games[1].moves == moves
     finally
         isfile(tmp) && rm(tmp)
     end
@@ -84,7 +93,7 @@ end
 
 @testset "write/read round-trip – move truncation at 60" begin
     # Generate a full 60-move sequence from a real game
-    game  = ReversiGame()
+    game = ReversiGame()
     moves = String[]
     while !is_game_over(game) && length(moves) < 60
         ms = valid_moves(game)
@@ -97,7 +106,7 @@ end
         end
     end
 
-    g   = WThorGame(0, 0, 0, 0, 0, moves)
+    g = WThorGame(0, 0, 0, 0, 0, moves)
     tmp = tempname() * ".wtb"
     try
         write_wthor(tmp, [g])
@@ -112,7 +121,7 @@ end
 @testset "write/read round-trip – zero padding is clean" begin
     # A short game: only a few moves.  Remaining 60 - n bytes must read as nothing.
     short_moves = ["f5", "d6", "c5"]
-    g   = WThorGame(0, 0, 0, 0, 0, short_moves)
+    g = WThorGame(0, 0, 0, 0, 0, short_moves)
     tmp = tempname() * ".wtb"
     try
         write_wthor(tmp, [g])
@@ -142,10 +151,10 @@ end
     try
         write_wthor(tmp, [g1, g2]; game_year=2001)
         header, games = read_wthor(tmp)
-        @test header.n_games   == 2
+        @test header.n_games == 2
         @test header.game_year == 2001
-        @test games[1].moves   == moves1
-        @test games[2].moves   == moves2
+        @test games[1].moves == moves1
+        @test games[2].moves == moves2
     finally
         isfile(tmp) && rm(tmp)
     end
@@ -168,19 +177,19 @@ end
 # ---------------------------------------------------------------------------
 
 @testset "wthor_game_to_record – result mapping" begin
-    @test wthor_game_to_record(WThorGame(0,0,0, 34, 36, ["f5"])).result == BLACK
-    @test wthor_game_to_record(WThorGame(0,0,0, 30, 32, ["f5"])).result == WHITE
-    @test wthor_game_to_record(WThorGame(0,0,0, 32, 32, ["f5"])).result == EMPTY
+    @test wthor_game_to_record(WThorGame(0, 0, 0, 34, 36, ["f5"])).result == BLACK
+    @test wthor_game_to_record(WThorGame(0, 0, 0, 30, 32, ["f5"])).result == WHITE
+    @test wthor_game_to_record(WThorGame(0, 0, 0, 32, 32, ["f5"])).result == EMPTY
 end
 
 @testset "wthor_game_to_record – moves preserved" begin
     moves = ["f5", "d6", "c5"]
-    rec   = wthor_game_to_record(WThorGame(0,0,0, 34, 36, moves))
+    rec = wthor_game_to_record(WThorGame(0, 0, 0, 34, 36, moves))
     @test rec.moves == moves
     # Mutation of WThorGame.moves must not affect the returned GameRecord
-    orig  = ["f5", "d6"]
-    g     = WThorGame(0,0,0,34,36,orig)
-    rec2  = wthor_game_to_record(g)
+    orig = ["f5", "d6"]
+    g = WThorGame(0, 0, 0, 34, 36, orig)
+    rec2 = wthor_game_to_record(g)
     push!(orig, "c5")
     @test length(rec2.moves) == 2
 end
@@ -190,7 +199,7 @@ end
 # ---------------------------------------------------------------------------
 
 @testset "verify_wthor_game – valid sequence" begin
-    game  = ReversiGame()
+    game = ReversiGame()
     moves = String[]
     for _ in 1:10
         ms = valid_moves(game)
@@ -200,11 +209,11 @@ end
         push!(moves, position_to_string(m))
     end
     black_score, _ = count_pieces(game)
-    @test verify_wthor_game(WThorGame(0,0,0, black_score, black_score, moves)) == true
+    @test verify_wthor_game(WThorGame(0, 0, 0, black_score, black_score, moves)) == true
 end
 
 @testset "verify_wthor_game – wrong score" begin
-    game  = ReversiGame()
+    game = ReversiGame()
     moves = String[]
     for _ in 1:10
         ms = valid_moves(game)
@@ -214,11 +223,12 @@ end
         push!(moves, position_to_string(m))
     end
     black_score, _ = count_pieces(game)
-    @test verify_wthor_game(WThorGame(0,0,0, black_score + 5, black_score, moves)) == false
+    @test verify_wthor_game(WThorGame(0, 0, 0, black_score + 5, black_score, moves)) ==
+        false
 end
 
 @testset "verify_wthor_game – invalid move" begin
-    @test verify_wthor_game(WThorGame(0,0,0, 32, 32, ["a1"])) == false
+    @test verify_wthor_game(WThorGame(0, 0, 0, 32, 32, ["a1"])) == false
 end
 
 # ---------------------------------------------------------------------------
@@ -227,8 +237,8 @@ end
 
 @testset "full pipeline: play → write_wthor → read_wthor → verify" begin
     # Play a complete random game and capture the moves
-    game   = ReversiGame()
-    moves  = String[]
+    game = ReversiGame()
+    moves = String[]
     while !is_game_over(game)
         ms = valid_moves(game)
         if isempty(ms)
@@ -242,7 +252,7 @@ end
     end
     black_score, _ = count_pieces(game)
 
-    g   = WThorGame(0, 1, 2, black_score, black_score, moves)
+    g = WThorGame(0, 1, 2, black_score, black_score, moves)
     tmp = tempname() * ".wtb"
     try
         write_wthor(tmp, [g]; game_year=2024)
@@ -251,7 +261,7 @@ end
 
         _, loaded = read_wthor(tmp)
         @test length(loaded) == 1
-        @test loaded[1].moves       == moves
+        @test loaded[1].moves == moves
         @test loaded[1].black_score == black_score
 
         @test verify_wthor_game(loaded[1]) == true
@@ -297,7 +307,7 @@ end
     wthor_games = WThorGame[]
 
     for trial in 1:N
-        ref   = ReversiGame()
+        ref = ReversiGame()
         moves = String[]
 
         while !is_game_over(ref)
@@ -313,7 +323,9 @@ end
 
         black_score, _ = count_pieces(ref)
         push!(ref_boards, (ref.black, ref.white))
-        push!(wthor_games, WThorGame(trial, trial, trial + 1, black_score, black_score, moves))
+        push!(
+            wthor_games, WThorGame(trial, trial, trial + 1, black_score, black_score, moves)
+        )
     end
 
     tmp = tempname() * ".wtb"
@@ -327,7 +339,7 @@ end
         # --- Read back ---
         header, loaded = read_wthor(tmp)
         @test header.n_games == N
-        @test length(loaded)  == N
+        @test length(loaded) == N
 
         # --- Verify each game ---
         for i in 1:N

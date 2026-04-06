@@ -22,7 +22,7 @@ println("="^60)
 # ---------------------------------------------------------------------------
 
 function play_to_wthor(id::Int)
-    game  = ReversiGame()
+    game = ReversiGame()
     moves = String[]
     while !is_game_over(game)
         ms = valid_moves(game)
@@ -46,12 +46,12 @@ println("\nA. Internal round-trip (5 random games)")
 println("-"^40)
 
 N = 5
-games_out  = WThorGame[]
+games_out = WThorGame[]
 ref_boards = Tuple{UInt64,UInt64}[]
 
 for i in 1:N
     g, board = play_to_wthor(i)
-    push!(games_out,  g)
+    push!(games_out, g)
     push!(ref_boards, board)
 end
 
@@ -59,9 +59,11 @@ tmp = tempname() * ".wtb"
 try
     write_wthor(tmp, games_out; year=2024, game_year=2024)
     expected_size = 16 + N * 68
-    actual_size   = filesize(tmp)
+    actual_size = filesize(tmp)
     size_ok = actual_size == expected_size
-    println("  File size : $actual_size bytes  (expected $expected_size)  $(size_ok ? "✓" : "✗")")
+    println(
+        "  File size : $actual_size bytes  (expected $expected_size)  $(size_ok ? "✓" : "✗")",
+    )
 
     header, games_in = read_wthor(tmp)
     println("  n_games   : $(header.n_games)  $(header.n_games == N ? "✓" : "✗")")
@@ -71,7 +73,7 @@ try
         g = games_in[i]
         moves_match = g.moves == games_out[i].moves
         score_match = g.black_score == games_out[i].black_score
-        verify_ok   = verify_wthor_game(g)
+        verify_ok = verify_wthor_game(g)
 
         # Deep board comparison via auto-pass replay
         replayed = ReversiGame()
@@ -84,8 +86,8 @@ try
         while isempty(valid_moves(replayed)) && !is_game_over(replayed)
             pass!(replayed; force=true)
         end
-        board_match = replayed.black == ref_boards[i][1] &&
-                      replayed.white == ref_boards[i][2]
+        board_match =
+            replayed.black == ref_boards[i][1] && replayed.white == ref_boards[i][2]
 
         ok = moves_match && score_match && verify_ok && board_match
         all_ok &= ok
@@ -111,7 +113,9 @@ if isempty(wthor_path) || !isfile(wthor_path)
     println()
     println("  Example:")
     println("    using Downloads")
-    println("    Downloads.download(\"https://www.ffothello.org/wthor/base/WTH_2001.wtb\", \"WTH_2001.wtb\")")
+    println(
+        "    Downloads.download(\"https://www.ffothello.org/wthor/base/WTH_2001.wtb\", \"WTH_2001.wtb\")",
+    )
     println("    WTHOR_PATH=WTH_2001.wtb julia --project=next next/examples/wthor_demo.jl")
 else
     header, games = read_wthor(wthor_path)
@@ -132,7 +136,9 @@ else
         write_wthor(tmp2, sub; game_year=gy)
         _, reloaded = read_wthor(tmp2)
         mismatch = sum(reloaded[i].moves != sub[i].moves for i in eachindex(sub))
-        println("  Round-trip ($(length(sub)) games): $(mismatch == 0 ? "✓ all match" : "✗ $mismatch mismatches")")
+        println(
+            "  Round-trip ($(length(sub)) games): $(mismatch == 0 ? "✓ all match" : "✗ $mismatch mismatches")",
+        )
     finally
         isfile(tmp2) && rm(tmp2)
     end

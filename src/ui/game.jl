@@ -12,11 +12,11 @@ Optional keyword arguments:
 function play_game(
     player1::Player,
     player2::Player;
-    verbose::Bool    = true,
-    save_record::Bool = false,
-    record_path::String = "game_record.txt",
+    verbose::Bool=true,
+    save_record::Bool=false,
+    record_path::String="game_record.txt",
 )
-    game    = ReversiGame()
+    game = ReversiGame()
     players = Dict(BLACK => player1, WHITE => player2)
     recorded_moves = String[]
 
@@ -29,7 +29,7 @@ function play_game(
 
     while !is_game_over(game)
         current = players[game.current_player]
-        color   = game.current_player == BLACK ? "Black" : "White"
+        color = game.current_player == BLACK ? "Black" : "White"
 
         verbose && println("\n" * "="^40)
 

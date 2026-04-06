@@ -9,8 +9,8 @@ using Test
 end
 
 @testset "is_valid_position" begin
-    @test  is_valid_position(1, 1)
-    @test  is_valid_position(8, 8)
+    @test is_valid_position(1, 1)
+    @test is_valid_position(8, 8)
     @test !is_valid_position(0, 1)
     @test !is_valid_position(1, 9)
     @test !is_valid_position(9, 1)
@@ -18,7 +18,7 @@ end
 
 @testset "valid_moves – opening" begin
     game = ReversiGame()
-    bm   = valid_moves(game, BLACK)
+    bm = valid_moves(game, BLACK)
     @test length(bm) == 4
     @test Position(3, 4) in bm
     @test Position(4, 3) in bm
@@ -58,8 +58,10 @@ end
 end
 
 @testset "make_move! – overloads" begin
-    g1 = ReversiGame(); @test make_move!(g1, "d3")          == true
-    g2 = ReversiGame(); @test make_move!(g2, Position(3,4)) == true
+    g1 = ReversiGame();
+    @test make_move!(g1, "d3") == true
+    g2 = ReversiGame();
+    @test make_move!(g2, Position(3, 4)) == true
     @test g1.black == g2.black
 end
 
@@ -109,7 +111,7 @@ end
     pass!(game; force=true)
     @test !is_game_over(game)
     pass!(game; force=true)
-    @test  is_game_over(game)
+    @test is_game_over(game)
 end
 
 @testset "is_game_over – full board" begin
@@ -124,27 +126,27 @@ end
     game = ReversiGame()
     game.black = (one(UInt64) << 0) | (one(UInt64) << 1)
     game.white = one(UInt64) << 2
-    game.hash  = compute_full_hash(game)
+    game.hash = compute_full_hash(game)
     @test get_winner(game) == BLACK
 
     game.black = one(UInt64) << 0
     game.white = (one(UInt64) << 1) | (one(UInt64) << 2)
-    game.hash  = compute_full_hash(game)
+    game.hash = compute_full_hash(game)
     @test get_winner(game) == WHITE
 
     game.black = one(UInt64) << 0
     game.white = one(UInt64) << 1
-    game.hash  = compute_full_hash(game)
+    game.hash = compute_full_hash(game)
     @test get_winner(game) == EMPTY
 end
 
 @testset "next_state – copy-on-move" begin
-    game     = ReversiGame()
+    game = ReversiGame()
     new_game = next_state(game, Position(3, 4))
-    @test get_piece(game, 3, 4)     == EMPTY   # original unchanged
-    @test game.current_player       == BLACK
+    @test get_piece(game, 3, 4) == EMPTY   # original unchanged
+    @test game.current_player == BLACK
     @test get_piece(new_game, 3, 4) == BLACK
-    @test new_game.current_player   == WHITE
+    @test new_game.current_player == WHITE
     @test new_game.hash == compute_full_hash(new_game)
 end
 

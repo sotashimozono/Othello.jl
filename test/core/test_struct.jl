@@ -4,10 +4,10 @@ using Reversi: compute_full_hash, update_hash, get_piece
 using Test
 
 @testset "constants" begin
-    @test BLACK       ==  1
-    @test WHITE       == -1
-    @test EMPTY       ==  0
-    @test IN_PROGRESS ==  2
+    @test BLACK == 1
+    @test WHITE == -1
+    @test EMPTY == 0
+    @test IN_PROGRESS == 2
     @test _color_idx(BLACK) == 1
     @test _color_idx(WHITE) == 2
 end
@@ -51,12 +51,12 @@ end
 
 @testset "Base.copy(game)" begin
     game = ReversiGame()
-    c    = copy(game)
-    @test c.black          == game.black
-    @test c.white          == game.white
+    c = copy(game)
+    @test c.black == game.black
+    @test c.white == game.white
     @test c.current_player == game.current_player
-    @test c.pass_count     == game.pass_count
-    @test c.hash           == game.hash
+    @test c.pass_count == game.pass_count
+    @test c.hash == game.hash
     # Mutating the copy must not affect the original
     c.black = zero(UInt64)
     @test game.black != zero(UInt64)
@@ -64,8 +64,8 @@ end
 
 @testset "Zobrist – update_hash is self-inverse" begin
     game = ReversiGame()
-    h0   = game.hash
-    h1   = update_hash(h0, 3, 4, BLACK)
+    h0 = game.hash
+    h1 = update_hash(h0, 3, 4, BLACK)
     @test h1 != h0
     @test update_hash(h1, 3, 4, BLACK) == h0
 end

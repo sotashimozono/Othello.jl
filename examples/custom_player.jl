@@ -23,16 +23,20 @@ println("="^60)
 
 struct HeuristicPlayer <: Player
     weights::Matrix{Float64}
-    HeuristicPlayer() = new(Float64[
-        100 -20  10   5   5  10 -20 100;
-        -20 -50  -2  -2  -2  -2 -50 -20;
-         10  -2   5   3   3   5  -2  10;
-          5  -2   3   1   1   3  -2   5;
-          5  -2   3   1   1   3  -2   5;
-         10  -2   5   3   3   5  -2  10;
-        -20 -50  -2  -2  -2  -2 -50 -20;
-        100 -20  10   5   5  10 -20 100
-    ])
+    function HeuristicPlayer()
+        new(
+            Float64[
+                100 -20 10 5 5 10 -20 100;
+                -20 -50 -2 -2 -2 -2 -50 -20;
+                10 -2 5 3 3 5 -2 10;
+                5 -2 3 1 1 3 -2 5;
+                5 -2 3 1 1 3 -2 5;
+                10 -2 5 3 3 5 -2 10;
+                -20 -50 -2 -2 -2 -2 -50 -20;
+                100 -20 10 5 5 10 -20 100
+            ],
+        )
+    end
 end
 
 function Reversi.get_move(player::HeuristicPlayer, game::ReversiGame)
@@ -59,8 +63,9 @@ function _evaluate(game::ReversiGame, color::Int)
     return color == BLACK ? b - w : w - b
 end
 
-function _minimax(game::ReversiGame, depth::Int, α::Float64, β::Float64,
-                  maximizing::Bool, color::Int)::Float64
+function _minimax(
+    game::ReversiGame, depth::Int, α::Float64, β::Float64, maximizing::Bool, color::Int
+)::Float64
     depth == 0 || is_game_over(game) && return _evaluate(game, color)
 
     moves = valid_moves(game)
@@ -97,10 +102,10 @@ function Reversi.get_move(player::MinimaxPlayer, game::ReversiGame)
     moves = valid_moves(game)
     isempty(moves) && return nothing
     color = game.current_player
-    best  = moves[1]
-    bval  = -Inf
+    best = moves[1]
+    bval = -Inf
     for m in moves
-        g2  = copy(game)
+        g2 = copy(game)
         make_move!(g2, m)
         val = _minimax(g2, player.depth - 1, -Inf, Inf, false, color)
         if val > bval
@@ -143,9 +148,9 @@ function run_match(name1, p1, name2, p2; n=10)
 end
 
 println()
-run_match("Heuristic", HeuristicPlayer(), "Random",    RandomPlayer())
-run_match("Minimax(2)", MinimaxPlayer(2), "Random",    RandomPlayer())
-run_match("Mobility",  MobilityPlayer(),  "Random",    RandomPlayer())
+run_match("Heuristic", HeuristicPlayer(), "Random", RandomPlayer())
+run_match("Minimax(2)", MinimaxPlayer(2), "Random", RandomPlayer())
+run_match("Mobility", MobilityPlayer(), "Random", RandomPlayer())
 run_match("Minimax(2)", MinimaxPlayer(2), "Heuristic", HeuristicPlayer())
 
 println()

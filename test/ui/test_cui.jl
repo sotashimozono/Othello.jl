@@ -19,7 +19,7 @@ function capture_board(f::Function)
 end
 
 @testset "display_board – contains expected symbols" begin
-    game   = ReversiGame()
+    game = ReversiGame()
     output = capture_board(() -> display_board(game))
     @test occursin("●", output)
     @test occursin("○", output)
@@ -31,14 +31,14 @@ end
 end
 
 @testset "display_board – with hints" begin
-    game   = ReversiGame()
-    hints  = valid_moves(game)
+    game = ReversiGame()
+    hints = valid_moves(game)
     output = capture_board(() -> display_board(game; hints=hints))
     @test occursin("*", output)
 end
 
 @testset "display_board – no hints shown when hints=[]" begin
-    game   = ReversiGame()
+    game = ReversiGame()
     output = capture_board(() -> display_board(game; hints=Position[]))
     @test !occursin("*", output)
 end

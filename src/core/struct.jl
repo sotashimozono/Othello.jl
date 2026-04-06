@@ -119,11 +119,11 @@ all fields are value types (integers).
 """
 function Base.copy(game::ReversiGame)
     g = ReversiGame()
-    g.black          = game.black
-    g.white          = game.white
+    g.black = game.black
+    g.white = game.white
     g.current_player = game.current_player
-    g.pass_count     = game.pass_count
-    g.hash           = game.hash
+    g.pass_count = game.pass_count
+    g.hash = game.hash
     return g
 end
 

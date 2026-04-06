@@ -59,9 +59,9 @@ receiving an empty record.
 function load_game(filepath::String)::GameRecord
     isfile(filepath) || throw(ArgumentError("File not found: $filepath"))
 
-    moves_found  = false
+    moves_found = false
     result_found = false
-    moves  = String[]
+    moves = String[]
     result = IN_PROGRESS
 
     # Use open...do so the file handle is closed before any exception propagates
@@ -70,7 +70,7 @@ function load_game(filepath::String)::GameRecord
         for line in eachline(io)
             if startswith(line, "MOVES:")
                 moves_found = true
-                raw  = strip(line[(length("MOVES:") + 1):end])
+                raw = strip(line[(length("MOVES:") + 1):end])
                 moves = isempty(raw) ? String[] : String.(split(raw))
             elseif startswith(line, "RESULT:")
                 result_found = true
@@ -90,7 +90,7 @@ function load_game(filepath::String)::GameRecord
         end
     end  # file handle closed here — safe to rm() on Windows
 
-    moves_found  || throw(ArgumentError("Missing MOVES line in $filepath"))
+    moves_found || throw(ArgumentError("Missing MOVES line in $filepath"))
     result_found || throw(ArgumentError("Missing RESULT line in $filepath"))
 
     return GameRecord(moves, result)
@@ -140,9 +140,7 @@ final state.
                     silently ignoring it.  Recommended when replaying external data.
 """
 function replay_game(
-    record::GameRecord;
-    verbose::Bool = false,
-    strict::Bool  = false,
+    record::GameRecord; verbose::Bool=false, strict::Bool=false
 )::ReversiGame
     game = ReversiGame()
     for (i, move_str) in enumerate(record.moves)
@@ -150,9 +148,11 @@ function replay_game(
 
         if move_str == "pass"
             if strict && !isempty(valid_moves(game))
-                throw(ArgumentError(
-                    "Move $i: \"pass\" is invalid — current player has legal moves"
-                ))
+                throw(
+                    ArgumentError(
+                        "Move $i: \"pass\" is invalid — current player has legal moves"
+                    ),
+                )
             end
             pass!(game; force=true)
         else

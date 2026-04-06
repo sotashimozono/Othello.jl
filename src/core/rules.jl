@@ -19,18 +19,17 @@ is_valid_position(row::Int, col::Int) = 1 <= row <= 8 && 1 <= col <= 8
 const _COL_A = UInt64(0x0101010101010101)
 const _COL_H = UInt64(0x8080808080808080)
 
-@inline _shift_n(x::UInt64)  = x >> 8
-@inline _shift_s(x::UInt64)  = x << 8
-@inline _shift_e(x::UInt64)  = (x & ~_COL_H) << 1
-@inline _shift_w(x::UInt64)  = (x & ~_COL_A) >> 1
+@inline _shift_n(x::UInt64) = x >> 8
+@inline _shift_s(x::UInt64) = x << 8
+@inline _shift_e(x::UInt64) = (x & ~_COL_H) << 1
+@inline _shift_w(x::UInt64) = (x & ~_COL_A) >> 1
 @inline _shift_ne(x::UInt64) = (x & ~_COL_H) >> 7
 @inline _shift_nw(x::UInt64) = (x & ~_COL_A) >> 9
 @inline _shift_se(x::UInt64) = (x & ~_COL_H) << 9
 @inline _shift_sw(x::UInt64) = (x & ~_COL_A) << 7
 
 const _SHIFTS = (
-    _shift_n, _shift_s, _shift_e, _shift_w,
-    _shift_ne, _shift_nw, _shift_se, _shift_sw,
+    _shift_n, _shift_s, _shift_e, _shift_w, _shift_ne, _shift_nw, _shift_se, _shift_sw
 )
 
 # ---------------------------------------------------------------------------
@@ -106,7 +105,7 @@ function is_valid_move(
 )
     is_valid_position(row, col) || return false
     bit = one(UInt64) << ((row - 1) * 8 + (col - 1))
-    player_bb   = player == BLACK ? game.black : game.white
+    player_bb = player == BLACK ? game.black : game.white
     opponent_bb = player == BLACK ? game.white : game.black
     return (bit & legal_moves_bb(player_bb, opponent_bb)) != 0
 end
@@ -117,7 +116,7 @@ end
 Return all valid moves for `player` (defaults to `game.current_player`).
 """
 function valid_moves(game::ReversiGame, player::Int=game.current_player)
-    player_bb   = player == BLACK ? game.black : game.white
+    player_bb = player == BLACK ? game.black : game.white
     opponent_bb = player == BLACK ? game.white : game.black
     bb = legal_moves_bb(player_bb, opponent_bb)
     moves = Position[]
@@ -136,7 +135,7 @@ Return the number of legal moves available to `player`
 (defaults to `game.current_player`).  A commonly used feature in evaluation.
 """
 function mobility(game::ReversiGame, player::Int=game.current_player)::Int
-    player_bb   = player == BLACK ? game.black : game.white
+    player_bb = player == BLACK ? game.black : game.white
     opponent_bb = player == BLACK ? game.white : game.black
     return count_ones(legal_moves_bb(player_bb, opponent_bb))
 end
@@ -149,9 +148,9 @@ the Zobrist hash.  Returns `true` on success, `false` if the move is illegal.
 """
 function make_move!(game::ReversiGame, row::Int, col::Int)
     player = game.current_player
-    opp    = opponent(player)
+    opp = opponent(player)
 
-    player_bb   = player == BLACK ? game.black : game.white
+    player_bb = player == BLACK ? game.black : game.white
     opponent_bb = player == BLACK ? game.white : game.black
 
     bit = one(UInt64) << ((row - 1) * 8 + (col - 1))
@@ -172,7 +171,7 @@ function make_move!(game::ReversiGame, row::Int, col::Int)
         flip_copy &= flip_copy - one(UInt64)
     end
 
-    new_player_bb   = player_bb   | bit | flips
+    new_player_bb = player_bb | bit | flips
     new_opponent_bb = opponent_bb & ~flips
 
     if player == BLACK
@@ -183,7 +182,7 @@ function make_move!(game::ReversiGame, row::Int, col::Int)
         game.black = new_opponent_bb
     end
 
-    game.pass_count     = 0
+    game.pass_count = 0
     game.current_player = opp
     return true
 end
@@ -213,13 +212,15 @@ Set `force=true` to skip the check (useful for replaying external records or tes
 """
 function pass!(game::ReversiGame; force::Bool=false)
     if !force && !isempty(valid_moves(game))
-        throw(ArgumentError(
-            "Cannot pass: current player has legal moves. " *
-            "Use pass!(game; force=true) to override."
-        ))
+        throw(
+            ArgumentError(
+                "Cannot pass: current player has legal moves. " *
+                "Use pass!(game; force=true) to override.",
+            ),
+        )
     end
-    game.pass_count     += 1
-    game.current_player  = opponent(game.current_player)
+    game.pass_count += 1
+    game.current_player = opponent(game.current_player)
 end
 
 """

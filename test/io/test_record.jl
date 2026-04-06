@@ -10,7 +10,7 @@ using Test
 
 @testset "GameRecord – defaults" begin
     rec = GameRecord(["d3", "c3"])
-    @test rec.moves  == ["d3", "c3"]
+    @test rec.moves == ["d3", "c3"]
     @test rec.result == IN_PROGRESS
 end
 
@@ -24,7 +24,7 @@ end
     try
         save_game(rec, tmp)
         got = load_game(tmp)
-        @test got.moves  == rec.moves
+        @test got.moves == rec.moves
         @test got.result == BLACK
     finally
         isfile(tmp) && rm(tmp)
@@ -35,7 +35,8 @@ end
     rec = GameRecord(["d3"], WHITE)
     tmp = tempname() * ".txt"
     try
-        save_game(rec, tmp); got = load_game(tmp)
+        save_game(rec, tmp);
+        got = load_game(tmp)
         @test got.result == WHITE
     finally
         isfile(tmp) && rm(tmp)
@@ -46,7 +47,8 @@ end
     rec = GameRecord(["d3"], EMPTY)
     tmp = tempname() * ".txt"
     try
-        save_game(rec, tmp); got = load_game(tmp)
+        save_game(rec, tmp);
+        got = load_game(tmp)
         @test got.result == EMPTY
     finally
         isfile(tmp) && rm(tmp)
@@ -57,7 +59,8 @@ end
     rec = GameRecord(["d3"])   # result defaults to IN_PROGRESS
     tmp = tempname() * ".txt"
     try
-        save_game(rec, tmp); got = load_game(tmp)
+        save_game(rec, tmp);
+        got = load_game(tmp)
         @test got.result == IN_PROGRESS
     finally
         isfile(tmp) && rm(tmp)
@@ -68,7 +71,8 @@ end
     rec = GameRecord(String[], BLACK)
     tmp = tempname() * ".txt"
     try
-        save_game(rec, tmp); got = load_game(tmp)
+        save_game(rec, tmp);
+        got = load_game(tmp)
         @test isempty(got.moves)
         @test got.result == BLACK
     finally
@@ -143,29 +147,32 @@ end
 # ---------------------------------------------------------------------------
 
 @testset "replay_game – basic" begin
-    moves    = ["d3", "c3", "b3"]
-    rec      = GameRecord(moves, IN_PROGRESS)
+    moves = ["d3", "c3", "b3"]
+    rec = GameRecord(moves, IN_PROGRESS)
     replayed = replay_game(rec)
 
     ref = ReversiGame()
-    for m in moves; make_move!(ref, m); end
+    for m in moves
+        ;
+        make_move!(ref, m);
+    end
 
-    @test replayed.black          == ref.black
-    @test replayed.white          == ref.white
+    @test replayed.black == ref.black
+    @test replayed.white == ref.white
     @test replayed.current_player == ref.current_player
-    @test replayed.hash           == ref.hash
+    @test replayed.hash == ref.hash
 end
 
 @testset "replay_game – hash stays consistent" begin
     rec = GameRecord(["d3", "c4", "f5", "f4"])
-    g   = replay_game(rec)
+    g = replay_game(rec)
     @test g.hash == compute_full_hash(g)
 end
 
 @testset "replay_game – strict=false ignores invalid move" begin
     # With strict=false (default) an invalid move is silently skipped
     rec = GameRecord(["d3", "a1"])  # a1 is invalid after d3
-    g   = replay_game(rec; strict=false)
+    g = replay_game(rec; strict=false)
     # The game should have applied d3 and skipped a1
     @test g.current_player == WHITE   # after d3 it is WHITE's turn (a1 skipped)
 end
@@ -182,12 +189,13 @@ end
 @testset "play_game – save and reload record" begin
     tmp = tempname() * ".txt"
     try
-        winner = play_game(RandomPlayer(), RandomPlayer();
-                           verbose=false, save_record=true, record_path=tmp)
+        winner = play_game(
+            RandomPlayer(), RandomPlayer(); verbose=false, save_record=true, record_path=tmp
+        )
         @test winner in [BLACK, WHITE, EMPTY]
         @test isfile(tmp)
 
-        rec      = load_game(tmp)
+        rec = load_game(tmp)
         replayed = replay_game(rec; strict=true)
         @test replayed.hash == compute_full_hash(replayed)
         @test validate_record(rec) === nothing

@@ -47,7 +47,9 @@ else
 end
 
 println()
-winner = play_game(black, white; verbose=true, save_record=true, record_path="last_game.txt")
+winner = play_game(
+    black, white; verbose=true, save_record=true, record_path="last_game.txt"
+)
 println()
 println("Record saved to last_game.txt — replay it with:")
 println("  julia --project=next next/examples/record_demo.jl")

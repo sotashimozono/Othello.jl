@@ -79,17 +79,20 @@ function Reversi.launch_replay_gui(moves::Vector{String}; title::String="Game Re
     colsize!(fig.layout, 2, Fixed(config.sidebar_width))
     rowsize!(fig.layout, 2, Relative(1.0))
 
+    # Pre-build kifu entries once (move_n, color, notation)
+    kifu_entries = [(i, move_colors[i], moves[i]) for i in 1:n_moves]
+
     # ---------------------------------------------------------------------------
     # Navigation logic
     # ---------------------------------------------------------------------------
     function _goto!(p)
         p = clamp(p, 0, n_moves)
-        pos_obs[]    = p
-        game_obs[]   = states[p+1]
+        pos_obs[]      = p
+        game_obs[]     = states[p+1]
         slider.value[] = p
         lm = (show_last_obs[] && p > 0 && moves[p] != "pass") ? Position(moves[p]) : nothing
         _refresh_board!(ax, states[p+1], false, show_last_obs[], lm, false, config)
-        _refresh_replay_kifu!(kifu_ax, moves, move_colors, p, config)
+        _draw_kifu!(kifu_ax, kifu_entries, config; active_n=p)
     end
 
     on(tgl_last.active)   do v; show_last_obs[] = v; _goto!(pos_obs[]); end
@@ -107,7 +110,7 @@ function Reversi.launch_replay_gui(moves::Vector{String}; title::String="Game Re
         event.key == Keyboard.left  && _goto!(pos_obs[]-1)
         event.key == Keyboard.right && _goto!(pos_obs[]+1)
         event.key == Keyboard.home  && _goto!(0)
-        event.key == Keyboard.end_  && _goto!(n_moves)
+        nothing  # Keyboard.end_ not available in this Makie version
     end
 
     _goto!(0)

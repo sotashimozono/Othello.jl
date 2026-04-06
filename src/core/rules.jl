@@ -220,7 +220,7 @@ function pass!(game::ReversiGame; force::Bool=false)
         )
     end
     game.pass_count += 1
-    game.current_player = opponent(game.current_player)
+    return game.current_player = opponent(game.current_player)
 end
 
 """
@@ -270,3 +270,26 @@ function next_state(game::ReversiGame, move::Position)::ReversiGame
 end
 
 next_state(game::ReversiGame, move::AbstractString) = next_state(game, Position(move))
+
+"""
+    board_to_matrix(game::ReversiGame; flip_for_current=true) -> Array{Float32, 2}
+
+Encode the 8x8 board as a matrix of `Float32`. 
+If `flip_for_current=true`, the `current_player`'s pieces are `1.0f0` and the 
+opponent's are `-1.0f0`. Empty squares are `0.0f0`.
+"""
+function board_to_matrix(game::ReversiGame; flip_for_current::Bool=true)
+    res = zeros(Float32, 8, 8)
+    curr = game.current_player
+    for r in 1:8, c in 1:8
+        p = get_piece(game, r, c)
+        if p == EMPTY
+            res[r, c] = 0.0f0
+        elseif p == curr
+            res[r, c] = 1.0f0
+        else
+            res[r, c] = -1.0f0
+        end
+    end
+    return res
+end

@@ -229,15 +229,21 @@ function Reversi.launch_gui(
         rowsize!(main_col, 2, Fixed(show ? 100 : 0))
         config.show_eval = show
         save_session_config(config)
+        # Refresh on re-show so the graph is current
+        show && _refresh_eval_graph!(eval_ax, score_history_obs[],
+                                     mode_obs[] == :review ? review_pos_obs[] : 0, config)
     end
 
     on(show_sidebar_obs) do show
         colsize!(main_row, 2, Fixed(show ? 200 : 0))
-        kifu_header_lbl.visible[]       = show
-        kifu_ax.scene.visible[]         = show
-        kifu_ax.blockscene.visible[]    = show
+        kifu_header_lbl.visible[]    = show
+        kifu_ax.scene.visible[]      = show
+        kifu_ax.blockscene.visible[] = show
         config.show_kifu = show
         save_session_config(config)
+        # Refresh on re-show so the kifu is current
+        show && _draw_kifu!(kifu_ax, kifu_obs[], config;
+                            active_n = mode_obs[] == :review ? review_pos_obs[] : 0)
     end
 
     on(tgl_eval.active)    do v; show_eval_obs[]    = v; end
@@ -268,16 +274,16 @@ function Reversi.launch_gui(
         mode_obs[]       = :review
         review_pos_obs[] = n
         _refresh_board!(ax, g, false, true, lm, false, config)
-        _draw_kifu!(kifu_ax, kifu, config; active_n=n)
-        _refresh_eval_graph!(eval_ax, score_history_obs[], n, config)
+        show_sidebar_obs[] && _draw_kifu!(kifu_ax, kifu, config; active_n=n)
+        show_eval_obs[]    && _refresh_eval_graph!(eval_ax, score_history_obs[], n, config)
     end
 
     function return_to_live!()
         mode_obs[]       = :live
         review_pos_obs[] = 0
         _refresh_board!(ax, game_obs[], hints_obs[], show_last_obs[], last_move_obs[], game_over_obs[], config)
-        _draw_kifu!(kifu_ax, kifu_obs[], config; active_n=0)
-        _refresh_eval_graph!(eval_ax, score_history_obs[], 0, config)
+        show_sidebar_obs[] && _draw_kifu!(kifu_ax, kifu_obs[], config; active_n=0)
+        show_eval_obs[]    && _refresh_eval_graph!(eval_ax, score_history_obs[], 0, config)
     end
 
     # ---------------------------------------------------------------------------
@@ -289,7 +295,8 @@ function Reversi.launch_gui(
     end
     on(kifu_obs) do kifu
         mode_obs[] == :review && return
-        _draw_kifu!(kifu_ax, kifu, config; active_n=0)
+        show_sidebar_obs[] && _draw_kifu!(kifu_ax, kifu, config; active_n=0)
+        # score history replay (needed for eval graph and review mode even when hidden)
         hist = Float32[0.0f0]
         g = ReversiGame()
         for (_, _, notation) in kifu
@@ -303,7 +310,7 @@ function Reversi.launch_gui(
             push!(hist, Float32(b - w))
         end
         score_history_obs[] = hist
-        _refresh_eval_graph!(eval_ax, hist, 0, config)
+        show_eval_obs[] && _refresh_eval_graph!(eval_ax, hist, 0, config)
     end
     on(tgl_hints.active) do v
         hints_obs[] = v; config.show_hints = v; save_session_config(config)

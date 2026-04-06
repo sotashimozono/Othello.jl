@@ -4,7 +4,7 @@ CurrentModule = Reversi
 
 # Custom players
 
-[`examples/custom_player.jl`](../../../../next/examples/custom_player.jl) —
+[`examples/custom_player.jl`](https://github.com/sotashimozono/Reversi.jl/blob/main/examples/custom_player.jl) —
 three example `Player` implementations showing common patterns.
 
 ## The `Player` interface

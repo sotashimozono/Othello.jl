@@ -4,11 +4,11 @@ CurrentModule = Reversi
 
 # Play (CUI)
 
-[`examples/play.jl`](../../../../next/examples/play.jl) — interactive terminal game.
+[`examples/play.jl`](https://github.com/sotashimozono/Reversi.jl/blob/main/examples/play.jl) — interactive terminal game.
 
 ```julia
 # Run:
-#   julia --project=next next/examples/play.jl
+#   julia --project=. examples/play.jl
 
 using Reversi
 

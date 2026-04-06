@@ -202,7 +202,9 @@ function _open_add_player_dialog!(
     Label(dlg[3, 1]; text="Expression:", color=c_text_dim, fontsize=fs, halign=:right)
     expr_tb = Textbox(dlg[3, 2]; placeholder="e.g. MyPlayer()", fontsize=fs, width=300)
 
-    msg_lbl = Label(dlg[4, 1:2]; text="", color=RGBf(1, 0.4, 0.4), fontsize=fs - 2)
+    msg_lbl = Label(
+        dlg[4, 1:2]; text="", color=_get_color(config, "last_move"), fontsize=fs - 2
+    )
 
     btn_row = dlg[5, 1:2] = GridLayout()
     btn_cancel = Button(
@@ -308,14 +310,14 @@ function Reversi.launch_gui(
     black_sel = Menu(
         sel_bar[1, 2];
         options=menu_options_obs,
-        i_selected=_find_idx(init_reg, black),
+        i_selected=_find_idx(init_reg, b_player),
         fontsize=13,
         width=160,
     )
     white_sel = Menu(
         sel_bar[1, 4];
         options=menu_options_obs,
-        i_selected=_find_idx(init_reg, white),
+        i_selected=_find_idx(init_reg, w_player),
         fontsize=13,
         width=160,
     )
@@ -361,7 +363,7 @@ function Reversi.launch_gui(
     white_card = fig[2, 1] = GridLayout()
     white_name_lbl = Label(
         white_card[1, 1];
-        text="[W]  White: $(_player_name(white))",
+        text="[W]  White: $(_player_name(w_player))",
         color=_get_color(config, "accent_white"),
         fontsize=config.fontsize + 1,
         halign=:left,
@@ -391,7 +393,7 @@ function Reversi.launch_gui(
         fig[3, 1];
         aspect=DataAspect(),
         limits=(-0.40, 8.32, -0.24, 8.55),
-        backgroundcolor=_C_BG,
+        backgroundcolor=_get_color(config, "background"),
         xgridvisible=false,
         ygridvisible=false,
         xticksvisible=false,
@@ -408,7 +410,7 @@ function Reversi.launch_gui(
     black_card = fig[4, 1] = GridLayout()
     black_name_lbl = Label(
         black_card[1, 1];
-        text="[B]  Black: $(_player_name(black))",
+        text="[B]  Black: $(_player_name(b_player))",
         color=_get_color(config, "accent_black"),
         fontsize=config.fontsize + 1,
         halign=:left,
@@ -470,7 +472,13 @@ function Reversi.launch_gui(
                 end
             end
         ),
-        color=@lift($game_over_obs ? RGBf(1.0, 0.75, 0.3) : _get_color(config, "text_dim")),
+        color=@lift(
+            if $game_over_obs
+                _get_color(config, "last_move")
+            else
+                _get_color(config, "text_dim")
+            end
+        ),
         fontsize=config.fontsize,
         halign=:left,
         tellwidth=false,
@@ -594,7 +602,7 @@ function Reversi.launch_gui(
         _refresh!(ax, game_obs[], hints_obs[], last_move_obs[])
     end
 
-    players = Ref{Dict{Int,Player}}(Dict(BLACK => black, WHITE => white))
+    players = Ref{Dict{Int,Player}}(Dict(BLACK => b_player, WHITE => w_player))
 
     function _selected_player(menu::Menu)
         reg = registry_obs[]
@@ -778,33 +786,33 @@ function Reversi.launch_replay_gui(moves::Vector{String}; title::String="Game Re
     btn_first = Button(
         nav[1, 1];
         label="|◀",
-        buttoncolor=RGBf(0.22, 0.22, 0.26),
-        labelcolor=:white,
-        fontsize=14,
+        buttoncolor=_get_color(config, "panel"),
+        labelcolor=_get_color(config, "text"),
+        fontsize=config.fontsize,
         width=44,
     )
     btn_prev = Button(
         nav[1, 2];
         label="◀",
-        buttoncolor=RGBf(0.22, 0.22, 0.26),
-        labelcolor=:white,
-        fontsize=14,
+        buttoncolor=_get_color(config, "panel"),
+        labelcolor=_get_color(config, "text"),
+        fontsize=config.fontsize,
         width=44,
     )
     btn_next = Button(
         nav[1, 3];
         label="▶",
-        buttoncolor=RGBf(0.22, 0.22, 0.26),
-        labelcolor=:white,
-        fontsize=14,
+        buttoncolor=_get_color(config, "panel"),
+        labelcolor=_get_color(config, "text"),
+        fontsize=config.fontsize,
         width=44,
     )
     btn_last = Button(
         nav[1, 4];
         label="▶|",
-        buttoncolor=RGBf(0.22, 0.22, 0.26),
-        labelcolor=:white,
-        fontsize=14,
+        buttoncolor=_get_color(config, "panel"),
+        labelcolor=_get_color(config, "text"),
+        fontsize=config.fontsize,
         width=44,
     )
     slider = Slider(nav[1, 5]; range=0:n_moves, startvalue=0)

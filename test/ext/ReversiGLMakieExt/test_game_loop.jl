@@ -13,8 +13,11 @@ end
     moves_recorded = Tuple{Int,String}[]   # (color, notation)
     game = ReversiGame()
     players = Dict{Int,Player}(BLACK => RandomPlayer(), WHITE => RandomPlayer())
-    game_loop!(game, players;
-        on_move = (g, color, notation) -> push!(moves_recorded, (color, notation)))
+    game_loop!(
+        game,
+        players;
+        on_move=(g, color, notation) -> push!(moves_recorded, (color, notation)),
+    )
     @test length(moves_recorded) >= 4    # any real game has at least a few moves
     @test all(c in (BLACK, WHITE) for (c, _) in moves_recorded)
     @test all(n isa String for (_, n) in moves_recorded)
@@ -24,7 +27,7 @@ end
     done_count = Ref(0)
     game = ReversiGame()
     players = Dict{Int,Player}(BLACK => RandomPlayer(), WHITE => RandomPlayer())
-    game_loop!(game, players; on_done = _ -> (done_count[] += 1))
+    game_loop!(game, players; on_done=_ -> (done_count[] += 1))
     @test done_count[] == 1
 end
 
@@ -32,7 +35,7 @@ end
     game = ReversiGame()
     players = Dict{Int,Player}(BLACK => RandomPlayer(), WHITE => RandomPlayer())
     notations = String[]
-    game_loop!(game, players; on_move = (g, c, n) -> push!(notations, n))
+    game_loop!(game, players; on_move=(g, c, n) -> push!(notations, n))
     for n in notations
         if n != "pass"
             @test occursin(r"^[a-h][1-8]$", n)

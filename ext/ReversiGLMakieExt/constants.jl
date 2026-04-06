@@ -8,7 +8,7 @@ function _get_color(config::GUIConfig, key::String)
     return length(c) == 3 ? RGBf(c...) : RGBAf(c...)
 end
 
-_player_name(::HumanPlayer)  = "Human"
+_player_name(::HumanPlayer) = "Human"
 _player_name(::RandomPlayer) = "Random AI"
 _player_name(::GreedyPlayer) = "Greedy AI"
-_player_name(p::Player)      = string(typeof(p))
+_player_name(p::Player) = string(typeof(p))

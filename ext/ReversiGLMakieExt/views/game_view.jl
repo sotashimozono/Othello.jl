@@ -44,7 +44,7 @@ function Reversi.launch_gui(
         menu_bar[1, 1];
         options=["▶ New Game", "+ Add Player"],
         textcolor=_get_color(config, "text"),
-        fontsize=config.fontsize - 2,
+        fontsize=(config.fontsize - 2),
         width=100,
         height=24,
         prompt="Actions",
@@ -171,7 +171,7 @@ function Reversi.launch_gui(
         status_bar[1, 1];
         text=@lift("$(count_pieces($game_obs)[2])"),
         color=_get_color(config, "accent_white"),
-        fontsize=config.fontsize + 8,
+        fontsize=(config.fontsize + 8),
         font=:bold,
         halign=:center,
     )
@@ -179,7 +179,7 @@ function Reversi.launch_gui(
         status_bar[1, 2];
         text=@lift("$(count_pieces($game_obs)[1])"),
         color=_get_color(config, "accent_black"),
-        fontsize=config.fontsize + 8,
+        fontsize=(config.fontsize + 8),
         font=:bold,
         halign=:center,
     )
@@ -214,14 +214,14 @@ function Reversi.launch_gui(
         ctrl[1, 2];
         text="Hints",
         color=_get_color(config, "text_dim"),
-        fontsize=config.fontsize - 1,
+        fontsize=(config.fontsize - 1),
     )
     tgl_last = Toggle(ctrl[1, 3]; active=config.show_last_move)
     Label(
         ctrl[1, 4];
         text="Last Move",
         color=_get_color(config, "text_dim"),
-        fontsize=config.fontsize - 1,
+        fontsize=(config.fontsize - 1),
     )
     live_btn = Button(
         ctrl[1, 6];

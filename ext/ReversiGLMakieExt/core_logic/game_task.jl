@@ -30,7 +30,8 @@ function run_game!(
     game_obs::Observable,
     kifu_obs::Observable,
     last_move_obs::Observable,
-    game_over_obs::Observable{Bool},
+    game_over_obs::Observable{Bool};
+    stop_check::Function = () -> false,   # returns true → cancel this task
 )
     try
         move_num = Ref(0)
@@ -38,6 +39,7 @@ function run_game!(
             game_ref[],
             players[];
             on_move = (game, color, notation) -> begin
+                stop_check() && throw(InterruptException())
                 yield()
                 move_num[] += 1
                 push!(kifu_ref[], (move_num[], color, notation))
@@ -48,7 +50,8 @@ function run_game!(
             on_done = (_) -> (game_over_obs[] = true),
         )
     catch e
-        e isa InvalidStateException && return   # channel closed intentionally
+        e isa InvalidStateException && return   # HumanPlayer channel closed
+        e isa InterruptException     && return   # generation mismatch → stale task
         @error "Error in game task" exception=(e, catch_backtrace())
     end
 end

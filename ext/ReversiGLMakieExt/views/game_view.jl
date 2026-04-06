@@ -28,6 +28,8 @@ function Reversi.launch_gui(
     review_pos_obs   = Observable(0)
     show_eval_obs    = Observable(config.show_eval)
     show_sidebar_obs = Observable(config.show_kifu)
+    auto_start_obs   = Observable(false)
+    game_gen         = Ref(0)             # incremented on each new game; stale tasks exit
 
     # ---------------------------------------------------------------------------
     # Figure & layout
@@ -192,6 +194,11 @@ function Reversi.launch_gui(
     Label(toolbar[1, 10]; text="Sidebar",
           color=_get_color(config, "text_dim"), fontsize=config.fontsize - 2)
 
+    # Auto-restart
+    tgl_auto = Toggle(toolbar[1, 11]; active=false)
+    Label(toolbar[1, 12]; text="Auto",
+          color=_get_color(config, "text_dim"), fontsize=config.fontsize - 2)
+
     # Size all columns after content is placed
     colsize!(toolbar, 1, Fixed(130))
     colsize!(toolbar, 2, Auto())
@@ -226,14 +233,16 @@ function Reversi.launch_gui(
 
     on(show_sidebar_obs) do show
         colsize!(main_row, 2, Fixed(show ? 200 : 0))
-        kifu_header_lbl.visible[] = show
-        kifu_ax.visible[]         = show
+        kifu_header_lbl.visible[]       = show
+        kifu_ax.scene.visible[]         = show
+        kifu_ax.blockscene.visible[]    = show
         config.show_kifu = show
         save_session_config(config)
     end
 
     on(tgl_eval.active)    do v; show_eval_obs[]    = v; end
     on(tgl_sidebar.active) do v; show_sidebar_obs[] = v; end
+    on(tgl_auto.active)    do v; auto_start_obs[]   = v; end
 
     # ---------------------------------------------------------------------------
     # Review mode helpers
@@ -327,6 +336,16 @@ function Reversi.launch_gui(
         mode_obs[] == :review && return_to_live!()
     end
 
+    # Auto-restart: when game ends and auto_start_obs is on, start next game
+    on(game_over_obs) do is_over
+        is_over && auto_start_obs[] || return
+        sleep(0.4)   # brief pause so the final position is visible
+        start_game!(
+            _selected_player(black_sel, registry_obs[]),
+            _selected_player(white_sel, registry_obs[]),
+        )
+    end
+
     # ---------------------------------------------------------------------------
     # Game session management
     # ---------------------------------------------------------------------------
@@ -346,7 +365,10 @@ function Reversi.launch_gui(
         score_history_obs[] = Float32[0.0f0]
         kifu_obs[]          = kifu_ref[]
         game_obs[]          = game_ref[]
-        @async run_game!(game_ref, kifu_ref, players, game_obs, kifu_obs, last_move_obs, game_over_obs)
+        game_gen[] += 1
+        my_gen = game_gen[]
+        @async run_game!(game_ref, kifu_ref, players, game_obs, kifu_obs, last_move_obs, game_over_obs;
+                         stop_check = () -> game_gen[] != my_gen)
     end
 
     on(new_game_btn.clicks) do _

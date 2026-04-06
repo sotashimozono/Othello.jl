@@ -393,3 +393,216 @@ mkpath.(values(PATHS))
         end
     end
 end
+
+# ===========================================================================
+# WTHOR Format I/O
+# ===========================================================================
+
+using Reversi: WThorHeader, WThorGame, read_wthor, write_wthor,
+               wthor_game_to_record, verify_wthor_game
+
+@testset "WTHOR – move encoding" begin
+    # byte = row * 10 + col  (1-indexed)
+    # a1 = row1, col1 → 11
+    @test Reversi._wthor_byte_to_notation(UInt8(11)) == "a1"
+    # h8 = row8, col8 → 88
+    @test Reversi._wthor_byte_to_notation(UInt8(88)) == "h8"
+    # f5 = row5, col6 → 56
+    @test Reversi._wthor_byte_to_notation(UInt8(56)) == "f5"
+    # d3 = row3, col4 → 34
+    @test Reversi._wthor_byte_to_notation(UInt8(34)) == "d3"
+    # 0 → end-of-game (nothing)
+    @test Reversi._wthor_byte_to_notation(UInt8(0)) === nothing
+    # out-of-range bytes → nothing
+    @test Reversi._wthor_byte_to_notation(UInt8(99)) === nothing
+    @test Reversi._wthor_byte_to_notation(UInt8(10)) === nothing
+
+    # Inverse: notation → byte
+    @test Reversi._notation_to_wthor_byte("a1") == UInt8(11)
+    @test Reversi._notation_to_wthor_byte("h8") == UInt8(88)
+    @test Reversi._notation_to_wthor_byte("f5") == UInt8(56)
+    @test Reversi._notation_to_wthor_byte("d3") == UInt8(34)
+
+    # Round-trip: all valid squares
+    for row in 1:8, col in 1:8
+        notation = string(Char(Int('a') + col - 1)) * string(row)
+        byte = UInt8(row * 10 + col)
+        @test Reversi._wthor_byte_to_notation(byte) == notation
+        @test Reversi._notation_to_wthor_byte(notation) == byte
+    end
+end
+
+@testset "WTHOR – write and read round-trip" begin
+    # Build two synthetic game records
+    moves1 = ["f5", "d6", "c5", "f4", "e3", "d3", "c4"]
+    moves2 = ["d3", "c4", "c3"]
+
+    g1 = WThorGame(1, 10, 20, 34, 36, moves1)
+    g2 = WThorGame(2, 11, 21, 30, 32, moves2)
+
+    tmp = tempname() * ".wtb"
+    try
+        write_wthor(tmp, [g1, g2]; year=2024, game_year=124)
+        @test isfile(tmp)
+
+        header, games = read_wthor(tmp)
+        @test header.n_games == 2
+        @test length(games) == 2
+
+        # Recover first game
+        @test games[1].tournament_id == 1
+        @test games[1].black_id     == 10
+        @test games[1].white_id     == 20
+        @test games[1].black_score  == 34
+        @test games[1].best_score   == 36
+        @test games[1].moves        == moves1
+
+        # Recover second game
+        @test games[2].moves        == moves2
+        @test games[2].black_score  == 30
+    finally
+        isfile(tmp) && rm(tmp)
+    end
+end
+
+@testset "WTHOR – wthor_game_to_record" begin
+    # Black score 34 > 32  → BLACK wins
+    g_black_wins = WThorGame(1, 1, 2, 34, 36, ["f5", "d6"])
+    rec = wthor_game_to_record(g_black_wins)
+    @test rec.moves  == ["f5", "d6"]
+    @test rec.result == BLACK
+
+    # Black score 30 < 32  → WHITE wins
+    g_white_wins = WThorGame(1, 1, 2, 30, 32, ["d3"])
+    rec2 = wthor_game_to_record(g_white_wins)
+    @test rec2.result == WHITE
+
+    # Black score 32 (exact tie) → EMPTY
+    g_draw = WThorGame(1, 1, 2, 32, 32, ["d3"])
+    rec3 = wthor_game_to_record(g_draw)
+    @test rec3.result == EMPTY
+end
+
+@testset "WTHOR – verify_wthor_game" begin
+    # Replay a known-valid sequence and verify score
+    # d3 → c4 → c3 → b3 for black starts (opening theory)
+    # Build a game manually to know the expected score
+    game = ReversiGame()
+    moves = String[]
+    for _ in 1:10
+        ms = valid_moves(game)
+        isempty(ms) && (pass!(game); continue)
+        m = first(ms)
+        make_move!(game, m)
+        push!(moves, position_to_string(m))
+    end
+    black_score, _ = count_pieces(game)
+    # Use the actual score so verify returns true
+    g = WThorGame(0, 0, 0, black_score, black_score, moves)
+    @test verify_wthor_game(g) == true
+
+    # Wrong score → false
+    g_wrong = WThorGame(0, 0, 0, black_score + 5, black_score, moves)
+    @test verify_wthor_game(g_wrong) == false
+
+    # Invalid move → returns false (not throws)
+    g_bad = WThorGame(0, 0, 0, 32, 32, ["a1"])   # a1 is never valid at start
+    @test verify_wthor_game(g_bad) == false
+end
+
+@testset "WTHOR – empty game list write/read" begin
+    tmp = tempname() * ".wtb"
+    try
+        write_wthor(tmp, WThorGame[])
+        header, games = read_wthor(tmp)
+        @test header.n_games == 0
+        @test isempty(games)
+    finally
+        isfile(tmp) && rm(tmp)
+    end
+end
+
+# ===========================================================================
+# NamedPlayerEntry / Player Registry
+# ===========================================================================
+
+using Reversi: GUIPlayer
+
+@testset "NamedPlayerEntry – factory pattern" begin
+    # Built-in entries via the registry constant
+    builtin = Reversi._BUILTIN_PLAYERS
+    @test length(builtin) == 2
+    @test builtin[1].name == "Human (Player)"
+    @test builtin[2].name == "Random AI"
+
+    # Each factory returns a fresh Player instance
+    p1a = builtin[1].factory()
+    p1b = builtin[1].factory()
+    @test p1a isa GUIPlayer
+    @test p1b isa GUIPlayer
+    @test p1a !== p1b   # fresh instances
+
+    p2 = builtin[2].factory()
+    @test p2 isa RandomPlayer
+
+    # Custom entry with lambda
+    custom = Reversi.NamedPlayerEntry("Custom Random", () -> RandomPlayer())
+    @test custom.name == "Custom Random"
+    @test custom.factory() isa RandomPlayer
+end
+
+# ===========================================================================
+# Replay pre-computation helpers (board state sequence)
+# ===========================================================================
+
+@testset "Replay – board state pre-computation" begin
+    # Helper: compute the same sequence launch_replay_gui uses internally
+    function precompute_states(moves)
+        states = Vector{ReversiGame}(undef, length(moves) + 1)
+        states[1] = ReversiGame()
+        for (i, m) in enumerate(moves)
+            g = deepcopy(states[i])
+            m == "pass" ? pass!(g) : make_move!(g, m)
+            states[i + 1] = g
+        end
+        return states
+    end
+
+    moves = ["f5", "d6", "c5", "f4", "e3"]
+    states = precompute_states(moves)
+
+    # One extra state (initial board)
+    @test length(states) == length(moves) + 1
+
+    # State 0: fresh board
+    @test count_pieces(states[1]) == (2, 2)
+
+    # After f5 (first standard Othello move):
+    @test get_piece(states[2], 5, 6) == BLACK
+
+    # Final state hash must be consistent
+    @test states[end].hash == compute_full_hash(states[end])
+
+    # Pass moves are handled:
+    g_pass = precompute_states(["f5", "pass"])
+    @test length(g_pass) == 3
+    turn_after_pass = g_pass[3].current_player
+    turn_before_pass = g_pass[2].current_player
+    @test turn_after_pass == opponent(turn_before_pass)
+end
+
+@testset "Replay – GameRecord to moves compatibility" begin
+    # Make sure wthor_game_to_record → GameRecord.moves works with replay
+    moves_in = ["d3", "c3", "c4"]
+    rec = GameRecord(moves_in, BLACK)
+    replayed = replay_game(rec)
+    @test replayed.hash == compute_full_hash(replayed)
+
+    # WThorGame → GameRecord → replay
+    g = WThorGame(0, 0, 0, 0, 0, moves_in)
+    rec2 = wthor_game_to_record(g)
+    @test rec2.moves == moves_in
+    replayed2 = replay_game(rec2)
+    @test replayed2.hash == compute_full_hash(replayed2)
+    @test replayed.hash == replayed2.hash
+end

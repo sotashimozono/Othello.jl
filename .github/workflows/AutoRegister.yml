@@ -1,14 +1,15 @@
 name: AutoRegister
 
-# Triggered on push to main. If Project.toml version changed, post a
-# @JuliaRegistrator register comment to kick off the registration pipeline.
+# Runs after Release Drafter completes on main.
+# If Project.toml version changed, posts @JuliaRegistrator register comment.
 
 on:
-  push:
+  workflow_run:
+    workflows: ["Release Drafter"]
+    types:
+      - completed
     branches:
       - main
-    paths:
-      - Project.toml
 
 permissions:
   contents: write
@@ -16,10 +17,13 @@ permissions:
 
 jobs:
   register:
+    # Only run if Release Drafter succeeded
+    if: github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.workflow_run.head_sha }}
           fetch-depth: 2 # need HEAD and HEAD~1 to compare
 
       - name: Check if version changed
@@ -42,41 +46,30 @@ jobs:
         id: notes
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CURR: ${{ steps.version_check.outputs.curr }}
         run: |
-          CURR="${{ steps.version_check.outputs.curr }}"
-
-          DRAFT_TAG="v$CURR"
-          DRAFT_BODY=$(gh release view "$DRAFT_TAG" --json body --jq '.body' 2>/dev/null || echo "")
-
-          if [ -z "$DRAFT_BODY" ] || [ "$DRAFT_BODY" = "null" ]; then
-            DRAFT_BODY=$(gh release list --limit 50 --json tagName,isDraft \
-              --jq '.[] | select(.isDraft == true) | .tagName' | head -n 1 | xargs -I{} gh release view {} --json body --jq '.body' 2>/dev/null || echo "")
-          fi
+          DRAFT_BODY=$(gh release list --limit 50 --json tagName,isDraft \
+            --jq '.[] | select(.isDraft == true) | .tagName' | head -n 1 | \
+            xargs -I{} gh release view {} --json body --jq '.body' 2>/dev/null || echo "")
 
           if [ -z "$DRAFT_BODY" ] || [ "$DRAFT_BODY" = "null" ]; then
-            DRAFT_BODY="## Changelog\n\n- See changelog/commit history for details in v$CURR.\n\n## Breaking changes\n\n- No explicit breaking changes were detected in automation."
+            DRAFT_BODY=$(printf '## Changelog\n\n- See commit history for details in v%s.\n\n## Breaking changes\n\n- No explicit breaking changes were detected in automation.' "$CURR")
           fi
 
-          printf 'content<<EOF\n%s\nEOF\n' "$DRAFT_BODY" >> "$GITHUB_OUTPUT"
+          printf 'content<<RELEASE_NOTES_EOF\n%s\nRELEASE_NOTES_EOF\n' "$DRAFT_BODY" >> "$GITHUB_OUTPUT"
 
       - name: Post @JuliaRegistrator comment on commit
         if: steps.version_check.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_NOTES: ${{ steps.notes.outputs.content }}
+          CURR: ${{ steps.version_check.outputs.curr }}
+          PREV: ${{ steps.version_check.outputs.prev }}
+          COMMIT: ${{ github.event.workflow_run.head_sha }}
+          REPO: ${{ github.repository }}
         run: |
-          CURR="${{ steps.version_check.outputs.curr }}"
-          PREV="${{ steps.version_check.outputs.prev }}"
-          COMMIT="${{ github.sha }}"
-          RELEASE_NOTES="${{ steps.notes.outputs.content }}"
+          BODY=$(printf '@JuliaRegistrator register\n\nRelease notes:\n\n%s\n\nVersion bumped from `%s` -> `%s` by commit %s.' \
+            "$RELEASE_NOTES" "$PREV" "$CURR" "$COMMIT")
 
-          BODY="@JuliaRegistrator register
-
-          Release notes:
-
-          $RELEASE_NOTES
-
-          Version bumped from \`$PREV\` -> \`$CURR\` by commit $COMMIT."
-
-          # Registrator accepts comments on commits or issues, but not pull requests.
-          gh api repos/${{ github.repository }}/commits/$COMMIT/comments \
-            -f body="$BODY"
+          # Registrator accepts comments on commits, not pull requests.
+          gh api "repos/${REPO}/commits/${COMMIT}/comments" -f body="$BODY"

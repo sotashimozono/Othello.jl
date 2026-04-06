@@ -24,7 +24,9 @@ mutable struct GUIConfig
     white_player::String
 end
 
-const DEFAULT_CONFIG_PATH = joinpath(@__DIR__, "default_config.toml")
+const DEFAULT_CONFIG_PATH = joinpath(
+    dirname(dirname(@__DIR__)), "config", "default_config.toml"
+)
 const USER_CONFIG_PATH = joinpath(homedir(), ".reversirc.toml")
 const SESSION_CONFIG_PATH = joinpath(tempdir(), "reversi_session_config.toml")
 
@@ -53,7 +55,14 @@ function load_config()
                 section = lowercase(parts[2])
                 name = join(lowercase.(parts[3:end]), "_")
                 if haskey(config_dict, section)
-                    config_dict[section][name] = env_val
+                    # Try to match the type of the existing value if possible
+                    if haskey(config_dict[section], name)
+                        config_dict[section][name] = _try_parse_val(
+                            config_dict[section][name], env_val
+                        )
+                    else
+                        config_dict[section][name] = env_val
+                    end
                 end
             end
         end
@@ -85,6 +94,12 @@ function _merge!(dst::AbstractDict, src::AbstractDict)
         end
     end
     return dst
+end
+
+function _try_parse_val(existing_val, new_str::String)
+    existing_val isa Int && return parse(Int, new_str)
+    existing_val isa Bool && return lowercase(new_str) in ("true", "yes", "1")
+    return new_str
 end
 
 function save_session_config(config::GUIConfig)

@@ -60,6 +60,15 @@ Modules = [Reversi]
 Pages   = ["ui/gui.jl"]
 ```
 
+---
+
+## Configuration (`config.jl`)
+
+```@autodocs
+Modules = [Reversi]
+Pages   = ["ui/config.jl"]
+```
+
 ### Launching the GUI
 
 ```julia

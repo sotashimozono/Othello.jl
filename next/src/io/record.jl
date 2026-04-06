@@ -64,27 +64,31 @@ function load_game(filepath::String)::GameRecord
     moves  = String[]
     result = IN_PROGRESS
 
-    for line in eachline(filepath)
-        if startswith(line, "MOVES:")
-            moves_found = true
-            raw  = strip(line[(length("MOVES:") + 1):end])
-            moves = isempty(raw) ? String[] : String.(split(raw))
-        elseif startswith(line, "RESULT:")
-            result_found = true
-            val = strip(line[(length("RESULT:") + 1):end])
-            result = if val == "BLACK"
-                BLACK
-            elseif val == "WHITE"
-                WHITE
-            elseif val == "DRAW"
-                EMPTY
-            elseif val == "IN_PROGRESS"
-                IN_PROGRESS
-            else
-                throw(ArgumentError("Unrecognised RESULT value: \"$val\" in $filepath"))
+    # Use open...do so the file handle is closed before any exception propagates
+    # (important on Windows where an open handle blocks rm()).
+    open(filepath) do io
+        for line in eachline(io)
+            if startswith(line, "MOVES:")
+                moves_found = true
+                raw  = strip(line[(length("MOVES:") + 1):end])
+                moves = isempty(raw) ? String[] : String.(split(raw))
+            elseif startswith(line, "RESULT:")
+                result_found = true
+                val = strip(line[(length("RESULT:") + 1):end])
+                result = if val == "BLACK"
+                    BLACK
+                elseif val == "WHITE"
+                    WHITE
+                elseif val == "DRAW"
+                    EMPTY
+                elseif val == "IN_PROGRESS"
+                    IN_PROGRESS
+                else
+                    throw(ArgumentError("Unrecognised RESULT value: \"$val\" in $filepath"))
+                end
             end
         end
-    end
+    end  # file handle closed here — safe to rm() on Windows
 
     moves_found  || throw(ArgumentError("Missing MOVES line in $filepath"))
     result_found || throw(ArgumentError("Missing RESULT line in $filepath"))

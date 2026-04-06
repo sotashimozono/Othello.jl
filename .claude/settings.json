@@ -1,7 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "WebSearch"
+      "WebSearch",
+      "Bash(julia --project=next -e 'import Pkg; Pkg.resolve\\(\\)')",
+      "Bash(julia --project=next next/test/core/test_struct.jl)",
+      "Bash(julia --project=next next/test/core/test_rules.jl)"
     ]
   }
 }

@@ -1,0 +1,63 @@
+name: AutoRegister
+
+# Triggered on push to main. If Project.toml version changed, post a
+# @JuliaRegistrator register comment to kick off the registration pipeline.
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - Project.toml
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  register:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2   # need HEAD and HEAD~1 to compare
+
+      - name: Check if version changed
+        id: version_check
+        run: |
+          PREV=$(git show HEAD~1:Project.toml 2>/dev/null | grep '^version' | head -1 | sed 's/.*"\(.*\)"/\1/' || echo "")
+          CURR=$(grep '^version' Project.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
+          echo "prev=$PREV"
+          echo "curr=$CURR"
+          echo "prev=$PREV" >> "$GITHUB_OUTPUT"
+          echo "curr=$CURR" >> "$GITHUB_OUTPUT"
+          if [ "$PREV" != "$CURR" ] && [ -n "$CURR" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Post @JuliaRegistrator comment
+        if: steps.version_check.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          CURR="${{ steps.version_check.outputs.curr }}"
+          PREV="${{ steps.version_check.outputs.prev }}"
+          COMMIT="${{ github.sha }}"
+          # Find the PR that was merged (may not exist for direct pushes)
+          PR_NUMBER=$(gh pr list --state merged --base main --json number,mergeCommit \
+            --jq ".[] | select(.mergeCommit.oid == \"$COMMIT\") | .number" 2>/dev/null || echo "")
+
+          BODY="@JuliaRegistrator register
+
+          Version bumped from \`$PREV\` → \`$CURR\` by commit $COMMIT."
+
+          if [ -n "$PR_NUMBER" ]; then
+            gh pr comment "$PR_NUMBER" --body "$BODY"
+          else
+            # Fall back to creating an issue comment on the commit via the commits API
+            gh api repos/${{ github.repository }}/commits/$COMMIT/comments \
+              -f body="$BODY"
+          fi

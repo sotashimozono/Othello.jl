@@ -266,9 +266,18 @@ function verify_wthor_game(g::WThorGame)
         if move_str == "pass"
             pass!(game; force=true)
         else
+            # WTHOR does not encode passes; auto-pass whenever the current
+            # player has no legal moves before applying the stored move.
+            while isempty(valid_moves(game)) && !is_game_over(game)
+                pass!(game; force=true)
+            end
             ok = make_move!(game, move_str)
             ok || return false
         end
+    end
+    # Auto-pass any trailing forced passes after all stored moves.
+    while isempty(valid_moves(game)) && !is_game_over(game)
+        pass!(game; force=true)
     end
     actual_black, _ = count_pieces(game)
     return actual_black == g.black_score

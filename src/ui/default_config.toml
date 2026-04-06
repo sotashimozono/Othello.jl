@@ -1,0 +1,34 @@
+# Reversi GUI Configuration
+
+[window]
+title = "Reversi.jl"
+width = 820
+height = 760
+
+[colors]
+background = "#212126"     # _C_BG
+panel = "#303038"          # _C_PANEL
+board = "#0d6b24"          # _C_BOARD
+grid = "#054712"           # _C_GRID
+black_piece = "#121217"    # _C_BLACK_PC
+white_piece = "#f0f0f4"    # _C_WHITE_PC
+hint = "#f2e0338c"         # _C_HINT (RGBA)
+hint_rim = "#ccba0d6d"     # _C_HINT_RIM (RGBA)
+last_move = "#ff5959bf"    # _C_LAST (RGBA)
+text = "#e0e0e0"           # _C_TEXT
+text_dim = "#8c8c94"       # _C_TEXT_DIM
+accent_black = "#408cff"   # _C_ACCENT_B
+accent_white = "#f2f2f2"   # _C_ACCENT_W
+turn_highlight = "#408cff2e" # _C_TURN_HL (RGBA)
+
+[ui]
+show_hints = true
+show_last_move = false
+show_kifu = true
+show_eval = false
+fontsize = 14
+sidebar_width = 230
+
+[players]
+black = "Human"
+white = "Random AI"

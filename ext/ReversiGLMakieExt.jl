@@ -215,9 +215,9 @@ function _open_add_player_dialog!(registry_obs::Observable, update_cb::Function)
     on(btn_reg.clicks) do _
         raw_name = strip(name_tb.displayed_string[])
         raw_expr = strip(expr_tb.displayed_string[])
-        isempty(raw_name) && (msg_lbl.text[] = "⚠ Please enter a name."; return nothing)
+        isempty(raw_name) && (msg_lbl.text[]="⚠ Please enter a name."; return nothing)
         isempty(raw_expr) &&
-            (msg_lbl.text[] = "⚠ Please enter a Julia expression."; return nothing)
+            (msg_lbl.text[]="⚠ Please enter a Julia expression."; return nothing)
         local player_instance
         try
             parsed = Meta.parse(raw_expr)

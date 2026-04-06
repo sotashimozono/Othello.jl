@@ -24,7 +24,7 @@ export play_game
 export GameRecord, save_game, load_game, replay_game, validate_record
 
 # GUI (requires GLMakie)
-export GUIPlayer, launch_gui, launch_replay_gui
+export launch_gui, launch_replay_gui
 
 # WTHOR format (io)
 export WThorHeader, WThorGame, read_wthor, write_wthor

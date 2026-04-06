@@ -33,7 +33,11 @@ function play_game(
 
         verbose && println("\n" * "="^40)
 
-        move = get_move(current, game)
+        move = if current isa HumanPlayer
+            get_terminal_input(game)
+        else
+            get_move(current, game)
+        end
 
         if move === nothing
             verbose && println("$color passes.")

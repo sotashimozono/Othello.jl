@@ -31,7 +31,7 @@ play_game(HumanPlayer(), RandomPlayer())
 
 ```julia
 # GUI game
-launch_gui(GUIPlayer(), RandomPlayer())
+launch_gui(HumanPlayer(), RandomPlayer())
 ```
 
 ## Custom player interface

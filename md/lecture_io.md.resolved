@@ -1,0 +1,35 @@
+# ML Lecture 2: Design of the I/O Pipeline
+
+To train an AI, you need a high-speed "conveyor belt" of data. In Reversi, this means turning the game logic into something a GPU or Optimizer can digest.
+
+## 1. The Data Source: Games vs Positions
+- **Games**: Full game records (e.g., WTHOR database). Good for learning overall strategy.
+- **Positions**: Atomic pairs of (Board -> Result).
+- **The "Data Sink"**: You should create a script that runs millions of random games and saves the terminal state and random board samples into a `.h5` (HDF5) or `.jld2` file.
+
+## 2. Encoding the Input ($X$)
+We use the `board_to_matrix` function we implemented.
+- **Naive Encoding**: 1.0 (Black), -1.0 (White), 0.0 (Empty).
+- **One-Hot Encoding** (Recommended for NNs): 
+    - Layer 1: 1.0 where Black exists, 0.0 otherwise.
+    - Layer 2: 1.0 where White exists, 0.0 otherwise.
+    - Layer 3: 1.0 for the current player's turn (constant plane).
+- **Why?** It's easier for the network to handle binary inputs than relative values.
+
+## 3. Encoding the Output ($Y$)
+- **For Value ($V$)**: A single float (e.g., 1.0 for current player win, -1.0 for loss).
+- **For Policy ($\pi$)**: A "One-Hot" 64-length vector where the index of the move made is 1.0, others are 0.0.
+
+## 4. Batching for Performance
+Deep learning libraries (like Flux.jl) work fastest on **Batches**.
+- Instead of feeding one 8x8 board, you feed a 4D tensor: `8 x 8 x Channels x BatchSize`.
+- Example: `8 x 8 x 2 x 128` (128 boards at once).
+
+## 5. Tensor Network (DMRG) Specifics
+If you are doing DMRG/TDVP:
+- Your "Input" is the board state.
+- Your "Ground State Search" is finding the MPS that minimizes the energy (loss) over your training dataset.
+- The I/O remains the same, but the internal "Contraction" replaces the "Matrix Multiplication" of NNs.
+
+---
+**Next Lecture**: Experimental Ideas (How to use your TN knowledge to outperform standard NNs).

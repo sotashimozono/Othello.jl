@@ -46,6 +46,6 @@ include("io/record.jl")     # GameRecord, save_game, load_game, replay_game
 
 include("ui/cui.jl")        # display_board (terminal rendering)
 include("ui/game.jl")       # play_game (CUI game loop)
-include("ui/gui.jl")        # GLMakie GUI (loads GLMakie on include)
+include("ui/gui.jl")        # GUI stubs; GLMakie implementation lives in ext/
 
 end # module Reversi

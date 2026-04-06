@@ -67,7 +67,7 @@ Pages   = ["ui/gui.jl"]
 launch_gui()
 
 # Fully custom
-launch_gui(MyMLPlayer(model), GUIPlayer(); show_hints=false)
+launch_gui(MyMLPlayer(model), HumanPlayer(); show_hints=false)
 
 # Replay a saved game record
 rec = load_game("game.txt")

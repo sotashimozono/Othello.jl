@@ -11,29 +11,7 @@
 #   using GLMakie   # must be loaded before or alongside Reversi
 #   using Reversi
 # ---------------------------------------------------------------------------
-
-"""
-    GUIPlayer <: Player
-
-A player that inputs moves by clicking squares on the GLMakie GUI board.
-
-`get_move` blocks until a valid board square is clicked.
-Use `launch_gui(GUIPlayer(), ...)` to open the window.
-Requires the GLMakie package to be loaded for `launch_gui` to work.
-"""
-mutable struct GUIPlayer <: Player
-    move_channel::Channel{Union{Position,Nothing}}
-    GUIPlayer() = new(Channel{Union{Position,Nothing}}(1))
-end
-
-function get_move(player::GUIPlayer, game::ReversiGame)
-    moves = valid_moves(game)
-    isempty(moves) && return nothing
-    while true
-        pos = take!(player.move_channel)
-        (pos === nothing || pos in moves) && return pos
-    end
-end
+# (GUIPlayer has been merged into HumanPlayer in core/player.jl)
 
 """
     launch_gui([black, white]; show_hints=true)
@@ -44,7 +22,7 @@ Open an interactive GLMakie Reversi window.
 ```julia
 using GLMakie, Reversi
 launch_gui()                            # human (black) vs random AI
-launch_gui(GUIPlayer(), GUIPlayer())    # human vs human
+launch_gui(HumanPlayer(), HumanPlayer())  # human vs human
 ```
 """
 function launch_gui end

@@ -2,7 +2,15 @@ module ReversiGLMakieExt
 
 using Reversi
 using Reversi:
-    BLACK, WHITE, Position, ReversiGame, Player, GUIPlayer, RandomPlayer, GameRecord
+    BLACK,
+    WHITE,
+    Position,
+    ReversiGame,
+    Player,
+    HumanPlayer,
+    RandomPlayer,
+    GreedyPlayer,
+    GameRecord
 using Reversi:
     valid_moves,
     make_move!,
@@ -112,8 +120,8 @@ function _draw_pieces!(
         r0 = _BOARD_SIZE - last_move.row
         lines!(
             ax,
-            [c0, c0+1, c0+1, c0, c0],
-            [r0, r0, r0+1, r0+1, r0];
+            [c0, c0 + 1, c0 + 1, c0, c0],
+            [r0, r0, r0 + 1, r0 + 1, r0];
             color=RGBAf(1.0, 0.35, 0.35, 0.90),
             linewidth=3.5,
         )
@@ -137,8 +145,9 @@ end
 # Player name helper
 # ---------------------------------------------------------------------------
 
-_player_name(::GUIPlayer) = "Human"
+_player_name(::HumanPlayer) = "Human"
 _player_name(::RandomPlayer) = "Random AI"
+_player_name(::GreedyPlayer) = "Greedy AI"
 _player_name(p::Player) = string(typeof(p))
 
 # ---------------------------------------------------------------------------
@@ -151,8 +160,9 @@ struct NamedPlayerEntry
 end
 
 const _BUILTIN_PLAYERS = [
-    NamedPlayerEntry("Human (Player)", () -> GUIPlayer()),
+    NamedPlayerEntry("Human (Player)", () -> HumanPlayer()),
     NamedPlayerEntry("Random AI", () -> RandomPlayer()),
+    NamedPlayerEntry("Greedy AI", () -> GreedyPlayer()),
 ]
 
 # ---------------------------------------------------------------------------
@@ -199,8 +209,7 @@ function _open_add_player_dialog!(registry_obs::Observable, update_cb::Function)
     )
 
     on(btn_cancel.clicks) do _
-        ;
-        close(dlg.scene);
+        close(dlg.scene)
     end
 
     on(btn_reg.clicks) do _
@@ -237,7 +246,7 @@ end
 # ---------------------------------------------------------------------------
 
 function Reversi.launch_gui(
-    black::Player=GUIPlayer(), white::Player=RandomPlayer(); show_hints::Bool=true
+    black::Player=HumanPlayer(), white::Player=RandomPlayer(); show_hints::Bool=true
 )
     game_obs = Observable(ReversiGame())
     hints_obs = Observable(show_hints)
@@ -252,8 +261,8 @@ function Reversi.launch_gui(
     # Row 1: player selection bar
     sel_bar = fig[1, 1] = GridLayout()
     _names(reg) = [e.name for e in reg]
-    _find_idx(reg, p) = begin
-        p isa GUIPlayer && return 1
+    function _find_idx(reg, p)
+        p isa HumanPlayer && return 1
         p isa RandomPlayer &&
             return something(findfirst(e -> e.name == "Random AI", reg), 1)
         return 1
@@ -262,8 +271,7 @@ function Reversi.launch_gui(
     init_reg = registry_obs[]
     menu_options_obs = Observable(_names(init_reg))
     on(registry_obs) do reg
-        ;
-        menu_options_obs[] = _names(reg);
+        menu_options_obs[] = _names(reg)
     end
 
     black_sel = Menu(
@@ -339,7 +347,7 @@ function Reversi.launch_gui(
     )
     white_turn_lbl = Label(
         white_card[1, 3];
-        text=@lift((!$game_over_obs && $game_obs.current_player==WHITE) ? "< Turn" : ""),
+        text=@lift((!$game_over_obs && $game_obs.current_player == WHITE) ? "< Turn" : ""),
         color=_C_ACCENT_B,
         fontsize=13,
         halign=:left,
@@ -386,7 +394,7 @@ function Reversi.launch_gui(
     )
     black_turn_lbl = Label(
         black_card[1, 3];
-        text=@lift((!$game_over_obs && $game_obs.current_player==BLACK) ? "< Turn" : ""),
+        text=@lift((!$game_over_obs && $game_obs.current_player == BLACK) ? "< Turn" : ""),
         color=_C_ACCENT_B,
         fontsize=13,
         halign=:left,
@@ -404,14 +412,14 @@ function Reversi.launch_gui(
         ctrl[1, 5];
         text=@lift(
             begin
-                game = $game_obs;
+                game = $game_obs
                 over = $game_over_obs
                 if over
-                    w = get_winner(game);
+                    w = get_winner(game)
                     b, wc = count_pieces(game)
-                    if w==BLACK
+                    if w == BLACK
                         "Black wins!  (B $b - W $wc)"
-                    elseif w==WHITE
+                    elseif w == WHITE
                         "White wins!  (B $b - W $wc)"
                     else
                         "Draw!  (B $b - W $wc)"
@@ -466,7 +474,7 @@ function Reversi.launch_gui(
         empty!(ax)
         _draw_board!(ax)
         _draw_pieces!(ax, game, ppu, show_last_obs[] ? last_move : nothing)
-        show_h && !game_over_obs[] && _draw_hints!(ax, game, ppu)
+        return show_h && !game_over_obs[] && _draw_hints!(ax, game, ppu)
     end
 
     function _refresh_kifu!(kifu_ax, kifu)
@@ -491,7 +499,7 @@ function Reversi.launch_gui(
             text!(
                 kifu_ax,
                 0.05,
-                Float32(n-1);
+                Float32(n - 1);
                 text=lpad(string(n), 3),
                 color=_C_TEXT_DIM,
                 fontsize=12,
@@ -500,7 +508,7 @@ function Reversi.launch_gui(
             text!(
                 kifu_ax,
                 0.35,
-                Float32(n-1);
+                Float32(n - 1);
                 text="$pc_tag  $notation",
                 color=line_color,
                 fontsize=12,
@@ -508,75 +516,90 @@ function Reversi.launch_gui(
             )
         end
         ylims!(kifu_ax, length(kifu) + 0.5, -0.5)
-        xlims!(kifu_ax, 0, 1)
+        return xlims!(kifu_ax, 0, 1)
     end
 
     on(game_obs) do game
-        ;
-        _refresh!(ax, game, hints_obs[], last_move_obs[]);
+        _refresh!(ax, game, hints_obs[], last_move_obs[])
     end
     on(kifu_obs) do kifu
-        ;
-        _refresh_kifu!(kifu_ax, kifu);
+        _refresh_kifu!(kifu_ax, kifu)
     end
     on(tgl_hints.active) do v
-        hints_obs[] = v;
+        hints_obs[] = v
         _refresh!(ax, game_obs[], v, last_move_obs[])
     end
     on(tgl_last.active) do v
-        show_last_obs[] = v;
+        show_last_obs[] = v
         _refresh!(ax, game_obs[], hints_obs[], last_move_obs[])
     end
     on(ax.scene.viewport) do _
-        ;
-        _refresh!(ax, game_obs[], hints_obs[], last_move_obs[]);
+        _refresh!(ax, game_obs[], hints_obs[], last_move_obs[])
     end
 
     players = Ref{Dict{Int,Player}}(Dict(BLACK => black, WHITE => white))
 
     function _selected_player(menu::Menu)
-        reg = registry_obs[];
+        reg = registry_obs[]
         idx = clamp(menu.i_selected[], 1, length(reg))
         return reg[idx].factory()
     end
 
     function run_game!(game_ref, kifu_ref)
-        game = game_ref[]
-        while !is_game_over(game)
-            sleep(0.0)
-            color = game.current_player
-            move = get_move(players[][color], game)
-            if move === nothing
-                push!(kifu_ref[], (length(kifu_ref[])+1, color, "pass"))
-                pass!(game)
-                last_move_obs[] = nothing
-            else
-                push!(kifu_ref[], (length(kifu_ref[])+1, color, position_to_string(move)))
-                make_move!(game, move.row, move.col)
-                last_move_obs[] = move
+        try
+            game = game_ref[]
+            while !is_game_over(game)
+                yield()
+                color = game.current_player
+                move = get_move(players[][color], game)
+                if move === nothing
+                    push!(kifu_ref[], (length(kifu_ref[]) + 1, color, "pass"))
+                    pass!(game)
+                    last_move_obs[] = nothing
+                else
+                    push!(
+                        kifu_ref[],
+                        (length(kifu_ref[]) + 1, color, position_to_string(move)),
+                    )
+                    make_move!(game, move.row, move.col)
+                    last_move_obs[] = move
+                end
+                kifu_obs[] = copy(kifu_ref[])
+                game_obs[] = deepcopy(game)
             end
-            kifu_obs[] = copy(kifu_ref[])
-            game_obs[] = deepcopy(game)
+            game_over_obs[] = true
+            _refresh!(ax, game, false, last_move_obs[])
+            _refresh_kifu!(kifu_ax, kifu_obs[])
+        catch e
+            if !(e isa InvalidStateException) # Ignore if channel was closed intentionally
+                @error "Error in Reversi game task" exception = (e, catch_backtrace())
+            end
         end
-        game_over_obs[] = true
-        _refresh!(ax, game, false, last_move_obs[])
-        _refresh_kifu!(kifu_ax, kifu_obs[])
     end
 
     current_task = Ref{Union{Task,Nothing}}(nothing)
 
     function start_game!(new_black::Player, new_white::Player)
-        for p in values(players[])
-            p isa GUIPlayer && isopen(p.move_channel) && close(p.move_channel)
+
+        # Close channels of OLD players that are no longer in use
+        old_players = players[]
+        for p in values(old_players)
+            if p isa HumanPlayer && isopen(p.move_channel)
+                # Only close if it's NOT one of the new players
+                if p !== new_black && p !== new_white
+                    close(p.move_channel)
+                end
+            end
         end
+
         players[] = Dict{Int,Player}(BLACK => new_black, WHITE => new_white)
         white_name_lbl.text[] = "[W]  White: $(_player_name(new_white))"
         black_name_lbl.text[] = "[B]  Black: $(_player_name(new_black))"
-        game = ReversiGame();
+        game = ReversiGame()
         kifu = Tuple{Int,Int,String}[]
-        game_over_obs[] = false;
+        game_over_obs[] = false
         last_move_obs[] = nothing
-        kifu_obs[] = kifu;
+        kifu_obs[] = kifu
         game_obs[] = game
         t = @async run_game!(Ref(game), Ref(kifu))
         current_task[] = t
@@ -590,26 +613,24 @@ function Reversi.launch_gui(
         _open_add_player_dialog!(registry_obs, () -> nothing)
     end
 
-    on(events(fig.scene).mousebutton) do event
-        event.button == Mouse.left && event.action == Mouse.press || return nothing
-        is_mouseinside(ax.scene) || return nothing
-        game = game_obs[];
+    register_interaction!(ax, :board_click) do event::MouseEvent, _
+        event.type == MouseEventTypes.leftclick || return nothing
+        game = game_obs[]
         game_over_obs[] && return nothing
 
-        mp_win = events(fig.scene).mouseposition[]
-        ax_vp = ax.scene.viewport[]
-        nx = (mp_win[1] - ax_vp.origin[1]) / ax_vp.widths[1]
-        ny = (mp_win[2] - ax_vp.origin[2]) / ax_vp.widths[2]
-        lims = ax.finallimits[]
-        data_x = lims.origin[1] + nx * lims.widths[1]
-        data_y = lims.origin[2] + ny * lims.widths[2]
-        col = Int(floor(data_x)) + 1
-        row = _BOARD_SIZE - Int(floor(data_y))
-        if 1 <= row <= 8 && 1 <= col <= 8
-            cp = players[][game.current_player]
-            if cp isa GUIPlayer && isopen(cp.move_channel)
-                put!(cp.move_channel, Position(row, col))
-            end
+        # Ensure we are within board bounds (0 to 8 in data coords)
+        x, y = event.data
+        (0 <= x <= 8 && 0 <= y <= 8) || return nothing
+
+        col = Int(floor(x)) + 1
+        row = _BOARD_SIZE - Int(floor(y))
+        # Extra safety for the upper bound (exactly 8.0)
+        col = clamp(col, 1, 8)
+        row = clamp(row, 1, 8)
+
+        cp = players[][game.current_player]
+        if cp isa HumanPlayer && isopen(cp.move_channel)
+            put!(cp.move_channel, Position(row, col))
         end
     end
 
@@ -661,8 +682,8 @@ function Reversi.launch_replay_gui(moves::Vector{String}; title::String="Game Re
         fig[1, 1];
         text=@lift(
             begin
-                g=$game_obs;
-                b, w=count_pieces(g);
+                g = $game_obs
+                b, w = count_pieces(g)
                 "B $b – W $w"
             end
         ),
@@ -771,15 +792,15 @@ function Reversi.launch_replay_gui(moves::Vector{String}; title::String="Game Re
     _px_per_unit_replay() = ax.scene.viewport[].widths[1] / 8.0
 
     function _refresh_board!(p)
-        ppu = _px_per_unit_replay();
-        empty!(ax);
+        ppu = _px_per_unit_replay()
+        empty!(ax)
         _draw_board!(ax)
         lm = (show_last_obs[] && p > 0 && moves[p] != "pass") ? Position(moves[p]) : nothing
-        _draw_pieces!(ax, states[p + 1], ppu, lm)
+        return _draw_pieces!(ax, states[p + 1], ppu, lm)
     end
 
     function _refresh_replay_kifu!(current_p)
-        empty!(kifu_ax);
+        empty!(kifu_ax)
         n = length(moves)
         if n == 0
             text!(
@@ -792,7 +813,7 @@ function Reversi.launch_replay_gui(moves::Vector{String}; title::String="Game Re
                 align=(:center, :center),
                 space=:relative,
             )
-            ylims!(kifu_ax, 1, 0);
+            ylims!(kifu_ax, 1, 0)
             return nothing
         end
         for i in 1:n
@@ -809,7 +830,7 @@ function Reversi.launch_replay_gui(moves::Vector{String}; title::String="Game Re
             text!(
                 kifu_ax,
                 0.05,
-                Float32(i-1);
+                Float32(i - 1);
                 text=lpad(string(i), 3),
                 color=_C_TEXT_DIM,
                 fontsize=12,
@@ -818,55 +839,48 @@ function Reversi.launch_replay_gui(moves::Vector{String}; title::String="Game Re
             text!(
                 kifu_ax,
                 0.35,
-                Float32(i-1);
+                Float32(i - 1);
                 text="$pc_tag  $(moves[i])",
                 color=row_color,
                 fontsize=is_current ? 13 : 12,
                 align=(:left, :top),
             )
         end
-        ylims!(kifu_ax, n + 0.5, -0.5);
-        xlims!(kifu_ax, 0, 1)
+        ylims!(kifu_ax, n + 0.5, -0.5)
+        return xlims!(kifu_ax, 0, 1)
     end
 
     function _goto!(p)
         p = clamp(p, 0, n_moves)
-        pos_obs[] = p;
-        game_obs[] = states[p + 1];
+        pos_obs[] = p
+        game_obs[] = states[p + 1]
         slider.value[] = p
-        _refresh_board!(p);
-        _refresh_replay_kifu!(p)
+        _refresh_board!(p)
+        return _refresh_replay_kifu!(p)
     end
 
     on(tgl_last.active) do v
-        ;
-        show_last_obs[] = v;
-        _refresh_board!(pos_obs[]);
+        show_last_obs[] = v
+        _refresh_board!(pos_obs[])
     end
     on(ax.scene.viewport) do _
-        ;
-        _refresh_board!(pos_obs[]);
+        _refresh_board!(pos_obs[])
     end
     on(btn_first.clicks) do _
-        ;
-        _goto!(0);
+        _goto!(0)
     end
     on(btn_prev.clicks) do _
-        ;
-        _goto!(pos_obs[] - 1);
+        _goto!(pos_obs[] - 1)
     end
     on(btn_next.clicks) do _
-        ;
-        _goto!(pos_obs[] + 1);
+        _goto!(pos_obs[] + 1)
     end
     on(btn_last.clicks) do _
-        ;
-        _goto!(n_moves);
+        _goto!(n_moves)
     end
     on(slider.value) do v
-        ;
-        v == pos_obs[] && return nothing;
-        _goto!(v);
+        v == pos_obs[] && return nothing
+        _goto!(v)
     end
 
     on(events(fig.scene).keyboardbutton) do event

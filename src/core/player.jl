@@ -16,11 +16,33 @@ function get_move end
 """
     HumanPlayer <: Player
 
-A player that gets moves from terminal input.
-"""
-struct HumanPlayer <: Player end
+A human player that can receive moves from any interface (GUI, terminal, etc.)
+via its internal `move_channel`.
 
-function get_move(::HumanPlayer, game::ReversiGame; hints=true)
+Use `get_move(player, game)` to wait for the next move.
+"""
+mutable struct HumanPlayer <: Player
+    move_channel::Channel{Union{Position,Nothing}}
+    HumanPlayer() = new(Channel{Union{Position,Nothing}}(1))
+end
+
+function get_move(player::HumanPlayer, game::ReversiGame)
+    moves = valid_moves(game)
+    isempty(moves) && return nothing
+    while true
+        pos = take!(player.move_channel)
+        # Accept if it's a pass (nothing) or a valid move
+        (pos === nothing || pos in moves) && return pos
+    end
+end
+
+"""
+    get_terminal_input(game::ReversiGame; hints=true) -> Union{Position, Nothing}
+
+A helper for CLI frontends to get move input from the terminal using `readline`.
+Can be used to `put!` a move into a `HumanPlayer`'s channel.
+"""
+function get_terminal_input(game::ReversiGame; hints=true)
     moves = valid_moves(game)
     if isempty(moves)
         println("\e[33mNo valid moves. Press Enter to pass...\e[0m")
@@ -67,4 +89,29 @@ function get_move(::RandomPlayer, game::ReversiGame)
     moves = valid_moves(game)
     isempty(moves) && return nothing
     return rand(moves)
+end
+
+"""
+    GreedyPlayer <: Player
+
+A player that always picks the move that flips the most pieces.
+"""
+struct GreedyPlayer <: Player end
+
+function get_move(::GreedyPlayer, game::ReversiGame)
+    moves = valid_moves(game)
+    isempty(moves) && return nothing
+    player_bb = game.current_player == BLACK ? game.black : game.white
+    opponent_bb = game.current_player == BLACK ? game.white : game.black
+    best_move = moves[1]
+    best_count = -1
+    for m in moves
+        bit = one(UInt64) << ((m.row - 1) * 8 + (m.col - 1))
+        n = count_ones(compute_flips(bit, player_bb, opponent_bb))
+        if n > best_count
+            best_count = n
+            best_move = m
+        end
+    end
+    return best_move
 end

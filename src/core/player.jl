@@ -68,3 +68,28 @@ function get_move(::RandomPlayer, game::ReversiGame)
     isempty(moves) && return nothing
     return rand(moves)
 end
+
+"""
+    GreedyPlayer <: Player
+
+A player that always picks the move that flips the most pieces.
+"""
+struct GreedyPlayer <: Player end
+
+function get_move(::GreedyPlayer, game::ReversiGame)
+    moves = valid_moves(game)
+    isempty(moves) && return nothing
+    player_bb = game.current_player == BLACK ? game.black : game.white
+    opponent_bb = game.current_player == BLACK ? game.white : game.black
+    best_move = moves[1]
+    best_count = -1
+    for m in moves
+        bit = one(UInt64) << ((m.row - 1) * 8 + (m.col - 1))
+        n = count_ones(compute_flips(bit, player_bb, opponent_bb))
+        if n > best_count
+            best_count = n
+            best_move = m
+        end
+    end
+    return best_move
+end

@@ -2,7 +2,7 @@ module ReversiGLMakieExt
 
 using Reversi
 using Reversi:
-    BLACK, WHITE, Position, ReversiGame, Player, GUIPlayer, RandomPlayer, GameRecord
+    BLACK, WHITE, Position, ReversiGame, Player, GUIPlayer, RandomPlayer, GreedyPlayer, GameRecord
 using Reversi:
     valid_moves,
     make_move!,
@@ -139,6 +139,7 @@ end
 
 _player_name(::GUIPlayer) = "Human"
 _player_name(::RandomPlayer) = "Random AI"
+_player_name(::GreedyPlayer) = "Greedy AI"
 _player_name(p::Player) = string(typeof(p))
 
 # ---------------------------------------------------------------------------
@@ -152,7 +153,8 @@ end
 
 const _BUILTIN_PLAYERS = [
     NamedPlayerEntry("Human (Player)", () -> GUIPlayer()),
-    NamedPlayerEntry("Random AI", () -> RandomPlayer()),
+    NamedPlayerEntry("Random AI",      () -> RandomPlayer()),
+    NamedPlayerEntry("Greedy AI",      () -> GreedyPlayer()),
 ]
 
 # ---------------------------------------------------------------------------

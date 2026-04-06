@@ -1,8 +1,18 @@
-function _refresh_kifu!(kifu_ax, kifu, config)
+# ---------------------------------------------------------------------------
+# Unified kifu drawing
+#
+# entries : Vector{Tuple{move_n, color, notation}}
+# active_n: highlight this move number (0 = none, used in live mode)
+# ---------------------------------------------------------------------------
+
+function _draw_kifu!(
+    kifu_ax, entries::Vector{Tuple{Int,Int,String}}, config::GUIConfig; active_n::Int=0
+)
     empty!(kifu_ax)
     c_text = _get_color(config, "text")
     c_text_dim = _get_color(config, "text_dim")
     c_accent_b = _get_color(config, "accent_black")
+    c_active = RGBf(1.0, 0.85, 0.2)
     fs = config.fontsize - 2
     if isempty(kifu)
         text!(
@@ -40,7 +50,7 @@ function _refresh_kifu!(kifu_ax, kifu, config)
             align=(:left, :top),
         )
     end
-    ylims!(kifu_ax, length(kifu)+0.5, -0.5)
+    ylims!(kifu_ax, length(entries) + 0.5, -0.5)
     xlims!(kifu_ax, 0, 1)
 end
 

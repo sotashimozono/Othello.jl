@@ -9,7 +9,7 @@ function Reversi.launch_gui(
     sh = isnothing(show_hints) ? config.show_hints : show_hints
 
     # ---------------------------------------------------------------------------
-    # Observables
+    # Observables — game state
     # ---------------------------------------------------------------------------
     game_obs = Observable(ReversiGame())
     hints_obs = Observable(sh)
@@ -17,8 +17,15 @@ function Reversi.launch_gui(
     last_move_obs = Observable{Union{Position,Nothing}}(nothing)
     show_last_obs = Observable(config.show_last_move)
     kifu_obs = Observable(Tuple{Int,Int,String}[])
+    score_history_obs = Observable(Float32[0.0f0])   # index 1 = initial (diff=0)
     registry_obs = Observable(copy(_BUILTIN_PLAYERS))
     players = Ref{Dict{Int,Player}}(Dict(BLACK => b_player, WHITE => w_player))
+
+    # ---------------------------------------------------------------------------
+    # Observables — UI state machine
+    # ---------------------------------------------------------------------------
+    mode_obs = Observable(:live)   # :live | :review
+    review_pos_obs = Observable(0)       # which move is highlighted (0 = none)
 
     # ---------------------------------------------------------------------------
     # Figure & layout
@@ -27,10 +34,12 @@ function Reversi.launch_gui(
         size=(config.window_width, config.window_height),
         backgroundcolor=_get_color(config, "background"),
     )
-    content_grid = fig[1, 1] = GridLayout(; halign=:center, tellwidth=false)
+    content_grid = fig[1, 1] = GridLayout(; halign=:center, tellwidth=true)
 
-    # -- Menu bar (row 1) --
-    menu_bar = content_grid[1, 1:2] = GridLayout(; valign=:top)
+    # ---------------------------------------------------------------------------
+    # Row 1: top bar — Actions menu + player selectors
+    # ---------------------------------------------------------------------------
+    menu_bar = content_grid[1, 1:2] = GridLayout(; valign=:center)
     action_menu = Menu(
         menu_bar[1, 1];
         options=["▶ New Game", "+ Add Player"],
@@ -41,18 +50,8 @@ function Reversi.launch_gui(
         prompt="Actions",
         selection_cell_color_inactive=_get_color(config, "panel"),
     )
-    colsize!(menu_bar, 1, Fixed(120))
-    rowsize!(content_grid, 1, Fixed(30))
+    colsize!(menu_bar, 1, Fixed(110))
 
-    # -- Main content area (row 2) --
-    main_row = content_grid[2, 1:2] = GridLayout(; valign=:center)
-    main_col = main_row[1, 1] = GridLayout()
-    rsb = main_row[1, 2] = GridLayout(; valign=:top)
-    colsize!(main_row, 1, Fixed(550))
-    colsize!(main_row, 2, Fixed(200))
-    rowsize!(content_grid, 2, Relative(1.0))
-
-    # -- Player selection menus --
     menu_options_obs = Observable([e.name for e in registry_obs[]])
     on(registry_obs) do reg
         menu_options_obs[] = [e.name for e in reg]
@@ -60,52 +59,66 @@ function Reversi.launch_gui(
 
     function _find_idx(reg, p)
         p isa HumanPlayer && return 1
-        idx = findfirst(e -> e.name == "Random AI", reg)
-        p isa RandomPlayer && return something(idx, 1)
+        p isa RandomPlayer &&
+            return something(findfirst(e -> e.name == "Random AI", reg), 1)
         return 1
     end
 
-    menu_row = main_col[1, 1] = GridLayout()
     Label(
-        menu_row[1, 2:3],
-        "BLACK";
+        menu_bar[1, 2];
+        text="●",
         color=_get_color(config, "accent_black"),
-        font=:bold,
         fontsize=10,
-        halign=:center,
+        halign=:right,
+        tellwidth=false,
     )
     black_sel = Menu(
-        menu_row[2, 2:3];
+        menu_bar[1, 3];
         options=menu_options_obs,
         i_selected=_find_idx(registry_obs[], b_player),
         fontsize=11,
-        width=100,
+        width=90,
         prompt="Human",
         selection_cell_color_inactive=_get_color(config, "accent_black"),
     )
-
     Label(
-        menu_row[1, 6:7],
-        "WHITE";
+        menu_bar[1, 4];
+        text="○",
         color=_get_color(config, "accent_white"),
-        font=:bold,
         fontsize=10,
-        halign=:center,
+        halign=:right,
+        tellwidth=false,
     )
     white_sel = Menu(
-        menu_row[2, 6:7];
+        menu_bar[1, 5];
         options=menu_options_obs,
         i_selected=_find_idx(registry_obs[], w_player),
         fontsize=11,
-        width=100,
+        width=90,
         prompt="Human",
         selection_cell_color_inactive=_get_color(config, "accent_white"),
     )
-    rowsize!(main_col, 1, Fixed(48))
+    colsize!(menu_bar, 2, Fixed(18))
+    colsize!(menu_bar, 3, Fixed(100))
+    colsize!(menu_bar, 4, Fixed(18))
+    colsize!(menu_bar, 5, Fixed(100))
+    rowsize!(content_grid, 1, Fixed(34))
+
+    # ---------------------------------------------------------------------------
+    # Row 2: board (left) + kifu sidebar (right)
+    # ---------------------------------------------------------------------------
+    main_row = content_grid[2, 1:2] = GridLayout(; valign=:center)
+    main_col = main_row[1, 1] = GridLayout()
+    rsb = main_row[1, 2] = GridLayout(; valign=:top)
+    colsize!(main_row, 1, Fixed(480))
+    colsize!(main_row, 2, Fixed(200))
+    rowsize!(content_grid, 2, Auto())
 
     # -- Board axis --
     ax = Axis(
-        main_col[2, 1];
+        main_col[1, 1];
+        width=480,
+        height=480,
         aspect=DataAspect(),
         limits=(-0.40, 8.32, -0.24, 8.55),
         backgroundcolor=_get_color(config, "background"),
@@ -120,8 +133,39 @@ function Reversi.launch_gui(
         topspinevisible=false,
         bottomspinevisible=false,
     )
+    rowsize!(main_col, 1, Fixed(480))
+    # -- Evaluation graph (directly below board) --
+    eval_panel = main_col[2, 1] = GridLayout()
+    Label(
+        eval_panel[1, 1];
+        text="Evaluation",
+        color=_get_color(config, "text_dim"),
+        fontsize=(config.fontsize - 2),
+        halign=:left,
+    )
+    eval_ax = Axis(
+        eval_panel[2, 1];
+        backgroundcolor=_get_color(config, "panel"),
+        xgridvisible=false,
+        ygridvisible=false,
+        xticksvisible=false,
+        yticksvisible=true,
+        xticklabelsvisible=false,
+        yticklabelsvisible=true,
+        leftspinevisible=false,
+        rightspinevisible=true,
+        topspinevisible=false,
+        bottomspinevisible=false,
+        rightspinecolor=_get_color(config, "text_dim"),
+        yticks=([-32, 0, 32], ["-32", "0", "+32"]),
+        ytickalign=1,
+        yticklabelsize=8,
+        yticklabelcolor=_get_color(config, "text_dim"),
+        width=480,
+    )
+    rowsize!(main_col, 2, Fixed(100))
 
-    # -- Score / status bar (row 3) --
+    # -- Status bar (piece counts + game state label) --
     status_bar = main_col[3, 1] = GridLayout()
     Label(
         status_bar[1, 1];
@@ -142,22 +186,28 @@ function Reversi.launch_gui(
     Label(
         status_bar[1, 3];
         text=@lift(
-            if $game_over_obs
+            if $mode_obs == :review
+                "Reviewing move $($review_pos_obs)"
+            elseif $game_over_obs
                 "Game Over"
+            elseif $game_obs.current_player == BLACK
+                "Black's Turn"
             else
-                ($game_obs.current_player == BLACK ? "Black's Turn" : "White's Turn")
+                "White's Turn"
             end
         ),
-        color=_get_color(config, "text_dim"),
+        color=@lift(
+            $mode_obs == :review ? RGBf(1.0, 0.75, 0.3) : _get_color(config, "text_dim")
+        ),
         fontsize=config.fontsize,
         halign=:center,
     )
-    rowsize!(main_col, 3, Fixed(48))
+    rowsize!(main_col, 3, Fixed(40))
     for c in 1:3
         colsize!(status_bar, c, Relative(1 / 3))
     end
 
-    # -- Control toggles (row 4) --
+    # -- Control toggles + Return-to-Live button --
     ctrl = main_col[4, 1] = GridLayout()
     tgl_hints = Toggle(ctrl[1, 1]; active=sh)
     Label(
@@ -173,11 +223,19 @@ function Reversi.launch_gui(
         color=_get_color(config, "text_dim"),
         fontsize=(config.fontsize - 1),
     )
-    rowsize!(main_col, 2, Relative(1.0))
-    rowsize!(main_col, 4, Fixed(40))
+    live_btn = Button(
+        ctrl[1, 6];
+        label="● Live",
+        buttoncolor=_get_color(config, "panel"),
+        labelcolor=_get_color(config, "text_dim"),
+        fontsize=(config.fontsize - 2),
+    )
     colsize!(ctrl, 4, Relative(1.0))
+    rowsize!(main_col, 4, Fixed(36))
 
-    # -- Kifu sidebar --
+    # ---------------------------------------------------------------------------
+    # Kifu sidebar
+    # ---------------------------------------------------------------------------
     kifu_panel = rsb[1, 1] = GridLayout(; valign=:top)
     Label(
         kifu_panel[1, 1];
@@ -201,39 +259,41 @@ function Reversi.launch_gui(
         topspinevisible=false,
         bottomspinevisible=false,
         yreversed=true,
-        height=450,
         valign=:top,
+        height=480,
     )
     rowsize!(rsb, 1, Fixed(500))
+    # ---------------------------------------------------------------------------
+    # Review mode helpers
+    # ---------------------------------------------------------------------------
 
-    # ---------------------------------------------------------------------------
-    # Reactive updates
-    # ---------------------------------------------------------------------------
-    on(game_obs) do game
-        _refresh_board!(
-            ax, game, hints_obs[], show_last_obs[], last_move_obs[], game_over_obs[], config
-        )
+    function enter_review!(n::Int)
+        kifu = kifu_obs[]
+        (1 <= n <= length(kifu)) || return nothing
+
+        g = ReversiGame()
+        lm = nothing
+        for (i, (_, _, notation)) in enumerate(kifu)
+            i > n && break
+            if notation == "pass"
+                pass!(g; force=true)
+            else
+                pos = Position(notation)
+                make_move!(g, pos.row, pos.col)
+                lm = pos
+            end
+        end
+
+        mode_obs[] = :review
+        review_pos_obs[] = n
+        _refresh_board!(ax, g, false, true, lm, false, config)
+        _draw_kifu!(kifu_ax, kifu, config; active_n=n)
+        return _refresh_eval_graph!(eval_ax, score_history_obs[], n, config)
     end
-    on(kifu_obs) do kifu
-        _refresh_kifu!(kifu_ax, kifu, config)
-    end
-    on(tgl_hints.active) do v
-        hints_obs[] = v
-        config.show_hints = v
-        save_session_config(config)
-        _refresh_board!(
-            ax, game_obs[], v, show_last_obs[], last_move_obs[], game_over_obs[], config
-        )
-    end
-    on(tgl_last.active) do v
-        show_last_obs[] = v
-        config.show_last_move = v
-        save_session_config(config)
-        _refresh_board!(
-            ax, game_obs[], hints_obs[], v, last_move_obs[], game_over_obs[], config
-        )
-    end
-    on(ax.scene.viewport) do _
+
+    function return_to_live!()
+        mode_obs[] = :live
+        review_pos_obs[] = 0
         _refresh_board!(
             ax,
             game_obs[],
@@ -243,6 +303,79 @@ function Reversi.launch_gui(
             game_over_obs[],
             config,
         )
+        _draw_kifu!(kifu_ax, kifu_obs[], config; active_n=0)
+        return _refresh_eval_graph!(eval_ax, score_history_obs[], 0, config)
+    end
+
+    # ---------------------------------------------------------------------------
+    # Reactive updates (live mode only)
+    # ---------------------------------------------------------------------------
+    on(game_obs) do game
+        mode_obs[] == :review && return nothing
+        _refresh_board!(
+            ax, game, hints_obs[], show_last_obs[], last_move_obs[], game_over_obs[], config
+        )
+    end
+    on(kifu_obs) do kifu
+        mode_obs[] == :review && return nothing
+        _draw_kifu!(kifu_ax, kifu, config; active_n=0)
+        hist = Float32[0.0f0]
+        g = ReversiGame()
+        for (_, _, notation) in kifu
+            if notation == "pass"
+                pass!(g; force=true)
+            else
+                pos = Position(notation)
+                make_move!(g, pos.row, pos.col)
+            end
+            b, w = count_pieces(g)
+            push!(hist, Float32(b - w))
+        end
+        score_history_obs[] = hist
+        _refresh_eval_graph!(eval_ax, hist, 0, config)
+    end
+    on(tgl_hints.active) do v
+        hints_obs[] = v
+        config.show_hints = v
+        save_session_config(config)
+        mode_obs[] == :live && _refresh_board!(
+            ax, game_obs[], v, show_last_obs[], last_move_obs[], game_over_obs[], config
+        )
+    end
+    on(tgl_last.active) do v
+        show_last_obs[] = v
+        config.show_last_move = v
+        save_session_config(config)
+        mode_obs[] == :live && _refresh_board!(
+            ax, game_obs[], hints_obs[], v, last_move_obs[], game_over_obs[], config
+        )
+    end
+    on(ax.scene.viewport) do _
+        mode_obs[] == :live && _refresh_board!(
+            ax,
+            game_obs[],
+            hints_obs[],
+            show_last_obs[],
+            last_move_obs[],
+            game_over_obs[],
+            config,
+        )
+    end
+
+    # Sync Return-to-Live button style with mode
+    on(mode_obs) do mode
+        if mode == :review
+            live_btn.buttoncolor[] = RGBf(0.65, 0.30, 0.05)
+            live_btn.labelcolor[] = RGBf(1.0, 1.0, 1.0)
+            live_btn.label[] = "← Return to Live"
+        else
+            live_btn.buttoncolor[] = _get_color(config, "panel")
+            live_btn.labelcolor[] = _get_color(config, "text_dim")
+            live_btn.label[] = "● Live"
+        end
+    end
+    on(live_btn.clicks) do _
+        mode_obs[] == :review && return_to_live!()
     end
 
     # ---------------------------------------------------------------------------
@@ -257,11 +390,14 @@ function Reversi.launch_gui(
                 close(p.move_channel)
             end
         end
+        mode_obs[] = :live
+        review_pos_obs[] = 0
         players[] = Dict{Int,Player}(BLACK => new_black, WHITE => new_white)
         kifu_ref = Ref(Tuple{Int,Int,String}[])
         game_ref = Ref(ReversiGame())
         game_over_obs[] = false
         last_move_obs[] = nothing
+        score_history_obs[] = Float32[0.0f0]
         kifu_obs[] = kifu_ref[]
         game_obs[] = game_ref[]
         @async run_game!(
@@ -281,19 +417,17 @@ function Reversi.launch_gui(
     end
 
     # ---------------------------------------------------------------------------
-    # Interaction (Board Clicks)
+    # Board clicks (disabled in review mode)
     # ---------------------------------------------------------------------------
     register_interaction!(ax, :board_click) do event::MouseEvent, _
         event.type == MouseEventTypes.leftclick || return nothing
+        mode_obs[] == :review && return nothing
         game = game_obs[]
         game_over_obs[] && return nothing
-
         data_pos = event.data
         (0.0 <= data_pos[1] <= 8.0 && 0.0 <= data_pos[2] <= 8.0) || return nothing
-
         col = clamp(Int(floor(data_pos[1])) + 1, 1, 8)
         row = clamp(_BOARD_SIZE - Int(floor(data_pos[2])), 1, 8)
-
         cp = players[][game.current_player]
         if cp isa HumanPlayer && isopen(cp.move_channel)
             put!(cp.move_channel, Position(row, col))
@@ -301,12 +435,47 @@ function Reversi.launch_gui(
     end
 
     # ---------------------------------------------------------------------------
+    # Kifu clicks → enter review mode
+    # ---------------------------------------------------------------------------
+    on(events(fig.scene).mousebutton) do event
+        event.button == Mouse.left && event.action == Mouse.press || return nothing
+        win_pos = events(fig.scene).mouseposition[]
+        n = _kifu_move_at(kifu_ax, fig, win_pos)
+        n_clamped = clamp(n, 1, length(kifu_obs[]))
+        n >= 1 && n == n_clamped && enter_review!(n_clamped)
+    end
+
+    # ---------------------------------------------------------------------------
+    # Keyboard shortcuts
+    # ---------------------------------------------------------------------------
+    on(events(fig.scene).keyboardbutton) do event
+        (event.action == Keyboard.press || event.action == Keyboard.repeat) ||
+            return nothing
+        key = event.key
+        n_kifu = length(kifu_obs[])
+        cur = review_pos_obs[]
+
+        if key == Keyboard.escape
+            mode_obs[] == :review && return_to_live!()
+        elseif key == Keyboard.left
+            target = mode_obs[] == :review ? cur - 1 : n_kifu
+            if target >= 1
+                enter_review!(target)
+            else
+                (mode_obs[] == :review && return_to_live!())
+            end
+        elseif key == Keyboard.right
+            target = mode_obs[] == :review ? cur + 1 : n_kifu
+            target <= n_kifu && enter_review!(target)
+        end
+    end
+
+    # ---------------------------------------------------------------------------
     # Initial render & game start
     # ---------------------------------------------------------------------------
-    _refresh_kifu!(kifu_ax, Tuple{Int,Int,String}[], config)
+    _draw_kifu!(kifu_ax, Tuple{Int,Int,String}[], config)
+    _refresh_eval_graph!(eval_ax, Float32[], 0, config)
     _refresh_board!(ax, game_obs[], sh, false, nothing, false, config)
-
-    # Force display and wait for GL context to stabilize (macOS stability)
     display(fig)
     Timer(1.0) do _
         start_game!(b_player, w_player)

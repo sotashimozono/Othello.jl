@@ -25,6 +25,7 @@ using GLMakie
 include("constants.jl")
 include("components/board.jl")
 include("components/kifu.jl")
+include("components/sidebar.jl")
 include("components/dialogs.jl")
 include("core_logic/game_task.jl")
 include("views/game_view.jl")

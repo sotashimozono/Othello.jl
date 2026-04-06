@@ -151,6 +151,9 @@ function Reversi.launch_replay_gui(moves::Vector{String}; title::String="Game Re
     colsize!(fig.layout, 2, Fixed(config.sidebar_width))
     rowsize!(fig.layout, 2, Relative(1.0))
 
+    # Pre-build kifu entries once (move_n, color, notation)
+    kifu_entries = [(i, move_colors[i], moves[i]) for i in 1:n_moves]
+
     # ---------------------------------------------------------------------------
     # Navigation logic
     # ---------------------------------------------------------------------------

@@ -11,7 +11,7 @@ export EMPTY, BLACK, WHITE, IN_PROGRESS
 # Core game functions
 export make_move!, valid_moves, is_game_over, get_winner
 export HumanPlayer, RandomPlayer, GreedyPlayer
-export next_state, get_piece, count_pieces, pass!, mobility
+export next_state, get_piece, count_pieces, pass!, mobility, board_to_matrix
 export position_to_string, ZOBRIST_TABLE, compute_full_hash, update_hash
 
 # CUI

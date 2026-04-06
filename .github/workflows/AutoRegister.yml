@@ -20,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 2   # need HEAD and HEAD~1 to compare
+          fetch-depth: 2 # need HEAD and HEAD~1 to compare
 
       - name: Check if version changed
         id: version_check
@@ -48,7 +48,13 @@ jobs:
 
           BODY="@JuliaRegistrator register
 
-          Version bumped from \`$PREV\` → \`$CURR\` by commit $COMMIT."
+          Release notes:
+
+          ## Breaking changes
+
+          - See changelog/commit history for API changes in this release.
+
+          Version bumped from \`$PREV\` -> \`$CURR\` by commit $COMMIT."
 
           # Registrator accepts comments on commits or issues, but not pull requests.
           gh api repos/${{ github.repository }}/commits/$COMMIT/comments \

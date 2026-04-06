@@ -65,7 +65,7 @@ function _draw_board!(ax, config::GUIConfig)
             8.18;
             text=string(ch),
             color=c_text,
-            fontsize=config.fontsize + 1,
+            fontsize=(config.fontsize + 1),
             align=(:center, :bottom),
         )
     end
@@ -76,7 +76,7 @@ function _draw_board!(ax, config::GUIConfig)
             8 - r + 0.5;
             text=string(r),
             color=c_text,
-            fontsize=config.fontsize + 1,
+            fontsize=(config.fontsize + 1),
             align=(:right, :center),
         )
     end
@@ -229,9 +229,9 @@ function _open_add_player_dialog!(
     on(btn_reg.clicks) do _
         raw_name = strip(name_tb.stored_string[])
         raw_expr = strip(expr_tb.stored_string[])
-        isempty(raw_name) && (msg_lbl.text[] = "⚠ Please enter a name."; return nothing)
+        isempty(raw_name) && (msg_lbl.text[]="⚠ Please enter a name."; return nothing)
         isempty(raw_expr) &&
-            (msg_lbl.text[] = "⚠ Please enter a Julia expression."; return nothing)
+            (msg_lbl.text[]="⚠ Please enter a Julia expression."; return nothing)
 
         local player_instance
         try
@@ -326,7 +326,7 @@ function Reversi.launch_gui(
         sel_bar[1, 1];
         text="Black:",
         color=_get_color(config, "accent_black"),
-        fontsize=config.fontsize - 1,
+        fontsize=(config.fontsize - 1),
         font=:bold,
         halign=:right,
         tellwidth=false,
@@ -335,7 +335,7 @@ function Reversi.launch_gui(
         sel_bar[1, 3];
         text="White:",
         color=_get_color(config, "accent_white"),
-        fontsize=config.fontsize - 1,
+        fontsize=(config.fontsize - 1),
         font=:bold,
         halign=:right,
         tellwidth=false,
@@ -345,14 +345,14 @@ function Reversi.launch_gui(
         label="+ Add Player",
         buttoncolor=_get_color(config, "panel"),
         labelcolor=_get_color(config, "text"),
-        fontsize=config.fontsize - 1,
+        fontsize=(config.fontsize - 1),
     )
     btn_start = Button(
         sel_bar[1, 6];
         label="▶ New Game",
         buttoncolor=_get_color(config, "panel"),
         labelcolor=_get_color(config, "text"),
-        fontsize=config.fontsize - 1,
+        fontsize=(config.fontsize - 1),
     )
     rowsize!(fig.layout, 1, Fixed(44))
     colgap!(sel_bar, 6)
@@ -365,7 +365,7 @@ function Reversi.launch_gui(
         white_card[1, 1];
         text="[W]  White: $(_player_name(w_player))",
         color=_get_color(config, "accent_white"),
-        fontsize=config.fontsize + 1,
+        fontsize=(config.fontsize + 1),
         halign=:left,
         tellwidth=false,
     )
@@ -373,7 +373,7 @@ function Reversi.launch_gui(
         white_card[1, 2];
         text=@lift("$(count_pieces($game_obs)[2])"),
         color=_get_color(config, "text"),
-        fontsize=config.fontsize + 6,
+        fontsize=(config.fontsize + 6),
         font=:bold,
         halign=:right,
         tellwidth=false,
@@ -382,7 +382,7 @@ function Reversi.launch_gui(
         white_card[1, 3];
         text=@lift((!$game_over_obs && $game_obs.current_player == WHITE) ? "< Turn" : ""),
         color=_get_color(config, "accent_white"),
-        fontsize=config.fontsize - 1,
+        fontsize=(config.fontsize - 1),
         halign=:left,
         tellwidth=false,
     )
@@ -412,7 +412,7 @@ function Reversi.launch_gui(
         black_card[1, 1];
         text="[B]  Black: $(_player_name(b_player))",
         color=_get_color(config, "accent_black"),
-        fontsize=config.fontsize + 1,
+        fontsize=(config.fontsize + 1),
         halign=:left,
         tellwidth=false,
     )
@@ -420,7 +420,7 @@ function Reversi.launch_gui(
         black_card[1, 2];
         text=@lift("$(count_pieces($game_obs)[1])"),
         color=_get_color(config, "text"),
-        fontsize=config.fontsize + 6,
+        fontsize=(config.fontsize + 6),
         font=:bold,
         halign=:right,
         tellwidth=false,
@@ -429,7 +429,7 @@ function Reversi.launch_gui(
         black_card[1, 3];
         text=@lift((!$game_over_obs && $game_obs.current_player == BLACK) ? "< Turn" : ""),
         color=_get_color(config, "accent_black"),
-        fontsize=config.fontsize - 1,
+        fontsize=(config.fontsize - 1),
         halign=:left,
         tellwidth=false,
     )
@@ -442,14 +442,14 @@ function Reversi.launch_gui(
         ctrl[1, 2];
         text="Hints",
         color=_get_color(config, "text_dim"),
-        fontsize=config.fontsize - 1,
+        fontsize=(config.fontsize - 1),
     )
     tgl_last = Toggle(ctrl[1, 3]; active=config.show_last_move)
     Label(
         ctrl[1, 4];
         text="Last Move",
         color=_get_color(config, "text_dim"),
-        fontsize=config.fontsize - 1,
+        fontsize=(config.fontsize - 1),
     )
     status_lbl = Label(
         ctrl[1, 5];
@@ -548,7 +548,7 @@ function Reversi.launch_gui(
                 0.5;
                 text="No moves yet",
                 color=c_text_dim,
-                fontsize=config.fontsize - 2,
+                fontsize=(config.fontsize - 2),
                 align=(:center, :center),
                 space=:relative,
             )
@@ -564,7 +564,7 @@ function Reversi.launch_gui(
                 Float32(n - 1);
                 text=lpad(string(n), 3),
                 color=c_text_dim,
-                fontsize=config.fontsize - 2,
+                fontsize=(config.fontsize - 2),
                 align=(:left, :top),
             )
             text!(
@@ -573,7 +573,7 @@ function Reversi.launch_gui(
                 Float32(n - 1);
                 text="$pc_tag  $notation",
                 color=line_color,
-                fontsize=config.fontsize - 2,
+                fontsize=(config.fontsize - 2),
                 align=(:left, :top),
             )
         end
@@ -754,7 +754,7 @@ function Reversi.launch_replay_gui(moves::Vector{String}; title::String="Game Re
         fig[1, 1];
         text=title,
         color=_get_color(config, "text"),
-        fontsize=config.fontsize + 1,
+        fontsize=(config.fontsize + 1),
         font=:bold,
         halign=:left,
         tellwidth=false,
@@ -832,7 +832,7 @@ function Reversi.launch_replay_gui(moves::Vector{String}; title::String="Game Re
         nav[1, 6];
         text=@lift("Move $($pos_obs) / $n_moves"),
         color=_get_color(config, "text_dim"),
-        fontsize=config.fontsize - 1,
+        fontsize=(config.fontsize - 1),
         halign=:left,
         tellwidth=false,
     )
@@ -841,7 +841,7 @@ function Reversi.launch_replay_gui(moves::Vector{String}; title::String="Game Re
         nav[1, 8];
         text="Last Move",
         color=_get_color(config, "text_dim"),
-        fontsize=config.fontsize - 2,
+        fontsize=(config.fontsize - 2),
     )
     rowsize!(fig.layout, 3, Fixed(48))
     colsize!(nav, 5, Relative(1.0))
@@ -899,7 +899,7 @@ function Reversi.launch_replay_gui(moves::Vector{String}; title::String="Game Re
                 0.5;
                 text="No moves",
                 color=c_text_dim,
-                fontsize=config.fontsize - 2,
+                fontsize=(config.fontsize - 2),
                 align=(:center, :center),
                 space=:relative,
             )
@@ -923,7 +923,7 @@ function Reversi.launch_replay_gui(moves::Vector{String}; title::String="Game Re
                 Float32(i - 1);
                 text=lpad(string(i), 3),
                 color=c_text_dim,
-                fontsize=config.fontsize - 2,
+                fontsize=(config.fontsize - 2),
                 align=(:left, :top),
             )
             text!(
@@ -932,7 +932,7 @@ function Reversi.launch_replay_gui(moves::Vector{String}; title::String="Game Re
                 Float32(i - 1);
                 text="$pc_tag  $(moves[i])",
                 color=row_color,
-                fontsize=config.fontsize - 2,
+                fontsize=(config.fontsize - 2),
                 font=is_current ? :bold : :regular,
                 align=(:left, :top),
             )

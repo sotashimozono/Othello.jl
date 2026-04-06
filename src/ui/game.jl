@@ -75,3 +75,44 @@ function play_game(
 
     return winner
 end
+
+"""
+    game_loop!(game, players; on_move, on_done) -> ReversiGame
+
+Run a complete game synchronously using the given `players` dict
+(`BLACK => p1, WHITE => p2`).
+
+Callbacks (both optional):
+- `on_move(game, color, notation)` – called after every move/pass
+- `on_done(game)`                  – called once when the game ends
+
+Returns the finished `ReversiGame`. Does **not** print anything; suitable
+for programmatic use and testing.
+
+# Example
+```julia
+moves = String[]
+game_loop!(ReversiGame(), Dict(BLACK => RandomPlayer(), WHITE => RandomPlayer());
+    on_move = (g, c, n) -> push!(moves, n))
+```
+"""
+function game_loop!(
+    game::ReversiGame,
+    players::Dict{Int,Player};
+    on_move::Function = (g, c, n) -> nothing,
+    on_done::Function = (g) -> nothing,
+)
+    while !is_game_over(game)
+        color = game.current_player
+        move  = get_move(players[color], game)
+        if move === nothing
+            pass!(game)
+            on_move(game, color, "pass")
+        else
+            make_move!(game, move.row, move.col)
+            on_move(game, color, position_to_string(move))
+        end
+    end
+    on_done(game)
+    return game
+end

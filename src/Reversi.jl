@@ -18,7 +18,7 @@ export position_to_string, ZOBRIST_TABLE, compute_full_hash, update_hash
 export display_board
 
 # Game session
-export play_game
+export play_game, game_loop!
 
 # Game record & replay (io)
 export GameRecord, save_game, load_game, replay_game, validate_record

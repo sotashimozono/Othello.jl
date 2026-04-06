@@ -20,7 +20,7 @@ function _selected_player(menu::Menu, registry::Vector{NamedPlayerEntry})
 end
 
 # ---------------------------------------------------------------------------
-# Async game loop
+# Async wrapper for GUI (connects Reversi.game_loop! to GLMakie Observables)
 # ---------------------------------------------------------------------------
 
 function run_game!(
@@ -33,24 +33,20 @@ function run_game!(
     game_over_obs::Observable{Bool},
 )
     try
-        game = game_ref[]
-        while !is_game_over(game)
-            yield()
-            color = game.current_player
-            move  = get_move(players[][color], game)
-            if move === nothing
-                push!(kifu_ref[], (length(kifu_ref[])+1, color, "pass"))
-                pass!(game)
-                last_move_obs[] = nothing
-            else
-                push!(kifu_ref[], (length(kifu_ref[])+1, color, position_to_string(move)))
-                make_move!(game, move.row, move.col)
-                last_move_obs[] = move
-            end
-            kifu_obs[]  = copy(kifu_ref[])
-            game_obs[]  = deepcopy(game)
-        end
-        game_over_obs[] = true
+        move_num = Ref(0)
+        game_loop!(
+            game_ref[],
+            players[];
+            on_move = (game, color, notation) -> begin
+                yield()
+                move_num[] += 1
+                push!(kifu_ref[], (move_num[], color, notation))
+                last_move_obs[] = notation == "pass" ? nothing : Position(notation)
+                kifu_obs[]      = copy(kifu_ref[])
+                game_obs[]      = deepcopy(game)
+            end,
+            on_done = (_) -> (game_over_obs[] = true),
+        )
     catch e
         e isa InvalidStateException && return   # channel closed intentionally
         @error "Error in game task" exception=(e, catch_backtrace())

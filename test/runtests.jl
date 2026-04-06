@@ -19,13 +19,23 @@ const TEST_ROOT = @__DIR__
 
 function discover_tests(root::String)
     result = Tuple{String,String}[]   # (label, filepath)
-    for entry in sort(readdir(root))
-        dirpath = joinpath(root, entry)
-        isdir(dirpath) || continue
-        for f in sort(readdir(dirpath))
-            startswith(f, "test_") && endswith(f, ".jl") || continue
-            label = joinpath(entry, splitext(f)[1])   # e.g. "core/test_rules"
-            push!(result, (label, joinpath(dirpath, f)))
+    for d1 in sort(readdir(root))
+        p1 = joinpath(root, d1)
+        isdir(p1) || continue
+        for entry in sort(readdir(p1))
+            p2 = joinpath(p1, entry)
+            if isdir(p2)
+                # two levels deep: e.g. ext/ReversiGLMakieExt/test_foo.jl
+                for f in sort(readdir(p2))
+                    startswith(f, "test_") && endswith(f, ".jl") || continue
+                    label = joinpath(d1, entry, splitext(f)[1])
+                    push!(result, (label, joinpath(p2, f)))
+                end
+            elseif startswith(entry, "test_") && endswith(entry, ".jl")
+                # one level deep: e.g. core/test_rules.jl
+                label = joinpath(d1, splitext(entry)[1])
+                push!(result, (label, p2))
+            end
         end
     end
     return result

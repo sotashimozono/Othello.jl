@@ -229,9 +229,9 @@ function _open_add_player_dialog!(
     on(btn_reg.clicks) do _
         raw_name = strip(name_tb.stored_string[])
         raw_expr = strip(expr_tb.stored_string[])
-        isempty(raw_name) && (msg_lbl.text[] = "⚠ Please enter a name."; return nothing)
+        isempty(raw_name) && (msg_lbl.text[]="⚠ Please enter a name."; return nothing)
         isempty(raw_expr) &&
-            (msg_lbl.text[] = "⚠ Please enter a Julia expression."; return nothing)
+            (msg_lbl.text[]="⚠ Please enter a Julia expression."; return nothing)
 
         local player_instance
         try

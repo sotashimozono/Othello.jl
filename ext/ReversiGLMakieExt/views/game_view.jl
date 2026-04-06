@@ -44,19 +44,18 @@ function Reversi.launch_gui(
     # Row 1: top bar — Actions menu + player selectors
     # Phase 4: _find_idx uses _player_name for reliable sync with any player type
     # ---------------------------------------------------------------------------
-    menu_bar     = content_grid[1, 1:2] = GridLayout(; valign=:center)
-    new_game_btn = Button(menu_bar[1, 1];
-        label="▶ New Game",
-        buttoncolor=_get_color(config, "panel"),
-        labelcolor=_get_color(config, "text"),
-        fontsize=config.fontsize - 2, width=100, height=26)
-    add_player_btn = Button(menu_bar[1, 6];
-        label="+ Add",
-        buttoncolor=_get_color(config, "panel"),
-        labelcolor=_get_color(config, "text_dim"),
-        fontsize=config.fontsize - 3, width=60, height=26)
-    colsize!(menu_bar, 1, Fixed(105))
-    colsize!(menu_bar, 6, Fixed(65))
+    menu_bar = content_grid[1, 1:2] = GridLayout(; valign=:center)
+    action_menu = Menu(
+        menu_bar[1, 1];
+        options=["▶ New Game", "+ Add Player"],
+        textcolor=_get_color(config, "text"),
+        fontsize=(config.fontsize - 2),
+        width=100,
+        height=24,
+        prompt="Actions",
+        selection_cell_color_inactive=_get_color(config, "panel"),
+    )
+    colsize!(menu_bar, 1, Fixed(110))
 
     menu_options_obs = Observable([e.name for e in registry_obs[]])
     on(registry_obs) do reg
@@ -115,11 +114,15 @@ function Reversi.launch_gui(
 
     # -- Evaluation graph (directly below board) --
     eval_panel = main_col[2, 1] = GridLayout()
-    Label(eval_panel[1, 1]; text="Evaluation",
-          color=_get_color(config, "text_dim"), fontsize=config.fontsize - 2,
-          halign=:left)
-    eval_ax = Axis(eval_panel[2, 1];
-        width=480,
+    Label(
+        eval_panel[1, 1];
+        text="Evaluation",
+        color=_get_color(config, "text_dim"),
+        fontsize=(config.fontsize - 2),
+        halign=:left,
+    )
+    eval_ax = Axis(
+        eval_panel[2, 1];
         backgroundcolor=_get_color(config, "panel"),
         xgridvisible=false, ygridvisible=false,
         xticksvisible=false, yticksvisible=true,
@@ -137,12 +140,20 @@ function Reversi.launch_gui(
     Label(status_bar[1, 1];
         text=@lift("$(count_pieces($game_obs)[2])"),
         color=_get_color(config, "accent_white"),
-        fontsize=config.fontsize + 8, font=:bold, halign=:center)
-    Label(status_bar[1, 2];
+        fontsize=(config.fontsize + 8),
+        font=:bold,
+        halign=:center,
+    )
+    Label(
+        status_bar[1, 2];
         text=@lift("$(count_pieces($game_obs)[1])"),
         color=_get_color(config, "accent_black"),
-        fontsize=config.fontsize + 8, font=:bold, halign=:center)
-    Label(status_bar[1, 3];
+        fontsize=(config.fontsize + 8),
+        font=:bold,
+        halign=:center,
+    )
+    Label(
+        status_bar[1, 3];
         text=@lift(
             if $mode_obs == :review
                 "Reviewing move $($review_pos_obs)"
@@ -159,50 +170,31 @@ function Reversi.launch_gui(
     rowsize!(main_col, 3, Fixed(40))
     for c in 1:3; colsize!(status_bar, c, Relative(1/3)); end
 
-    # ---------------------------------------------------------------------------
-    # Phase 2: Analysis Toolbar — single row consolidating all controls
-    # Layout: [Live/Review btn] [spacer] [Hints tgl] [Last tgl] [Eval tgl] [Sidebar tgl]
-    # ---------------------------------------------------------------------------
-    toolbar  = main_col[4, 1] = GridLayout()
-
-    live_btn = Button(toolbar[1, 1];
+    # -- Control toggles + Return-to-Live button --
+    ctrl = main_col[4, 1] = GridLayout()
+    tgl_hints = Toggle(ctrl[1, 1]; active=sh)
+    Label(
+        ctrl[1, 2];
+        text="Hints",
+        color=_get_color(config, "text_dim"),
+        fontsize=(config.fontsize - 1),
+    )
+    tgl_last = Toggle(ctrl[1, 3]; active=config.show_last_move)
+    Label(
+        ctrl[1, 4];
+        text="Last Move",
+        color=_get_color(config, "text_dim"),
+        fontsize=(config.fontsize - 1),
+    )
+    live_btn = Button(
+        ctrl[1, 6];
         label="● Live",
         buttoncolor=_get_color(config, "panel"),
         labelcolor=_get_color(config, "text_dim"),
-        fontsize=config.fontsize - 2)
-
-    # Spacer — must place something in col 2 before calling colsize!
-    Label(toolbar[1, 2]; text="", tellwidth=false)
-
-    # Hints
-    tgl_hints = Toggle(toolbar[1, 3]; active=sh)
-    Label(toolbar[1, 4]; text="Hints",
-          color=_get_color(config, "text_dim"), fontsize=config.fontsize - 2)
-
-    # Last Move
-    tgl_last = Toggle(toolbar[1, 5]; active=config.show_last_move)
-    Label(toolbar[1, 6]; text="Last",
-          color=_get_color(config, "text_dim"), fontsize=config.fontsize - 2)
-
-    # Eval panel visibility
-    tgl_eval = Toggle(toolbar[1, 7]; active=config.show_eval)
-    Label(toolbar[1, 8]; text="Eval",
-          color=_get_color(config, "text_dim"), fontsize=config.fontsize - 2)
-
-    # Sidebar visibility
-    tgl_sidebar = Toggle(toolbar[1, 9]; active=config.show_kifu)
-    Label(toolbar[1, 10]; text="Sidebar",
-          color=_get_color(config, "text_dim"), fontsize=config.fontsize - 2)
-
-    # Auto-restart
-    tgl_auto = Toggle(toolbar[1, 11]; active=false)
-    Label(toolbar[1, 12]; text="Auto",
-          color=_get_color(config, "text_dim"), fontsize=config.fontsize - 2)
-
-    # Size all columns after content is placed
-    colsize!(toolbar, 1, Fixed(130))
-    colsize!(toolbar, 2, Auto())
-    rowsize!(main_col, 4, Fixed(32))
+        fontsize=(config.fontsize - 2),
+    )
+    colsize!(ctrl, 4, Relative(1.0))
+    rowsize!(main_col, 4, Fixed(36))
 
     # ---------------------------------------------------------------------------
     # Kifu sidebar

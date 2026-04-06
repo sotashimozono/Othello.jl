@@ -99,12 +99,12 @@ game_loop!(ReversiGame(), Dict(BLACK => RandomPlayer(), WHITE => RandomPlayer())
 function game_loop!(
     game::ReversiGame,
     players::Dict{Int,Player};
-    on_move::Function = (g, c, n) -> nothing,
-    on_done::Function = (g) -> nothing,
+    on_move::Function=(g, c, n) -> nothing,
+    on_done::Function=(g) -> nothing,
 )
     while !is_game_over(game)
         color = game.current_player
-        move  = get_move(players[color], game)
+        move = get_move(players[color], game)
         if move === nothing
             pass!(game)
             on_move(game, color, "pass")

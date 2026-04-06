@@ -4,19 +4,19 @@ end
 
 function Reversi.launch_replay_gui(moves::Vector{String}; title::String="Game Replay")
     # Pre-compute all board states
-    states      = Vector{ReversiGame}(undef, length(moves)+1)
+    states = Vector{ReversiGame}(undef, length(moves)+1)
     move_colors = Vector{Int}(undef, length(moves))
-    states[1]   = ReversiGame()
+    states[1] = ReversiGame()
     for (i, m) in enumerate(moves)
         g = deepcopy(states[i])
         move_colors[i] = g.current_player
         m == "pass" ? pass!(g) : make_move!(g, m)
-        states[i+1] = g
+        states[i + 1] = g
     end
     n_moves = length(moves)
 
-    pos_obs       = Observable(0)
-    game_obs      = Observable(states[1])
+    pos_obs = Observable(0)
+    game_obs = Observable(states[1])
     show_last_obs = Observable(true)
 
     config = load_config()
@@ -26,55 +26,127 @@ function Reversi.launch_replay_gui(moves::Vector{String}; title::String="Game Re
     )
 
     # -- Title bar --
-    Label(fig[1, 1]; text=title,
-          color=_get_color(config, "text"), fontsize=config.fontsize+1,
-          font=:bold, halign=:left, tellwidth=false)
-    Label(fig[1, 1];
-        text=@lift(let (b, w) = count_pieces($game_obs); "B $b – W $w" end),
-        color=_get_color(config, "text_dim"), fontsize=config.fontsize,
-        halign=:right, tellwidth=false)
+    Label(
+        fig[1, 1];
+        text=title,
+        color=_get_color(config, "text"),
+        fontsize=(config.fontsize+1),
+        font=:bold,
+        halign=:left,
+        tellwidth=false,
+    )
+    Label(
+        fig[1, 1];
+        text=@lift(
+            let (b, w) = count_pieces($game_obs);
+                "B $b – W $w"
+            end
+        ),
+        color=_get_color(config, "text_dim"),
+        fontsize=config.fontsize,
+        halign=:right,
+        tellwidth=false,
+    )
     rowsize!(fig.layout, 1, Fixed(36))
 
     # -- Board --
-    ax = Axis(fig[2, 1];
-        aspect=DataAspect(), limits=(-0.40, 8.32, -0.24, 8.55),
+    ax = Axis(
+        fig[2, 1];
+        aspect=DataAspect(),
+        limits=(-0.40, 8.32, -0.24, 8.55),
         backgroundcolor=_get_color(config, "background"),
-        xgridvisible=false, ygridvisible=false,
-        xticksvisible=false, yticksvisible=false,
-        xticklabelsvisible=false, yticklabelsvisible=false,
-        leftspinevisible=false, rightspinevisible=false,
-        topspinevisible=false, bottomspinevisible=false)
+        xgridvisible=false,
+        ygridvisible=false,
+        xticksvisible=false,
+        yticksvisible=false,
+        xticklabelsvisible=false,
+        yticklabelsvisible=false,
+        leftspinevisible=false,
+        rightspinevisible=false,
+        topspinevisible=false,
+        bottomspinevisible=false,
+    )
 
     # -- Navigation bar --
     c_panel = _get_color(config, "panel")
-    c_text  = _get_color(config, "text")
+    c_text = _get_color(config, "text")
     nav = fig[3, 1] = GridLayout()
-    btn_first = Button(nav[1,1]; label="|◀", buttoncolor=c_panel, labelcolor=c_text, fontsize=config.fontsize, width=44)
-    btn_prev  = Button(nav[1,2]; label="◀",  buttoncolor=c_panel, labelcolor=c_text, fontsize=config.fontsize, width=44)
-    btn_next  = Button(nav[1,3]; label="▶",  buttoncolor=c_panel, labelcolor=c_text, fontsize=config.fontsize, width=44)
-    btn_last  = Button(nav[1,4]; label="▶|", buttoncolor=c_panel, labelcolor=c_text, fontsize=config.fontsize, width=44)
-    slider    = Slider(nav[1,5]; range=0:n_moves, startvalue=0)
-    Label(nav[1,6];
+    btn_first = Button(
+        nav[1, 1];
+        label="|◀",
+        buttoncolor=c_panel,
+        labelcolor=c_text,
+        fontsize=config.fontsize,
+        width=44,
+    )
+    btn_prev = Button(
+        nav[1, 2];
+        label="◀",
+        buttoncolor=c_panel,
+        labelcolor=c_text,
+        fontsize=config.fontsize,
+        width=44,
+    )
+    btn_next = Button(
+        nav[1, 3];
+        label="▶",
+        buttoncolor=c_panel,
+        labelcolor=c_text,
+        fontsize=config.fontsize,
+        width=44,
+    )
+    btn_last = Button(
+        nav[1, 4];
+        label="▶|",
+        buttoncolor=c_panel,
+        labelcolor=c_text,
+        fontsize=config.fontsize,
+        width=44,
+    )
+    slider = Slider(nav[1, 5]; range=0:n_moves, startvalue=0)
+    Label(
+        nav[1, 6];
         text=@lift("Move $($pos_obs) / $n_moves"),
-        color=_get_color(config, "text_dim"), fontsize=config.fontsize-1,
-        halign=:left, tellwidth=false)
-    tgl_last = Toggle(nav[1,7]; active=config.show_last_move)
-    Label(nav[1,8]; text="Last Move", color=_get_color(config, "text_dim"), fontsize=config.fontsize-2)
+        color=_get_color(config, "text_dim"),
+        fontsize=(config.fontsize-1),
+        halign=:left,
+        tellwidth=false,
+    )
+    tgl_last = Toggle(nav[1, 7]; active=config.show_last_move)
+    Label(
+        nav[1, 8];
+        text="Last Move",
+        color=_get_color(config, "text_dim"),
+        fontsize=(config.fontsize-2),
+    )
     rowsize!(fig.layout, 3, Fixed(48))
     colsize!(nav, 5, Relative(1.0))
 
     # -- Kifu sidebar --
     kifu_panel = fig[1:3, 2] = GridLayout()
-    Label(kifu_panel[1, 1]; text="Move History",
-          color=_get_color(config, "text"), fontsize=config.fontsize, font=:bold, halign=:center)
-    kifu_ax = Axis(kifu_panel[2, 1];
+    Label(
+        kifu_panel[1, 1];
+        text="Move History",
+        color=_get_color(config, "text"),
+        fontsize=config.fontsize,
+        font=:bold,
+        halign=:center,
+    )
+    kifu_ax = Axis(
+        kifu_panel[2, 1];
         backgroundcolor=_get_color(config, "panel"),
-        xgridvisible=false, ygridvisible=false,
-        xticksvisible=false, yticksvisible=false,
-        xticklabelsvisible=false, yticklabelsvisible=false,
-        leftspinevisible=false, rightspinevisible=false,
-        topspinevisible=false, bottomspinevisible=false,
-        yreversed=true)
+        xgridvisible=false,
+        ygridvisible=false,
+        xticksvisible=false,
+        yticksvisible=false,
+        xticklabelsvisible=false,
+        yticklabelsvisible=false,
+        leftspinevisible=false,
+        rightspinevisible=false,
+        topspinevisible=false,
+        bottomspinevisible=false,
+        yreversed=true,
+    )
     colsize!(fig.layout, 1, Relative(1.0))
     colsize!(fig.layout, 2, Fixed(config.sidebar_width))
     rowsize!(fig.layout, 2, Relative(1.0))
@@ -87,30 +159,50 @@ function Reversi.launch_replay_gui(moves::Vector{String}; title::String="Game Re
     # ---------------------------------------------------------------------------
     function _goto!(p)
         p = clamp(p, 0, n_moves)
-        pos_obs[]      = p
-        game_obs[]     = states[p+1]
+        pos_obs[] = p
+        game_obs[] = states[p + 1]
         slider.value[] = p
         lm = (show_last_obs[] && p > 0 && moves[p] != "pass") ? Position(moves[p]) : nothing
-        _refresh_board!(ax, states[p+1], false, show_last_obs[], lm, false, config)
-        _draw_kifu!(kifu_ax, kifu_entries, config; active_n=p)
+        _refresh_board!(ax, states[p + 1], false, show_last_obs[], lm, false, config)
+        _refresh_replay_kifu!(kifu_ax, moves, move_colors, p, config)
     end
 
-    on(tgl_last.active)   do v; show_last_obs[] = v; _goto!(pos_obs[]); end
-    on(ax.scene.viewport) do _; _goto!(pos_obs[]); end
-    on(btn_first.clicks)  do _; _goto!(0); end
-    on(btn_prev.clicks)   do _; _goto!(pos_obs[]-1); end
-    on(btn_next.clicks)   do _; _goto!(pos_obs[]+1); end
-    on(btn_last.clicks)   do _; _goto!(n_moves); end
+    on(tgl_last.active) do v
+        ;
+        show_last_obs[] = v;
+        _goto!(pos_obs[]);
+    end
+    on(ax.scene.viewport) do _
+        ;
+        _goto!(pos_obs[]);
+    end
+    on(btn_first.clicks) do _
+        ;
+        _goto!(0);
+    end
+    on(btn_prev.clicks) do _
+        ;
+        _goto!(pos_obs[]-1);
+    end
+    on(btn_next.clicks) do _
+        ;
+        _goto!(pos_obs[]+1);
+    end
+    on(btn_last.clicks) do _
+        ;
+        _goto!(n_moves);
+    end
     on(slider.value) do v
-        v == pos_obs[] && return
+        v == pos_obs[] && return nothing
         _goto!(v)
     end
     on(events(fig.scene).keyboardbutton) do event
-        (event.action == Keyboard.press || event.action == Keyboard.repeat) || return
-        event.key == Keyboard.left  && _goto!(pos_obs[]-1)
+        (event.action == Keyboard.press || event.action == Keyboard.repeat) ||
+            return nothing
+        event.key == Keyboard.left && _goto!(pos_obs[]-1)
         event.key == Keyboard.right && _goto!(pos_obs[]+1)
-        event.key == Keyboard.home  && _goto!(0)
-        nothing  # Keyboard.end_ not available in this Makie version
+        event.key == Keyboard.home && _goto!(0)
+        event.key == Keyboard.end_ && _goto!(n_moves)
     end
 
     _goto!(0)

@@ -2,13 +2,24 @@ module ReversiGLMakieExt
 
 using Reversi
 using Reversi:
-    BLACK, WHITE,
-    Position, ReversiGame, Player,
-    HumanPlayer, RandomPlayer, GreedyPlayer,
+    BLACK,
+    WHITE,
+    Position,
+    ReversiGame,
+    Player,
+    HumanPlayer,
+    RandomPlayer,
+    GreedyPlayer,
     GameRecord
 using Reversi:
-    valid_moves, make_move!, is_game_over, get_winner,
-    count_pieces, pass!, get_move, position_to_string
+    valid_moves,
+    make_move!,
+    is_game_over,
+    get_winner,
+    count_pieces,
+    pass!,
+    get_move,
+    position_to_string
 using GLMakie
 
 include("constants.jl")

@@ -4,7 +4,7 @@ struct NamedPlayerEntry
 end
 
 const _BUILTIN_PLAYERS = [
-    NamedPlayerEntry("Human",     () -> HumanPlayer()),
+    NamedPlayerEntry("Human", () -> HumanPlayer()),
     NamedPlayerEntry("Random AI", () -> RandomPlayer()),
     NamedPlayerEntry("Greedy AI", () -> GreedyPlayer()),
 ]
@@ -38,20 +38,18 @@ function run_game!(
         game_loop!(
             game_ref[],
             players[];
-            on_move = (game, color, notation) -> begin
-                stop_check() && throw(InterruptException())
+            on_move=(game, color, notation) -> begin
                 yield()
                 move_num[] += 1
                 push!(kifu_ref[], (move_num[], color, notation))
                 last_move_obs[] = notation == "pass" ? nothing : Position(notation)
-                kifu_obs[]      = copy(kifu_ref[])
-                game_obs[]      = deepcopy(game)
+                kifu_obs[] = copy(kifu_ref[])
+                game_obs[] = deepcopy(game)
             end,
-            on_done = (_) -> (game_over_obs[] = true),
+            on_done=(_) -> (game_over_obs[] = true),
         )
     catch e
-        e isa InvalidStateException && return   # HumanPlayer channel closed
-        e isa InterruptException     && return   # generation mismatch → stale task
+        e isa InvalidStateException && return nothing   # channel closed intentionally
         @error "Error in game task" exception=(e, catch_backtrace())
     end
 end

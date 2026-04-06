@@ -11,9 +11,8 @@ on:
       - Project.toml
 
 permissions:
-  contents: read
+  contents: write
   issues: write
-  pull-requests: write
 
 jobs:
   register:
@@ -38,7 +37,7 @@ jobs:
             echo "changed=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Post @JuliaRegistrator comment
+      - name: Post @JuliaRegistrator comment on commit
         if: steps.version_check.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -46,18 +45,11 @@ jobs:
           CURR="${{ steps.version_check.outputs.curr }}"
           PREV="${{ steps.version_check.outputs.prev }}"
           COMMIT="${{ github.sha }}"
-          # Find the PR that was merged (may not exist for direct pushes)
-          PR_NUMBER=$(gh pr list --state merged --base main --json number,mergeCommit \
-            --jq ".[] | select(.mergeCommit.oid == \"$COMMIT\") | .number" 2>/dev/null || echo "")
 
           BODY="@JuliaRegistrator register
 
           Version bumped from \`$PREV\` → \`$CURR\` by commit $COMMIT."
 
-          if [ -n "$PR_NUMBER" ]; then
-            gh pr comment "$PR_NUMBER" --body "$BODY"
-          else
-            # Fall back to creating an issue comment on the commit via the commits API
-            gh api repos/${{ github.repository }}/commits/$COMMIT/comments \
-              -f body="$BODY"
-          fi
+          # Registrator accepts comments on commits or issues, but not pull requests.
+          gh api repos/${{ github.repository }}/commits/$COMMIT/comments \
+            -f body="$BODY"

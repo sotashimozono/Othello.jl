@@ -12,6 +12,7 @@ Downloads.download("https://github.com/sotashimozono.png", logo_path)
 
 makedocs(;
     sitename="Reversi.jl",
+    modules=[Reversi],
     format=Documenter.HTML(;
         canonical="https://codes.sota-shimozono.com/Reversi.jl/stable/",
         prettyurls=get(ENV, "CI", "false") == "true",
@@ -26,20 +27,15 @@ makedocs(;
         ),
         assets=["assets/favicon.ico"],
     ),
-    modules=[Reversi],
     pages=[
         "Home" => "index.md",
+        "API Reference" =>
+            ["Core game" => "api/core.md", "I/O" => "api/io.md", "UI" => "api/ui.md"],
         "Examples" => [
-            "quickstart" => "example/demo.md",
-            "play" => "example/play.md",
-            "machine learning" => "example/ml_integration.md",
-        ],
-        "API Reference" => [
-            "struct" => "api/struct.md",
-            "rules" => "api/rules.md",
-            "player" => "api/player.md",
-            "game" => "api/game.md",
-            "data" => "api/data.md",
+            "Play (CUI)" => "examples/play.md",
+            "Game records" => "examples/record.md",
+            "WTHOR format" => "examples/wthor.md",
+            "Custom players" => "examples/custom_player.md",
         ],
     ],
 )

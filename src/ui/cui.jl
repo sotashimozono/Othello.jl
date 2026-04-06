@@ -1,5 +1,5 @@
 """
-    display_board(game::ReversiGame; hints::Vector{Position}=Position[])
+    display_board(game; hints=Position[])
 
 Display the current board state in the terminal.
 Columns are labelled `a`–`h` and rows `1`–`8`.

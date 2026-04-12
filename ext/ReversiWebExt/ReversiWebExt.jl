@@ -23,7 +23,15 @@ import Reversi:
     RandomPlayer,
     GreedyPlayer,
     get_move,
-    EMPTY
+    EMPTY,
+    # Training
+    TrainingSession,
+    RandomTrainer,
+    start_training!,
+    stop_training!,
+    training_status,
+    training_history,
+    training_policy
 
 """
     launch_gui(:web; port=8080, open_browser=true)
@@ -141,6 +149,69 @@ function Reversi.launch_gui(::Val{:web}; port::Int=8080, open_browser::Bool=true
         game_ref[] = ReversiGame()
         empty!(history)
         return Dict("status" => "success")
+    end
+
+    # --- Training API ---
+    session_ref = Ref{Union{TrainingSession,Nothing}}(nothing)
+
+    @post "/api/training/start" function (req::HTTP.Request)
+        body = JSON3.read(req.body)
+        num_episodes = get(body, :num_episodes, 100)
+        trainer_type = get(body, :trainer_type, "random")
+
+        trainer = if trainer_type == "random"
+            RandomTrainer()
+        else
+            RandomTrainer()  # fallback; future trainers added here
+        end
+
+        session = TrainingSession(trainer; num_episodes=Int(num_episodes))
+        session_ref[] = session
+        start_training!(session)
+        return Dict("status" => "started", "num_episodes" => num_episodes)
+    end
+
+    @post "/api/training/stop" function (req::HTTP.Request)
+        session = session_ref[]
+        if session !== nothing
+            stop_training!(session)
+            return Dict("status" => "stopped")
+        else
+            return Dict("status" => "no_session")
+        end
+    end
+
+    @get "/api/training/status" function (req::HTTP.Request)
+        session = session_ref[]
+        if session !== nothing
+            return training_status(session)
+        else
+            return Dict(
+                "is_running" => false,
+                "total_episodes" => 0,
+                "completed_episodes" => 0,
+                "latest" => nothing,
+            )
+        end
+    end
+
+    @get "/api/training/history" function (req::HTTP.Request)
+        session = session_ref[]
+        if session !== nothing
+            return training_history(session)
+        else
+            return []
+        end
+    end
+
+    @get "/api/training/policy" function (req::HTTP.Request)
+        session = session_ref[]
+        if session !== nothing
+            p = training_policy(session)
+            return Dict("policy" => [p[r, :] for r in 1:8])
+        else
+            return Dict("policy" => [zeros(Float32, 8) for _ in 1:8])
+        end
     end
 
     # 3. CORS & Response Middleware

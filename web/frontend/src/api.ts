@@ -34,3 +34,55 @@ export async function resetGame(): Promise<{ status: string }> {
   const res = await fetch(`${API_BASE}/game/reset`, { method: 'POST' });
   return res.json();
 }
+
+// --- Training API ---
+
+export type TrainingStatus = {
+  is_running: boolean;
+  total_episodes: number;
+  completed_episodes: number;
+  latest: {
+    episode: number;
+    winner: number;
+    black_score: number;
+    white_score: number;
+    win_rate: number;
+  } | null;
+};
+
+export type TrainingHistoryEntry = {
+  episode: number;
+  winner: number;
+  black_score: number;
+  white_score: number;
+  win_rate: number;
+};
+
+export async function startTraining(numEpisodes: number, trainerType: string = 'random'): Promise<{ status: string }> {
+  const res = await fetch(`${API_BASE}/training/start`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ num_episodes: numEpisodes, trainer_type: trainerType }),
+  });
+  return res.json();
+}
+
+export async function stopTraining(): Promise<{ status: string }> {
+  const res = await fetch(`${API_BASE}/training/stop`, { method: 'POST' });
+  return res.json();
+}
+
+export async function fetchTrainingStatus(): Promise<TrainingStatus> {
+  const res = await fetch(`${API_BASE}/training/status`);
+  return res.json();
+}
+
+export async function fetchTrainingHistory(): Promise<TrainingHistoryEntry[]> {
+  const res = await fetch(`${API_BASE}/training/history`);
+  return res.json();
+}
+
+export async function fetchTrainingPolicy(): Promise<{ policy: number[][] }> {
+  const res = await fetch(`${API_BASE}/training/policy`);
+  return res.json();
+}

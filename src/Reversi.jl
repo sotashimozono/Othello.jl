@@ -29,8 +29,10 @@ export launch_gui, launch_replay_gui
 
 # Training
 export AbstractTrainer, TrainingMetrics, TrainingSession
-export train_episode!, start_training!, stop_training!
+export train_episode!, train_batch!, start_training!, stop_training!
 export training_status, training_history, training_policy
+export predict_value, hyperparameters, opponent, batch_size
+export save_trainer, load_trainer
 export RandomTrainer
 
 # Web UI

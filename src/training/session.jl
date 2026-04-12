@@ -12,18 +12,19 @@ function start_training!(session::TrainingSession)
         session.is_running = true
     end
 
+    bs = batch_size(session.trainer)
+
     session.task = @async begin
         try
-            for ep in 1:session.num_episodes
-                lock(session.lock) do
-                    session.is_running || return nothing
-                end
+            ep = 1
+            while ep <= session.num_episodes
                 session.is_running || break
-
-                metrics = train_episode!(session.trainer, ep)
+                n = min(bs, session.num_episodes - ep + 1)
+                batch = train_batch!(session.trainer, ep, n)
                 lock(session.lock) do
-                    push!(session.metrics_history, metrics)
+                    append!(session.metrics_history, batch)
                 end
+                ep += n
             end
         catch e
             @error "Training error" exception = (e, catch_backtrace())
@@ -91,12 +92,14 @@ function training_policy(session::TrainingSession)
 end
 
 function _metrics_to_dict(m::TrainingMetrics)
-    return Dict(
+    return Dict{String,Any}(
         "episode" => m.episode,
         "winner" => m.winner,
         "black_score" => m.black_score,
         "white_score" => m.white_score,
         "win_rate" => m.win_rate,
+        "value" => m.value,
+        "loss" => m.loss,
     )
 end
 

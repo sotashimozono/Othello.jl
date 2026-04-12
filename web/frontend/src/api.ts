@@ -37,26 +37,24 @@ export async function resetGame(): Promise<{ status: string }> {
 
 // --- Training API ---
 
-export type TrainingStatus = {
-  is_running: boolean;
-  total_episodes: number;
-  completed_episodes: number;
-  latest: {
-    episode: number;
-    winner: number;
-    black_score: number;
-    white_score: number;
-    win_rate: number;
-  } | null;
-};
-
-export type TrainingHistoryEntry = {
+export type TrainingMetricsDict = {
   episode: number;
   winner: number;
   black_score: number;
   white_score: number;
   win_rate: number;
+  value: number;
+  loss: number | null;
 };
+
+export type TrainingStatus = {
+  is_running: boolean;
+  total_episodes: number;
+  completed_episodes: number;
+  latest: TrainingMetricsDict | null;
+};
+
+export type TrainingHistoryEntry = TrainingMetricsDict;
 
 export async function startTraining(numEpisodes: number, trainerType: string = 'random'): Promise<{ status: string }> {
   const res = await fetch(`${API_BASE}/training/start`, {
@@ -84,5 +82,10 @@ export async function fetchTrainingHistory(): Promise<TrainingHistoryEntry[]> {
 
 export async function fetchTrainingPolicy(): Promise<{ policy: number[][] }> {
   const res = await fetch(`${API_BASE}/training/policy`);
+  return res.json();
+}
+
+export async function fetchTrainingHyperparameters(): Promise<Record<string, unknown>> {
+  const res = await fetch(`${API_BASE}/training/hyperparameters`);
   return res.json();
 }

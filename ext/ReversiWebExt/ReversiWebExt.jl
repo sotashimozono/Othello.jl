@@ -31,7 +31,10 @@ import Reversi:
     stop_training!,
     training_status,
     training_history,
-    training_policy
+    training_policy,
+    hyperparameters,
+    save_trainer,
+    load_trainer
 
 """
     launch_gui(:web; port=8080, open_browser=true)
@@ -211,6 +214,15 @@ function Reversi.launch_gui(::Val{:web}; port::Int=8080, open_browser::Bool=true
             return Dict("policy" => [p[r, :] for r in 1:8])
         else
             return Dict("policy" => [zeros(Float32, 8) for _ in 1:8])
+        end
+    end
+
+    @get "/api/training/hyperparameters" function (req::HTTP.Request)
+        session = session_ref[]
+        if session !== nothing
+            return hyperparameters(session.trainer)
+        else
+            return Dict{String,Any}()
         end
     end
 

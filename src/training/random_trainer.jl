@@ -32,10 +32,17 @@ function train_episode!(trainer::RandomTrainer, episode::Int)
 
     winner = get_winner(game)
     b_count, w_count = count_pieces(game)
-
-    # Win rate: fraction of episodes where BLACK won (arbitrary convention)
-    # The session accumulates these, so we compute rolling average externally
     black_won = winner == BLACK ? 1.0 : 0.0
 
-    return TrainingMetrics(episode, winner, b_count, w_count, black_won, policy)
+    return TrainingMetrics(;
+        episode=episode,
+        winner=winner,
+        black_score=b_count,
+        white_score=w_count,
+        win_rate=black_won,
+        policy=policy,
+    )
 end
+
+# Hyperparameters: nothing meaningful for a random baseline
+hyperparameters(::RandomTrainer) = Dict{String,Any}("name" => "RandomTrainer", "stochastic" => true)

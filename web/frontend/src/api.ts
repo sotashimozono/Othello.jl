@@ -89,3 +89,92 @@ export async function fetchTrainingHyperparameters(): Promise<Record<string, unk
   const res = await fetch(`${API_BASE}/training/hyperparameters`);
   return res.json();
 }
+
+// --- Analysis API ---
+
+export type AnalysisScore = {
+  row: number;
+  col: number;
+  score: number;
+};
+
+export type AnalysisResult = {
+  scores: AnalysisScore[];
+  best: AnalysisScore | null;
+  player: number;
+  heatmap: number[][];
+};
+
+export async function fetchAnalysis(player: string, index: number | null = null): Promise<AnalysisResult> {
+  const url = index !== null
+    ? `${API_BASE}/analysis/evaluate?player=${encodeURIComponent(player)}&index=${index}`
+    : `${API_BASE}/analysis/evaluate?player=${encodeURIComponent(player)}`;
+  const res = await fetch(url);
+  return res.json();
+}
+
+export type PVMove = {
+  row: number;
+  col: number;
+  notation: string;
+  player: number;
+  step: number;
+};
+
+export type PVResult = {
+  moves: PVMove[];
+  boards: number[][][];
+  final_score: { black: number; white: number };
+  depth: number;
+};
+
+export async function fetchPrincipalVariation(player: string, depth: number, index: number | null = null): Promise<PVResult> {
+  const base = `${API_BASE}/analysis/line?player=${encodeURIComponent(player)}&depth=${depth}`;
+  const url = index !== null ? `${base}&index=${index}` : base;
+  const res = await fetch(url);
+  return res.json();
+}
+
+// --- Tournament API ---
+
+export type TournamentPlayerSpec = string;
+
+export type TournamentPairResult = {
+  black: string;
+  white: string;
+  black_wins: number;
+  white_wins: number;
+  draws: number;
+  completed: number;
+  total: number;
+};
+
+export type TournamentStatus = {
+  is_running: boolean;
+  players: string[];
+  num_games: number;
+  total_pairs: number;
+  completed_pairs: number;
+  total_games: number;
+  completed_games: number;
+  results: TournamentPairResult[];
+};
+
+export async function startTournament(players: TournamentPlayerSpec[], numGames: number): Promise<{ status: string }> {
+  const res = await fetch(`${API_BASE}/tournament/start`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ players, num_games: numGames }),
+  });
+  return res.json();
+}
+
+export async function stopTournament(): Promise<{ status: string }> {
+  const res = await fetch(`${API_BASE}/tournament/stop`, { method: 'POST' });
+  return res.json();
+}
+
+export async function fetchTournamentStatus(): Promise<TournamentStatus> {
+  const res = await fetch(`${API_BASE}/tournament/status`);
+  return res.json();
+}

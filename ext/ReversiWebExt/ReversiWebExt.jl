@@ -34,7 +34,16 @@ import Reversi:
     training_policy,
     hyperparameters,
     save_trainer,
-    load_trainer
+    load_trainer,
+    # Analysis
+    evaluate_position,
+    principal_variation,
+    make_evaluator,
+    # Tournament
+    TournamentSession,
+    start_tournament!,
+    stop_tournament!,
+    tournament_status
 
 """
     launch_gui(:web; port=8080, open_browser=true)
@@ -223,6 +232,116 @@ function Reversi.launch_gui(::Val{:web}; port::Int=8080, open_browser::Bool=true
             return hyperparameters(session.trainer)
         else
             return Dict{String,Any}()
+        end
+    end
+
+    # --- Analysis API ---
+
+    @get "/api/analysis/evaluate" function (req::HTTP.Request)
+        params = queryparams(req)
+        evaluator_name = get(params, "player", "heuristic")
+        index_str = get(params, "index", nothing)
+
+        target_game = game_ref[]
+        if index_str !== nothing
+            idx = tryparse(Int, index_str)
+            if idx !== nothing && 0 <= idx <= length(history)
+                target_game = ReversiGame()
+                for i in 1:idx
+                    move_str = history[i]
+                    if move_str == "pass"
+                        pass!(target_game; force=true)
+                    else
+                        pos = Position(move_str)
+                        make_move!(target_game, pos.row, pos.col)
+                    end
+                end
+            end
+        end
+
+        try
+            evaluator = make_evaluator(evaluator_name)
+            return evaluate_position(evaluator, target_game)
+        catch e
+            return HTTP.Response(400, "Invalid evaluator: $evaluator_name ($(typeof(e)))")
+        end
+    end
+
+    @get "/api/analysis/line" function (req::HTTP.Request)
+        params = queryparams(req)
+        evaluator_name = get(params, "player", "minimax-3")
+        depth = something(tryparse(Int, get(params, "depth", "6")), 6)
+        index_str = get(params, "index", nothing)
+
+        target_game = game_ref[]
+        if index_str !== nothing
+            idx = tryparse(Int, index_str)
+            if idx !== nothing && 0 <= idx <= length(history)
+                target_game = ReversiGame()
+                for i in 1:idx
+                    move_str = history[i]
+                    if move_str == "pass"
+                        pass!(target_game; force=true)
+                    else
+                        pos = Position(move_str)
+                        make_move!(target_game, pos.row, pos.col)
+                    end
+                end
+            end
+        end
+
+        try
+            evaluator = make_evaluator(evaluator_name)
+            return principal_variation(evaluator, target_game, clamp(depth, 1, 20))
+        catch e
+            return HTTP.Response(400, "Invalid analysis: $evaluator_name ($(typeof(e)))")
+        end
+    end
+
+    # --- Tournament API ---
+    tournament_ref = Ref{Union{TournamentSession,Nothing}}(nothing)
+
+    @post "/api/tournament/start" function (req::HTTP.Request)
+        body = JSON3.read(req.body)
+        player_specs = [String(p) for p in body.players]
+        num_games = Int(get(body, :num_games, 5))
+
+        try
+            players = [make_evaluator(spec) for spec in player_specs]
+            session = TournamentSession(player_specs, players; num_games=num_games)
+            tournament_ref[] = session
+            start_tournament!(session)
+            return Dict("status" => "started", "num_games" => num_games, "players" => player_specs)
+        catch e
+            return HTTP.Response(400, "Invalid tournament config: $(typeof(e)) $(sprint(showerror, e))")
+        end
+    end
+
+    @post "/api/tournament/stop" function (req::HTTP.Request)
+        session = tournament_ref[]
+        if session !== nothing
+            stop_tournament!(session)
+            return Dict("status" => "stopped")
+        else
+            return Dict("status" => "no_session")
+        end
+    end
+
+    @get "/api/tournament/status" function (req::HTTP.Request)
+        session = tournament_ref[]
+        if session !== nothing
+            return tournament_status(session)
+        else
+            return Dict{String,Any}(
+                "is_running" => false,
+                "players" => String[],
+                "num_games" => 0,
+                "total_pairs" => 0,
+                "completed_pairs" => 0,
+                "total_games" => 0,
+                "completed_games" => 0,
+                "results" => [],
+            )
         end
     end
 

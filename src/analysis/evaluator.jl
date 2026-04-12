@@ -17,8 +17,9 @@ evaluation. Higher is better (from the current player's perspective).
 """
 function score_move end
 
-score_move(::HeuristicPlayer, ::ReversiGame, move::Position) =
+function score_move(::HeuristicPlayer, ::ReversiGame, move::Position)
     POSITIONAL_WEIGHTS[move.row, move.col]
+end
 
 function score_move(::CornerPlayer, ::ReversiGame, move::Position)
     bonus = (move.row, move.col) in CORNERS ? 1000.0 : 0.0
@@ -124,8 +125,11 @@ function evaluate_position(player::Player, game::ReversiGame)
 
     return Dict{String,Any}(
         "scores" => [Dict("row" => r, "col" => c, "score" => s) for (r, c, s) in scores],
-        "best" => best_move === nothing ? nothing :
-                  Dict("row" => best_move.row, "col" => best_move.col, "score" => best_score),
+        "best" => if best_move === nothing
+            nothing
+        else
+            Dict("row" => best_move.row, "col" => best_move.col, "score" => best_score)
+        end,
         "player" => game.current_player,
         "heatmap" => [heatmap[r, :] for r in 1:8],
     )
@@ -159,25 +163,42 @@ function principal_variation(player::Player, game::ReversiGame, depth::Int)
         color = g.current_player
         if isempty(moves)
             pass!(g; force=true)
-            push!(moves_trace, Dict(
-                "row" => 0, "col" => 0, "notation" => "pass", "player" => color, "step" => step,
-            ))
+            push!(
+                moves_trace,
+                Dict(
+                    "row" => 0,
+                    "col" => 0,
+                    "notation" => "pass",
+                    "player" => color,
+                    "step" => step,
+                ),
+            )
         else
             mv = get_move(player, g)
             if mv === nothing
                 pass!(g; force=true)
-                push!(moves_trace, Dict(
-                    "row" => 0, "col" => 0, "notation" => "pass", "player" => color, "step" => step,
-                ))
+                push!(
+                    moves_trace,
+                    Dict(
+                        "row" => 0,
+                        "col" => 0,
+                        "notation" => "pass",
+                        "player" => color,
+                        "step" => step,
+                    ),
+                )
             else
                 make_move!(g, mv.row, mv.col)
-                push!(moves_trace, Dict(
-                    "row" => mv.row,
-                    "col" => mv.col,
-                    "notation" => position_to_string(mv),
-                    "player" => color,
-                    "step" => step,
-                ))
+                push!(
+                    moves_trace,
+                    Dict(
+                        "row" => mv.row,
+                        "col" => mv.col,
+                        "notation" => position_to_string(mv),
+                        "player" => color,
+                        "step" => step,
+                    ),
+                )
             end
         end
         # Absolute board encoding (BLACK=1, WHITE=-1, EMPTY=0)
@@ -217,12 +238,12 @@ function make_evaluator(name::AbstractString)
     name == "random" && return RandomPlayer()
 
     if startswith(name, "minimax-")
-        depth = tryparse(Int, name[length("minimax-")+1:end])
+        depth = tryparse(Int, name[(length("minimax-") + 1):end])
         depth === nothing && throw(ArgumentError("Invalid minimax spec: $name"))
         return MinimaxPlayer(clamp(depth, 1, 6))
     end
     if startswith(name, "mcts-")
-        iter = tryparse(Int, name[length("mcts-")+1:end])
+        iter = tryparse(Int, name[(length("mcts-") + 1):end])
         iter === nothing && throw(ArgumentError("Invalid mcts spec: $name"))
         return MCTSPlayer(clamp(iter, 10, 5000))
     end

@@ -12,14 +12,14 @@ They rely only on primitives from `struct.jl` and `rules.jl`
 # ---------------------------------------------------------------------------
 
 const POSITIONAL_WEIGHTS = Float64[
-     100  -20   10    5    5   10  -20  100;
-     -20  -50   -2   -2   -2   -2  -50  -20;
-      10   -2    5    3    3    5   -2   10;
-       5   -2    3    1    1    3   -2    5;
-       5   -2    3    1    1    3   -2    5;
-      10   -2    5    3    3    5   -2   10;
-     -20  -50   -2   -2   -2   -2  -50  -20;
-     100  -20   10    5    5   10  -20  100
+    100 -20 10 5 5 10 -20 100;
+    -20 -50 -2 -2 -2 -2 -50 -20;
+    10 -2 5 3 3 5 -2 10;
+    5 -2 3 1 1 3 -2 5;
+    5 -2 3 1 1 3 -2 5;
+    10 -2 5 3 3 5 -2 10;
+    -20 -50 -2 -2 -2 -2 -50 -20;
+    100 -20 10 5 5 10 -20 100
 ]
 
 """
@@ -40,9 +40,7 @@ end
 # CornerPlayer — corners > positional weights
 # ---------------------------------------------------------------------------
 
-const CORNERS = Set((
-    (1, 1), (1, 8), (8, 1), (8, 8),
-))
+const CORNERS = Set(((1, 1), (1, 8), (8, 1), (8, 8)))
 
 """
     CornerPlayer <: Player
@@ -100,17 +98,13 @@ struct MinimaxPlayer <: Player
     MinimaxPlayer(depth::Int=3) = new(depth)
 end
 
-_piece_diff(game::ReversiGame, color::Int) = let (b, w) = count_pieces(game)
-    color == BLACK ? b - w : w - b
-end
+_piece_diff(game::ReversiGame, color::Int) =
+    let (b, w) = count_pieces(game)
+        color == BLACK ? b - w : w - b
+    end
 
 function _minimax_search(
-    game::ReversiGame,
-    depth::Int,
-    α::Float64,
-    β::Float64,
-    maximizing::Bool,
-    color::Int,
+    game::ReversiGame, depth::Int, α::Float64, β::Float64, maximizing::Bool, color::Int
 )::Float64
     if depth == 0 || is_game_over(game)
         return Float64(_piece_diff(game, color))
@@ -188,15 +182,17 @@ mutable struct _MCTSNode
     move_from_parent::Union{Position,Nothing}
 end
 
-_new_mcts_node(game::ReversiGame, parent, move) = _MCTSNode(
-    0.0,
-    0,
-    valid_moves(game),
-    Dict{Tuple{Int,Int},_MCTSNode}(),
-    parent,
-    game.current_player,
-    move,
-)
+function _new_mcts_node(game::ReversiGame, parent, move)
+    _MCTSNode(
+        0.0,
+        0,
+        valid_moves(game),
+        Dict{Tuple{Int,Int},_MCTSNode}(),
+        parent,
+        game.current_player,
+        move,
+    )
+end
 
 function _mcts_select(node::_MCTSNode, c::Float64)
     @inbounds best_score = -Inf

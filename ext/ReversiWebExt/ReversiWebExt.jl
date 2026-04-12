@@ -311,9 +311,13 @@ function Reversi.launch_gui(::Val{:web}; port::Int=8080, open_browser::Bool=true
             session = TournamentSession(player_specs, players; num_games=num_games)
             tournament_ref[] = session
             start_tournament!(session)
-            return Dict("status" => "started", "num_games" => num_games, "players" => player_specs)
+            return Dict(
+                "status" => "started", "num_games" => num_games, "players" => player_specs
+            )
         catch e
-            return HTTP.Response(400, "Invalid tournament config: $(typeof(e)) $(sprint(showerror, e))")
+            return HTTP.Response(
+                400, "Invalid tournament config: $(typeof(e)) $(sprint(showerror, e))"
+            )
         end
     end
 

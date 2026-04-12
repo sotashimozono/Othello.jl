@@ -38,3 +38,11 @@ fancy_mode = true          # Toggle for high-fidelity board
 animate_flips = true       # Toggle for piece animations
 animation_delay = 500      # Delay between captured piece flips (ms)
 history_format = "wthor"   # Display moves like "1. e4 c3"
+
+[web.panels]
+chronicle = true           # Move history sidebar
+evaluation = true          # Score evaluation bar
+replay = true              # Replay navigation controls
+training = false           # Training monitor (Phase 1)
+analysis = false           # Game analysis tools (Phase 2)
+tournament = false         # Tournament system (Phase 3)

@@ -27,6 +27,9 @@ export GameRecord, save_game, load_game, replay_game, validate_record
 export GUIConfig, load_config, save_session_config
 export launch_gui, launch_replay_gui
 
+# Web UI
+export launch_web_gui
+
 # WTHOR format (io)
 export WThorHeader, WThorGame, read_wthor, write_wthor
 export wthor_game_to_record, verify_wthor_game
@@ -48,6 +51,6 @@ include("io/record.jl")     # GameRecord, save_game, load_game, replay_game
 include("ui/cui.jl")        # display_board (terminal rendering)
 include("ui/game.jl")       # play_game (CUI game loop)
 include("ui/config.jl")     # GUI configuration loader
-include("ui/gui.jl")        # GUI stubs; GLMakie implementation lives in ext/
+include("ui/gui.jl")        # GUI stubs; backends (Makie, Web) live in ext/
 
 end # module Reversi

@@ -32,3 +32,9 @@ sidebar_width = 230
 [players]
 black = "Human"
 white = "Random AI"
+
+[web]
+fancy_mode = true          # Toggle for high-fidelity board
+animate_flips = true       # Toggle for piece animations
+animation_delay = 500      # Delay between captured piece flips (ms)
+history_format = "wthor"   # Display moves like "1. e4 c3"

@@ -1,0 +1,165 @@
+@import "tailwindcss";
+
+:root {
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 98%;
+}
+
+@layer base {
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  }
+}
+
+@layer utilities {
+  .glass-panel {
+    background-color: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  }
+}
+
+/* 3D Piece Styles */
+.piece-container {
+  perspective: 1000px;
+  width: 85%;
+  height: 85%;
+}
+
+.piece-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-style: preserve-3d;
+}
+
+.piece-inner.is-white {
+  transform: rotateY(180deg);
+}
+
+.piece-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 50%;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3), inset 2px 2px 4px rgba(255,255,255,0.1), inset -2px -2px 4px rgba(0,0,0,0.4);
+}
+
+.piece-black {
+  background: radial-gradient(circle at 30% 30%, var(--color-black-piece-light, #333), var(--color-black-piece, #000));
+  border: 1px solid rgba(0, 0, 0, 0.4);
+}
+
+.piece-white {
+  background: radial-gradient(circle at 30% 30%, var(--color-white-piece-light, #fff), var(--color-white-piece, #ddd));
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  transform: rotateY(180deg);
+}
+
+/* Board High-Fidelity Styles */
+.board-felt {
+  background-color: var(--color-board, #1a5c38);
+  background-image: radial-gradient(circle at center, var(--color-board-light, #247347) 0%, var(--color-board, #1a5c38) 100%);
+}
+
+.star-point {
+  width: 8px;
+  height: 8px;
+  background-color: var(--color-grid, rgba(0, 0, 0, 0.4));
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.cell-coord {
+  position: absolute;
+  font-size: 10px;
+  font-weight: bold;
+  pointer-events: none;
+  opacity: 0.3;
+}
+
+/* Sidebar / Drawer Styles */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 300px;
+  background: rgba(15, 17, 21, 0.95);
+  backdrop-filter: blur(20px);
+  z-index: 100;
+  transform: translateX(-100%);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar.is-open {
+  transform: translateX(0);
+}
+
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 90;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Evaluation Bar Styles */
+.eval-bar-container {
+  width: 100%;
+  height: 12px;
+  background: #333;
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.eval-bar-black {
+  height: 100%;
+  background: linear-gradient(to right, #000, #333);
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.eval-bar-white {
+  height: 100%;
+  background: linear-gradient(to left, #fff, #bbb);
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.eval-bar-marker {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #fbbf24;
+  z-index: 10;
+  transition: left 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 8px rgba(251, 191, 36, 0.5);
+}

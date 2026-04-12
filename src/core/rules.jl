@@ -279,16 +279,20 @@ If `flip_for_current=true`, the `current_player`'s pieces are `1.0f0` and the
 opponent's are `-1.0f0`. Empty squares are `0.0f0`.
 """
 function board_to_matrix(game::ReversiGame; flip_for_current::Bool=true)
-    res = zeros(Float32, 8, 8)
+    res = [Vector{Float32}(undef, 8) for _ in 1:8]
     curr = game.current_player
-    for r in 1:8, c in 1:8
-        p = get_piece(game, r, c)
-        if p == EMPTY
-            res[r, c] = 0.0f0
-        elseif p == curr
-            res[r, c] = 1.0f0
-        else
-            res[r, c] = -1.0f0
+    for r in 1:8
+        for c in 1:8
+            p = get_piece(game, r, c)
+            if p == EMPTY
+                res[r][c] = 0.0f0
+            elseif !flip_for_current
+                # Absolute values: BLACK (1), WHITE (-1)
+                res[r][c] = Float32(p)
+            else
+                # 1.0 for current player, -1.0 for opponent
+                res[r][c] = (p == curr) ? 1.0f0 : -1.0f0
+            end
         end
     end
     return res

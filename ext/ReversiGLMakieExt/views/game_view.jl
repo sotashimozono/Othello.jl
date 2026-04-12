@@ -1,4 +1,5 @@
 function Reversi.launch_gui(
+    ::Val{:makie},
     black::Union{Player,Nothing}=nothing,
     white::Union{Player,Nothing}=nothing;
     show_hints::Union{Bool,Nothing}=nothing,

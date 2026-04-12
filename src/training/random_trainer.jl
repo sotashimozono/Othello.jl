@@ -8,7 +8,7 @@ struct RandomTrainer <: AbstractTrainer end
 
 function train_episode!(trainer::RandomTrainer, episode::Int)
     game = ReversiGame()
-    players = Dict(BLACK => RandomPlayer(), WHITE => RandomPlayer())
+    players = Dict{Int,Player}(BLACK => RandomPlayer(), WHITE => RandomPlayer())
 
     # Collect move positions for the policy heatmap
     policy = zeros(Float32, 8, 8)

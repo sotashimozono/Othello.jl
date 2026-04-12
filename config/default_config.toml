@@ -43,6 +43,6 @@ history_format = "wthor"   # Display moves like "1. e4 c3"
 chronicle = true           # Move history sidebar
 evaluation = true          # Score evaluation bar
 replay = true              # Replay navigation controls
-training = false           # Training monitor (Phase 1)
+training = true            # Training monitor (Phase 1)
 analysis = false           # Game analysis tools (Phase 2)
 tournament = false         # Tournament system (Phase 3)

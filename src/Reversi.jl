@@ -27,6 +27,12 @@ export GameRecord, save_game, load_game, replay_game, validate_record
 export GUIConfig, load_config, save_session_config
 export launch_gui, launch_replay_gui
 
+# Training
+export AbstractTrainer, TrainingMetrics, TrainingSession
+export train_episode!, start_training!, stop_training!
+export training_status, training_history, training_policy
+export RandomTrainer
+
 # Web UI
 export launch_web_gui
 
@@ -52,5 +58,9 @@ include("ui/cui.jl")        # display_board (terminal rendering)
 include("ui/game.jl")       # play_game (CUI game loop)
 include("ui/config.jl")     # GUI configuration loader
 include("ui/gui.jl")        # GUI stubs; backends (Makie, Web) live in ext/
+
+include("training/types.jl")          # AbstractTrainer, TrainingMetrics, TrainingSession
+include("training/session.jl")        # start_training!, stop_training!, status/history
+include("training/random_trainer.jl") # RandomTrainer (dummy)
 
 end # module Reversi

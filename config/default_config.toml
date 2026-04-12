@@ -44,5 +44,5 @@ chronicle = true           # Move history sidebar
 evaluation = true          # Score evaluation bar
 replay = true              # Replay navigation controls
 training = true            # Training monitor (Phase 1)
-analysis = false           # Game analysis tools (Phase 2)
-tournament = false         # Tournament system (Phase 3)
+analysis = true            # Game analysis tools (Phase 2)
+tournament = true          # Tournament system (Phase 3)

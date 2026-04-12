@@ -9,8 +9,9 @@ export ReversiGame, Player, Position
 export EMPTY, BLACK, WHITE, IN_PROGRESS
 
 # Core game functions
-export make_move!, valid_moves, is_game_over, get_winner
+export make_move!, valid_moves, is_game_over, get_winner, opponent
 export HumanPlayer, RandomPlayer, GreedyPlayer
+export HeuristicPlayer, CornerPlayer, MobilityPlayer, MinimaxPlayer, MCTSPlayer
 export next_state, get_piece, count_pieces, pass!, mobility, board_to_matrix
 export position_to_string, ZOBRIST_TABLE, compute_full_hash, update_hash
 
@@ -31,9 +32,15 @@ export launch_gui, launch_replay_gui
 export AbstractTrainer, TrainingMetrics, TrainingSession
 export train_episode!, train_batch!, start_training!, stop_training!
 export training_status, training_history, training_policy
-export predict_value, hyperparameters, opponent, batch_size
+export predict_value, hyperparameters, batch_size
 export save_trainer, load_trainer
 export RandomTrainer
+
+# Analysis
+export score_move, evaluate_position, principal_variation, make_evaluator
+
+# Tournament
+export TournamentSession, start_tournament!, stop_tournament!, tournament_status
 
 # Web UI
 export launch_web_gui
@@ -52,6 +59,7 @@ export wthor_game_to_record, verify_wthor_game
 include("core/struct.jl")   # ReversiGame, Position, constants, Zobrist
 include("core/rules.jl")    # make_move!, valid_moves, pass!, …
 include("core/player.jl")   # Player interface, HumanPlayer, RandomPlayer
+include("core/ai_players.jl") # HeuristicPlayer, MinimaxPlayer, MobilityPlayer, CornerPlayer, MCTSPlayer
 
 include("io/wthor.jl")      # WTHOR binary format (.wtb)
 include("io/record.jl")     # GameRecord, save_game, load_game, replay_game
@@ -64,5 +72,10 @@ include("ui/gui.jl")        # GUI stubs; backends (Makie, Web) live in ext/
 include("training/types.jl")          # AbstractTrainer, TrainingMetrics, TrainingSession
 include("training/session.jl")        # start_training!, stop_training!, status/history
 include("training/random_trainer.jl") # RandomTrainer (dummy)
+
+include("analysis/evaluator.jl")      # score_move, evaluate_position, make_evaluator
+
+include("tournament/types.jl")        # TournamentSession, TournamentPairResult
+include("tournament/session.jl")      # start_tournament!, stop_tournament!, tournament_status
 
 end # module Reversi

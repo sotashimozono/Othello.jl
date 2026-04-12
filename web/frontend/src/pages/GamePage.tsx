@@ -9,6 +9,7 @@ import { EvaluationBar } from '../components/EvaluationBar';
 import { Chronicle } from '../components/Chronicle';
 import { ReplayControls } from '../components/ReplayControls';
 import { SettingsSidebar } from '../components/SettingsSidebar';
+import { AnalysisPanel } from '../components/analysis/AnalysisPanel';
 
 export function GamePage() {
   const { panelVisible, isFancy } = useConfig();
@@ -93,6 +94,10 @@ export function GamePage() {
               historyLen={historyLen}
               setViewingIndex={setViewingIndex}
             />
+          )}
+
+          {panelVisible('analysis') && (
+            <AnalysisPanel historyLen={historyLen} viewingIndex={viewingIndex} />
           )}
 
           {/* Winner Message */}

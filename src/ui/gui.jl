@@ -34,7 +34,9 @@ launch_gui(:web; port=8081)             # start web server on port 8081
 function launch_gui end
 
 # Convenience methods to dispatch Symbol backends to Val-based implementations
-launch_gui(backend::Symbol, args...; kwargs...) = launch_gui(Val(backend), args...; kwargs...)
+function launch_gui(backend::Symbol, args...; kwargs...)
+    launch_gui(Val(backend), args...; kwargs...)
+end
 
 # Default to :makie if no backend is specified
 launch_gui(args...; kwargs...) = launch_gui(:makie, args...; kwargs...)

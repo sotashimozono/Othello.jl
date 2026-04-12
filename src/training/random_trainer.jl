@@ -13,8 +13,10 @@ function train_episode!(trainer::RandomTrainer, episode::Int)
     # Collect move positions for the policy heatmap
     policy = zeros(Float32, 8, 8)
 
-    game_loop!(game, players;
-        on_move = (g, color, notation) -> begin
+    game_loop!(
+        game,
+        players;
+        on_move=(g, color, notation) -> begin
             if notation != "pass"
                 pos = Position(notation)
                 policy[pos.row, pos.col] += 1.0f0

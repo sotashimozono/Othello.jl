@@ -16,7 +16,7 @@ function start_training!(session::TrainingSession)
         try
             for ep in 1:session.num_episodes
                 lock(session.lock) do
-                    session.is_running || return
+                    session.is_running || return nothing
                 end
                 session.is_running || break
 

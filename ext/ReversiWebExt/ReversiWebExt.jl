@@ -43,7 +43,12 @@ import Reversi:
     TournamentSession,
     start_tournament!,
     stop_tournament!,
-    tournament_status
+    tournament_status,
+    # Opening book
+    OpeningBook,
+    build_opening_book,
+    opening_book_summary,
+    opening_book_lookup_dict
 
 """
     launch_gui(:web; port=8080, open_browser=true)
@@ -55,11 +60,35 @@ function Reversi.launch_gui(::Val{:web}; port::Int=8080, open_browser::Bool=true
     game_ref = Ref(ReversiGame())
     history = String[]
 
+    # Opening book state
+    opening_book_ref = Ref{Union{OpeningBook,Nothing}}(nothing)
+
     # Path to frontend public build
     # Assuming the app is installed, we find the project root
     pkg_root = joinpath(@__DIR__, "..", "..")
     frontend_dir = joinpath(pkg_root, "web", "frontend", "dist")
     config_path = joinpath(pkg_root, "config", "default_config.toml")
+
+    # Auto-load opening book if configured
+    if isfile(config_path)
+        try
+            cfg = TOML.parsefile(config_path)
+            wp = get(get(cfg, "web", Dict()), "opening", Dict())
+            path_val = get(wp, "wthor_path", "")
+            max_depth = Int(get(wp, "max_depth", 20))
+            if !isempty(path_val) && isfile(path_val)
+                @info "Building opening book from $path_val..."
+                @async try
+                    opening_book_ref[] = build_opening_book(path_val; max_depth=max_depth)
+                    @info "Opening book loaded: $(length(opening_book_ref[].entries)) positions from $(opening_book_ref[].game_count) games"
+                catch e
+                    @warn "Failed to auto-build opening book: $e"
+                end
+            end
+        catch e
+            @warn "Could not read opening config: $e"
+        end
+    end
 
     # 2. API Endpoints
     @get "/api/config" function (req::HTTP.Request)
@@ -347,6 +376,75 @@ function Reversi.launch_gui(::Val{:web}; port::Int=8080, open_browser::Bool=true
                 "results" => [],
             )
         end
+    end
+
+    # --- Opening Book API ---
+
+    @get "/api/opening/status" function (req::HTTP.Request)
+        book = opening_book_ref[]
+        if book === nothing
+            return Dict{String,Any}(
+                "loaded" => false,
+                "source_file" => "",
+                "game_count" => 0,
+                "entry_count" => 0,
+                "max_depth" => 0,
+            )
+        else
+            s = opening_book_summary(book)
+            s["loaded"] = true
+            return s
+        end
+    end
+
+    @post "/api/opening/build" function (req::HTTP.Request)
+        body = JSON3.read(req.body)
+        path_val = String(get(body, :wthor_path, ""))
+        max_depth = Int(get(body, :max_depth, 20))
+        if isempty(path_val) || !isfile(path_val)
+            return HTTP.Response(400, "File not found: $path_val")
+        end
+        try
+            opening_book_ref[] = build_opening_book(path_val; max_depth=max_depth)
+            s = opening_book_summary(opening_book_ref[])
+            s["loaded"] = true
+            return s
+        catch e
+            return HTTP.Response(
+                400, "Failed to build opening book: $(typeof(e)) $(sprint(showerror, e))"
+            )
+        end
+    end
+
+    @get "/api/opening/lookup" function (req::HTTP.Request)
+        book = opening_book_ref[]
+        if book === nothing
+            return Dict{String,Any}("loaded" => false, "found" => false)
+        end
+
+        params = queryparams(req)
+        index_str = get(params, "index", nothing)
+
+        target_game = game_ref[]
+        if index_str !== nothing
+            idx = tryparse(Int, index_str)
+            if idx !== nothing && 0 <= idx <= length(history)
+                target_game = ReversiGame()
+                for i in 1:idx
+                    move_str = history[i]
+                    if move_str == "pass"
+                        pass!(target_game; force=true)
+                    else
+                        pos = Position(move_str)
+                        make_move!(target_game, pos.row, pos.col)
+                    end
+                end
+            end
+        end
+
+        result = opening_book_lookup_dict(book, target_game)
+        result["loaded"] = true
+        return result
     end
 
     # 3. CORS & Response Middleware

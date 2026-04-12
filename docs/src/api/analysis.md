@@ -17,6 +17,17 @@ Modules = [Reversi]
 Pages   = ["analysis/evaluator.jl"]
 ```
 
+## Opening book (`opening_book.jl`)
+
+Zobrist-hash-keyed opening book built from WTHOR professional game data.
+Lookup returns aggregated statistics (game count, win split, candidate moves
+with frequencies) for any reached position.
+
+```@autodocs
+Modules = [Reversi]
+Pages   = ["analysis/opening_book.jl"]
+```
+
 ---
 
 ## Notes

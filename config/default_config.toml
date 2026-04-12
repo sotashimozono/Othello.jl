@@ -46,3 +46,8 @@ replay = true              # Replay navigation controls
 training = true            # Training monitor (Phase 1)
 analysis = true            # Game analysis tools (Phase 2)
 tournament = true          # Tournament system (Phase 3)
+opening = true             # Opening book panel (Phase 4)
+
+[web.opening]
+wthor_path = ""            # Path to .wtb file for book building (empty = disabled)
+max_depth = 20             # Plies to track per game when building

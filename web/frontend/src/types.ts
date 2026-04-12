@@ -6,7 +6,8 @@ export type PanelName =
   | 'replay'
   | 'training'
   | 'analysis'
-  | 'tournament';
+  | 'tournament'
+  | 'opening';
 
 export type Config = {
   colors: Record<string, string>;

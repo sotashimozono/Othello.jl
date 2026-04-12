@@ -10,6 +10,7 @@ import { Chronicle } from '../components/Chronicle';
 import { ReplayControls } from '../components/ReplayControls';
 import { SettingsSidebar } from '../components/SettingsSidebar';
 import { AnalysisPanel } from '../components/analysis/AnalysisPanel';
+import { OpeningBookPanel } from '../components/opening/OpeningBookPanel';
 
 export function GamePage() {
   const { panelVisible, isFancy } = useConfig();
@@ -98,6 +99,10 @@ export function GamePage() {
 
           {panelVisible('analysis') && (
             <AnalysisPanel historyLen={historyLen} viewingIndex={viewingIndex} />
+          )}
+
+          {panelVisible('opening') && (
+            <OpeningBookPanel historyLen={historyLen} viewingIndex={viewingIndex} />
           )}
 
           {/* Winner Message */}

@@ -178,3 +178,53 @@ export async function fetchTournamentStatus(): Promise<TournamentStatus> {
   const res = await fetch(`${API_BASE}/tournament/status`);
   return res.json();
 }
+
+// --- Opening Book API ---
+
+export type OpeningBookStatus = {
+  loaded: boolean;
+  source_file: string;
+  game_count: number;
+  entry_count: number;
+  max_depth: number;
+};
+
+export type OpeningCandidate = {
+  move: string;
+  count: number;
+  frequency: number;
+};
+
+export type OpeningLookup = {
+  loaded: boolean;
+  found: boolean;
+  hash?: string;
+  total?: number;
+  black_wins?: number;
+  white_wins?: number;
+  draws?: number;
+  candidates?: OpeningCandidate[];
+};
+
+export async function fetchOpeningStatus(): Promise<OpeningBookStatus> {
+  const res = await fetch(`${API_BASE}/opening/status`);
+  return res.json();
+}
+
+export async function buildOpeningBook(wthorPath: string, maxDepth: number = 20): Promise<OpeningBookStatus> {
+  const res = await fetch(`${API_BASE}/opening/build`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ wthor_path: wthorPath, max_depth: maxDepth }),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function fetchOpeningLookup(index: number | null = null): Promise<OpeningLookup> {
+  const url = index !== null
+    ? `${API_BASE}/opening/lookup?index=${index}`
+    : `${API_BASE}/opening/lookup`;
+  const res = await fetch(url);
+  return res.json();
+}

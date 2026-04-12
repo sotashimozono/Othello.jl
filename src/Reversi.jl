@@ -39,6 +39,12 @@ export RandomTrainer
 # Analysis
 export score_move, evaluate_position, principal_variation, make_evaluator
 
+# Opening book
+export OpeningBook, OpeningBookEntry
+export build_opening_book, lookup_opening
+export save_opening_book, load_opening_book
+export opening_book_summary, opening_book_lookup_dict
+
 # Tournament
 export TournamentSession, start_tournament!, stop_tournament!, tournament_status
 
@@ -74,6 +80,7 @@ include("training/session.jl")        # start_training!, stop_training!, status/
 include("training/random_trainer.jl") # RandomTrainer (dummy)
 
 include("analysis/evaluator.jl")      # score_move, evaluate_position, make_evaluator
+include("analysis/opening_book.jl")   # OpeningBook, build_opening_book, lookup_opening
 
 include("tournament/types.jl")        # TournamentSession, TournamentPairResult
 include("tournament/session.jl")      # start_tournament!, stop_tournament!, tournament_status

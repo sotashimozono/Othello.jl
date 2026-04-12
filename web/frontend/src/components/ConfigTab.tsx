@@ -8,6 +8,7 @@ const PANEL_LABELS: { name: PanelName; label: string }[] = [
   { name: 'training', label: 'Training Monitor' },
   { name: 'analysis', label: 'Game Analysis' },
   { name: 'tournament', label: 'Tournament' },
+  { name: 'opening', label: 'Opening Book' },
 ];
 
 export function ConfigTab() {

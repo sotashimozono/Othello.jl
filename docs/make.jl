@@ -29,8 +29,14 @@ makedocs(;
     ),
     pages=[
         "Home" => "index.md",
-        "API Reference" =>
-            ["Core game" => "api/core.md", "I/O" => "api/io.md", "UI" => "api/ui.md"],
+        "API Reference" => [
+            "Core game" => "api/core.md",
+            "I/O" => "api/io.md",
+            "UI" => "api/ui.md",
+            "Training" => "api/training.md",
+            "Analysis" => "api/analysis.md",
+            "Tournament" => "api/tournament.md",
+        ],
         "Examples" => [
             "Play (CUI)" => "examples/play.md",
             "Game records" => "examples/record.md",

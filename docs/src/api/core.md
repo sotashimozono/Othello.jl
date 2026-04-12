@@ -28,6 +28,21 @@ Modules = [Reversi]
 Pages   = ["core/player.jl"]
 ```
 
+## Classical AI players (`ai_players.jl`)
+
+Five non-ML players built on the bitboard primitives:
+
+- `HeuristicPlayer` — static positional weight table
+- `CornerPlayer` — corner-first then positional fallback
+- `MobilityPlayer` — maximises own mobility minus opponent's
+- `MinimaxPlayer(depth)` — alpha-beta search on piece-count diff
+- `MCTSPlayer(iterations)` — UCB1 + random rollout MCTS
+
+```@autodocs
+Modules = [Reversi]
+Pages   = ["core/ai_players.jl"]
+```
+
 ---
 
 ## Notes

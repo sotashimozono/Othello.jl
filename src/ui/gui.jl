@@ -14,18 +14,32 @@
 # (GUIPlayer has been merged into HumanPlayer in core/player.jl)
 
 """
-    launch_gui([black, white]; show_hints=true)
+    launch_gui([backend=:makie], [black, white]; kwargs...)
 
-Open an interactive GLMakie Reversi window.
+Open an interactive Reversi window. Supports multiple backends via package extensions.
 
-**Requires GLMakie to be loaded first:**
+## Backends
+- `:makie` (default): GLMakie-based native window. Requires `using GLMakie`.
+- `:web`: React-based web interface. Requires `using Oxygen, DefaultApplication, HTTP, JSON3`.
+
+## Examples
 ```julia
 using GLMakie, Reversi
-launch_gui()                            # human (black) vs random AI
-launch_gui(HumanPlayer(), HumanPlayer())  # human vs human
+launch_gui()                            # human (black) vs random AI (Makie)
+
+using Oxygen, DefaultApplication, HTTP, JSON3, Reversi
+launch_gui(:web; port=8081)             # start web server on port 8081
 ```
 """
 function launch_gui end
+
+# Convenience methods to dispatch Symbol backends to Val-based implementations
+function launch_gui(backend::Symbol, args...; kwargs...)
+    launch_gui(Val(backend), args...; kwargs...)
+end
+
+# Default to :makie if no backend is specified
+launch_gui(args...; kwargs...) = launch_gui(:makie, args...; kwargs...)
 
 """
     launch_replay_gui(record_or_moves; title="Game Replay")

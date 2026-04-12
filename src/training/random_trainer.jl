@@ -45,4 +45,6 @@ function train_episode!(trainer::RandomTrainer, episode::Int)
 end
 
 # Hyperparameters: nothing meaningful for a random baseline
-hyperparameters(::RandomTrainer) = Dict{String,Any}("name" => "RandomTrainer", "stochastic" => true)
+function hyperparameters(::RandomTrainer)
+    Dict{String,Any}("name" => "RandomTrainer", "stochastic" => true)
+end

@@ -4,7 +4,9 @@ version-resolver:
   major:
     labels: ['major']
   minor:
-    labels: ['minor']
+    labels:
+      - 'minor'
+      - 'breaking'
   patch:
     labels: ['patch']
   default: patch
@@ -40,6 +42,8 @@ exclude-labels:
 change-template: '- $TITLE (#$NUMBER) @$AUTHOR'
 
 template: |
+  ## Changelog
+
   ## What's Changed
 
   $CHANGES
